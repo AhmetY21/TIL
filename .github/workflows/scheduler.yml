@@ -32,6 +32,7 @@ jobs:
         run: python generate_lesson.py
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -44,3 +45,9 @@ jobs:
           branch: "auto-lesson-update"
           branch-suffix: timestamp
           delete-branch: true
+
+      - name: Auto-merge
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        run: gh pr merge "${{ steps.cpr.outputs.pull-request-number }}" --merge --auto
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
