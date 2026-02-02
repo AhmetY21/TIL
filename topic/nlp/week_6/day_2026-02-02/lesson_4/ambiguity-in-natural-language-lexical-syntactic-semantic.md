@@ -35,7 +35,7 @@ Ambiguity in natural language arises when a sentence or word can have multiple i
 
 We can use NLTK (Natural Language Toolkit) and spaCy, popular Python libraries for NLP, to demonstrate resolving some aspects of ambiguity. For more complex ambiguity, more sophisticated models (like transformers) are required.
 
-```python
+python
 import nltk
 import spacy
 
@@ -85,7 +85,7 @@ for token in doc:
 
 #  This is a very simplified example. Real syntactic ambiguity resolution is more complex and often involves probabilistic parsing or statistical models.
 
-```
+
 
 **Explanation:**
 

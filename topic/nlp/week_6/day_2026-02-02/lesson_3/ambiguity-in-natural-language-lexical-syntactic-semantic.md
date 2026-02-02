@@ -1,4 +1,3 @@
-```markdown
 ## Topic: Ambiguity in Natural Language: Lexical, Syntactic, Semantic
 
 **1- Provide formal definition, what is it and how can we use it?**
@@ -36,7 +35,7 @@ This example demonstrates how all three types of ambiguity can occur simultaneou
 
 While complete disambiguation is a complex task, we can use Python libraries like NLTK and spaCy to address aspects of it. Here's an example using NLTK for lexical ambiguity (Word Sense Disambiguation) using Lesk's Algorithm:
 
-```python
+python
 import nltk
 from nltk.wsd import lesk
 from nltk.tokenize import word_tokenize
@@ -64,7 +63,7 @@ if sense2:
     print(f"Definition: {sense2.definition()}")
 else:
     print("Could not disambiguate 'bank'.")
-```
+
 
 This code uses Lesk's algorithm, a simplified approach to WSD. It finds the sense of the word "bank" whose definition has the most overlap with the context of the sentence.  For syntactic parsing, NLTK provides parsers (e.g., `nltk.ChartParser`), and spaCy offers dependency parsing. For semantic disambiguation, techniques like knowledge representation (using ontologies) and contextual understanding are often applied, which are more complex to implement directly in a short code snippet.  Modern deep learning approaches involving transformer models (like BERT) are also very effective at capturing context and disambiguating word senses, and can be implemented using libraries such as Transformers.
 
@@ -83,4 +82,3 @@ Hi there,
 This is a reminder for our follow-up discussion about ambiguity in Natural Language Processing (lexical, syntactic, semantic). Let's chat tomorrow at 2:00 PM EST to discuss deep learning approaches to ambiguity resolution and their limitations.
 
 See you then!
-```

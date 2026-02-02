@@ -22,7 +22,7 @@ Let's consider a **customer service chatbot** for an e-commerce website. This ch
 
 We can use the `NLTK` (Natural Language Toolkit) or `spaCy` library for sentiment analysis in Python. Here's a basic example using NLTK and VADER (Valence Aware Dictionary and sEntiment Reasoner):
 
-```python
+python
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
@@ -50,7 +50,7 @@ elif scores['compound'] <= -0.05:
 else:
     print("Neutral sentiment")
 
-```
+
 
 Explanation:
 

@@ -1,4 +1,3 @@
-```markdown
 ## Topic: NLP vs NLU vs NLG: Understanding the Differences
 
 **1- Provide formal definition, what is it and how can we use it?**
@@ -41,7 +40,7 @@ Imagine a customer service chatbot for an online retailer:
 
 Here's a simplified example using the `transformers` library for NLU and a basic approach for NLG using Python:
 
-```python
+python
 from transformers import pipeline
 
 # NLU using transformers (zero-shot classification - determine user intent)
@@ -69,7 +68,7 @@ intent = result['labels'][0] # Simplified: Taking the top scoring label as the i
 
 response = generate_response(intent)
 print("NLG Response:", response)
-```
+
 
 **Explanation:**
 
@@ -93,4 +92,3 @@ Date: Tomorrow, November 3, 2024
 Time: 10:00 AM PST
 
 Prepare to discuss the impact of Transformer-based architectures on NLU and NLG.  We will focus on the advantages of attention mechanisms.  See you then!
-```

@@ -1,4 +1,3 @@
-```markdown
 Topic: Ambiguity in Natural Language: Lexical, Syntactic, Semantic
 
 1- Provide formal definition, what is it and how can we use it?
@@ -28,7 +27,7 @@ Ambiguity in Natural Language refers to the possibility of interpreting a lingui
 
 Here's a simple example of demonstrating lexical ambiguity using NLTK and WordNet for Word Sense Disambiguation:
 
-```python
+python
 import nltk
 from nltk.corpus import wordnet
 
@@ -54,7 +53,7 @@ for word, pos in tagged:
             print(f"Best Sense (based on simple heuristic): {best_sense.name()}, Definition: {best_sense.definition()}")
         else:
             print("No sense found based on POS tag")
-```
+
 
 **Explanation:**
 
@@ -77,7 +76,7 @@ How can we leverage pre-trained language models (e.g., BERT, RoBERTa) to improve
 
 5- Schedule a chatgpt chat to send notification (Simulated)
 
-```
+
 SIMULATED NOTIFICATION:
 Subject: ChatGPT Reminder
 
@@ -85,4 +84,3 @@ Body:
 This is a simulated notification. Reminder to discuss "Ambiguity in Natural Language: Lexical, Syntactic, Semantic" follow-up questions. You inquired about leveraging pre-trained language models for WSD. Ready to discuss BERT, RoBERTa and limitations?
 Date: October 27, 2023
 Time: 9:00 AM PST
-```

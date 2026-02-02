@@ -50,7 +50,7 @@ Let's consider a customer service chatbot for an online electronics store.
 
 3- Provide a method to apply in python (if possible)
 
-```python
+python
 import spacy
 from transformers import pipeline  # For NLG (requires installation: pip install transformers)
 
@@ -77,7 +77,7 @@ generated_text = generator(prompt, max_length=100, num_return_sequences=1) # Gen
 
 print("\nGenerated Product Description:")
 print(generated_text[0]['generated_text'])
-```
+
 
 **Explanation:**
 

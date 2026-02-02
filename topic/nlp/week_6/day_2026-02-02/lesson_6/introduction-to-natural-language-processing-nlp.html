@@ -9,7 +9,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            max_width: 800px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             color: #333;
@@ -41,34 +41,27 @@
 </ul>
 <p>3- <strong>Method to Apply in Python (Sentiment Analysis Example):</strong></p>
 <p>We can use the <code>NLTK</code> (Natural Language Toolkit) or <code>spaCy</code> library for sentiment analysis in Python. Here's a basic example using NLTK and VADER (Valence Aware Dictionary and sEntiment Reasoner):</p>
-<pre class="codehilite"><code class="language-python">import nltk
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-
-# Download necessary resources (run once)
-nltk.download('vader_lexicon')
-nltk.download('punkt') # Required by the SentimentIntensityAnalyzer
-
-# Initialize the sentiment analyzer
-sid = SentimentIntensityAnalyzer()
-
-# Example text
-text = &quot;This movie was absolutely fantastic! I highly recommend it.&quot;
-
-# Get the sentiment scores
-scores = sid.polarity_scores(text)
-
-# Print the scores
-print(scores)
-
-# Determine the overall sentiment
-if scores['compound'] &gt;= 0.05:
-    print(&quot;Positive sentiment&quot;)
+<p>python
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer</p>
+<h1>Download necessary resources (run once)</h1>
+<p>nltk.download('vader_lexicon')
+nltk.download('punkt') # Required by the SentimentIntensityAnalyzer</p>
+<h1>Initialize the sentiment analyzer</h1>
+<p>sid = SentimentIntensityAnalyzer()</p>
+<h1>Example text</h1>
+<p>text = "This movie was absolutely fantastic! I highly recommend it."</p>
+<h1>Get the sentiment scores</h1>
+<p>scores = sid.polarity_scores(text)</p>
+<h1>Print the scores</h1>
+<p>print(scores)</p>
+<h1>Determine the overall sentiment</h1>
+<p>if scores['compound'] &gt;= 0.05:
+    print("Positive sentiment")
 elif scores['compound'] &lt;= -0.05:
-    print(&quot;Negative sentiment&quot;)
+    print("Negative sentiment")
 else:
-    print(&quot;Neutral sentiment&quot;)
-</code></pre>
-
+    print("Neutral sentiment")</p>
 <p>Explanation:</p>
 <ul>
 <li>We import <code>nltk</code> and <code>SentimentIntensityAnalyzer</code>.</li>

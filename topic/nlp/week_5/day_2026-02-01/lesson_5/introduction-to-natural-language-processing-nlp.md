@@ -1,4 +1,3 @@
-```markdown
 Topic: Introduction to Natural Language Processing (NLP)
 
 1- **Provide formal definition, what is it and how can we use it?**
@@ -37,7 +36,7 @@ A company wants to understand how customers feel about their new product. They c
 
 This example utilizes the Natural Language Toolkit (NLTK) and VADER (Valence Aware Dictionary and sEntiment Reasoner) libraries. VADER is particularly well-suited for analyzing sentiments expressed in social media and online text.
 
-```python
+python
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
@@ -67,7 +66,7 @@ for review in reviews:
     else:
         print("Sentiment: Neutral")
     print("-" * 30)
-```
+
 
 **Explanation:**
 
@@ -108,4 +107,3 @@ See you then!
 Best,
 
 ChatGPT Assistant
-```

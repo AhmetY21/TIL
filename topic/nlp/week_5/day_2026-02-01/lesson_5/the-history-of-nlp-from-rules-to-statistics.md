@@ -1,4 +1,3 @@
-```markdown
 Topic: The History of NLP: From Rules to Statistics
 
 1- Provide formal definition, what is it and how can we use it?
@@ -29,7 +28,7 @@ The scenario highlights how the evolution from rules to statistics to neural net
 
 Here's a simplified example demonstrating the basic principles of statistical NLP using Python's `nltk` library for N-gram language modeling. This shows a very basic statistical concept.  Note that modern neural approaches are significantly more complex.
 
-```python
+python
 import nltk
 from nltk.corpus import brown
 from nltk.lm.preprocessing import padded_everygram_pipeline
@@ -62,7 +61,7 @@ print(f"Probability of the sentence '{sentence}': {probability}")
 
 # Generate text (very basic and likely nonsensical)
 print(model.generate(5, random_seed=42))
-```
+
 
 Explanation:
 
@@ -97,4 +96,3 @@ The chat is scheduled for:
 Please be ready to discuss your thoughts and any further questions you might have. We'll delve deeper into the topics covered earlier and explore the current state of neural NLP.
 
 See you then!
-```

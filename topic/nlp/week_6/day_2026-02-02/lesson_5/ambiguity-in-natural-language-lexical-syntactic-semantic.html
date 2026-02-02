@@ -9,7 +9,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            max_width: 800px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             color: #333;
@@ -21,61 +21,66 @@
     </style>
 </head>
 <body>
-    <pre class="codehilite"><code class="language-markdown">Topic: Ambiguity in Natural Language: Lexical, Syntactic, Semantic
-
-1- Provide formal definition, what is it and how can we use it?
-
-Ambiguity in Natural Language refers to the possibility of interpreting a linguistic expression (word, phrase, sentence) in multiple ways. This can arise at different levels of linguistic analysis: lexical, syntactic, and semantic. Understanding and resolving ambiguity is crucial for accurate NLP tasks such as machine translation, text understanding, information retrieval, and dialogue systems.
-
-*   **Lexical Ambiguity:** A single word has multiple meanings. This is also known as homonymy or polysemy.
-    *   **Formal Definition:** A word (lexeme) has multiple, distinct senses or meanings.
-    *   **Use:**  Lexical ambiguity requires context to determine the intended meaning of a word.  Word Sense Disambiguation (WSD) aims to identify the correct sense of a word within a specific context.
-
-*   **Syntactic Ambiguity:**  The grammatical structure of a sentence allows for multiple possible parse trees, leading to different interpretations. This is also known as structural ambiguity.
-    *   **Formal Definition:** A sentence can be parsed in multiple ways, each resulting in a different semantic interpretation.
-    *   **Use:** Requires disambiguation algorithms, often probabilistic, to choose the most likely syntactic structure based on context and statistical analysis of language.
-
-*   **Semantic Ambiguity:**  Even with a clear syntactic structure and unambiguous words, the sentence as a whole can have multiple interpretations due to the way words combine and relate to each other. This often stems from quantifier scope, pronoun reference, or vagueness.
-    *   **Formal Definition:**  The meaning of a sentence, even with a unique syntactic parse and unambiguous words, is unclear and has multiple possible interpretations.
-    *   **Use:**  Requires reasoning about the relationships between entities, events, and concepts expressed in the sentence, often involving knowledge representation and inference.
-
-2- Provide an application scenario
-
-*   **Machine Translation:** Consider the sentence: &quot;I saw her duck.&quot;
-    *   **Lexical Ambiguity:** &quot;Duck&quot; can be a noun (the bird) or a verb (to lower quickly). This affects the translation. A French translation might need to choose between &quot;canard&quot; (noun) or &quot;baisser&quot; (verb).
-    *   **Syntactic Ambiguity:** &quot;Her duck&quot; could mean &quot;I saw her pet duck&quot; or &quot;I saw her lower her head&quot;.
-    *   **Scenario:** A machine translation system unaware of these ambiguities could translate &quot;I saw her duck&quot; as &quot;J'ai vu son canard,&quot; assuming &quot;duck&quot; is the noun, even if the intended meaning was &quot;I saw her duck (down)&quot;. This would lead to an incorrect and nonsensical translation.
-
-3- Provide a method to apply in python (if possible)
-
-Here's a simple example of demonstrating lexical ambiguity using NLTK and WordNet for Word Sense Disambiguation:
-
-```python
+    <p>Topic: Ambiguity in Natural Language: Lexical, Syntactic, Semantic</p>
+<p>1- Provide formal definition, what is it and how can we use it?</p>
+<p>Ambiguity in Natural Language refers to the possibility of interpreting a linguistic expression (word, phrase, sentence) in multiple ways. This can arise at different levels of linguistic analysis: lexical, syntactic, and semantic. Understanding and resolving ambiguity is crucial for accurate NLP tasks such as machine translation, text understanding, information retrieval, and dialogue systems.</p>
+<ul>
+<li>
+<p><strong>Lexical Ambiguity:</strong> A single word has multiple meanings. This is also known as homonymy or polysemy.</p>
+<ul>
+<li><strong>Formal Definition:</strong> A word (lexeme) has multiple, distinct senses or meanings.</li>
+<li><strong>Use:</strong>  Lexical ambiguity requires context to determine the intended meaning of a word.  Word Sense Disambiguation (WSD) aims to identify the correct sense of a word within a specific context.</li>
+</ul>
+</li>
+<li>
+<p><strong>Syntactic Ambiguity:</strong>  The grammatical structure of a sentence allows for multiple possible parse trees, leading to different interpretations. This is also known as structural ambiguity.</p>
+<ul>
+<li><strong>Formal Definition:</strong> A sentence can be parsed in multiple ways, each resulting in a different semantic interpretation.</li>
+<li><strong>Use:</strong> Requires disambiguation algorithms, often probabilistic, to choose the most likely syntactic structure based on context and statistical analysis of language.</li>
+</ul>
+</li>
+<li>
+<p><strong>Semantic Ambiguity:</strong>  Even with a clear syntactic structure and unambiguous words, the sentence as a whole can have multiple interpretations due to the way words combine and relate to each other. This often stems from quantifier scope, pronoun reference, or vagueness.</p>
+<ul>
+<li><strong>Formal Definition:</strong>  The meaning of a sentence, even with a unique syntactic parse and unambiguous words, is unclear and has multiple possible interpretations.</li>
+<li><strong>Use:</strong>  Requires reasoning about the relationships between entities, events, and concepts expressed in the sentence, often involving knowledge representation and inference.</li>
+</ul>
+</li>
+</ul>
+<p>2- Provide an application scenario</p>
+<ul>
+<li><strong>Machine Translation:</strong> Consider the sentence: "I saw her duck."<ul>
+<li><strong>Lexical Ambiguity:</strong> "Duck" can be a noun (the bird) or a verb (to lower quickly). This affects the translation. A French translation might need to choose between "canard" (noun) or "baisser" (verb).</li>
+<li><strong>Syntactic Ambiguity:</strong> "Her duck" could mean "I saw her pet duck" or "I saw her lower her head".</li>
+<li><strong>Scenario:</strong> A machine translation system unaware of these ambiguities could translate "I saw her duck" as "J'ai vu son canard," assuming "duck" is the noun, even if the intended meaning was "I saw her duck (down)". This would lead to an incorrect and nonsensical translation.</li>
+</ul>
+</li>
+</ul>
+<p>3- Provide a method to apply in python (if possible)</p>
+<p>Here's a simple example of demonstrating lexical ambiguity using NLTK and WordNet for Word Sense Disambiguation:</p>
+<p>python
 import nltk
-from nltk.corpus import wordnet
-
-# Example Sentence
-sentence = &quot;I saw her duck.&quot;
+from nltk.corpus import wordnet</p>
+<h1>Example Sentence</h1>
+<p>sentence = "I saw her duck."
 tokens = nltk.word_tokenize(sentence)
-tagged = nltk.pos_tag(tokens) # Part of Speech Tagging
-
-# Focus on the word &quot;duck&quot;
-for word, pos in tagged:
-    if word == &quot;duck&quot;:
-        print(f&quot;Word: {word}, POS: {pos}&quot;)
+tagged = nltk.pos_tag(tokens) # Part of Speech Tagging</p>
+<h1>Focus on the word "duck"</h1>
+<p>for word, pos in tagged:
+    if word == "duck":
+        print(f"Word: {word}, POS: {pos}")
         synsets = wordnet.synsets(word)
-        print(f&quot;Synsets: {synsets}&quot;)
+        print(f"Synsets: {synsets}")</p>
+<pre class="codehilite"><code>    #Heuristic: Choose the first synset based on POS tag.  This is a simplified WSD.
+    if pos.startswith('N'): # Noun
+        best_sense = synsets[0] if synsets else None
+    elif pos.startswith('V'): # Verb
+        best_sense = synsets[1] if len(synsets) &gt; 1 else None #Bias towards verb sense if exists, assuming a verb is more plausible in this context
 
-        #Heuristic: Choose the first synset based on POS tag.  This is a simplified WSD.
-        if pos.startswith('N'): # Noun
-            best_sense = synsets[0] if synsets else None
-        elif pos.startswith('V'): # Verb
-            best_sense = synsets[1] if len(synsets) &gt; 1 else None #Bias towards verb sense if exists, assuming a verb is more plausible in this context
-
-        if best_sense:
-            print(f&quot;Best Sense (based on simple heuristic): {best_sense.name()}, Definition: {best_sense.definition()}&quot;)
-        else:
-            print(&quot;No sense found based on POS tag&quot;)
+    if best_sense:
+        print(f&quot;Best Sense (based on simple heuristic): {best_sense.name()}, Definition: {best_sense.definition()}&quot;)
+    else:
+        print(&quot;No sense found based on POS tag&quot;)
 </code></pre>
 
 <p><strong>Explanation:</strong></p>
@@ -95,13 +100,11 @@ for word, pos in tagged:
 <p>4- Provide a follow up question about that topic</p>
 <p>How can we leverage pre-trained language models (e.g., BERT, RoBERTa) to improve word sense disambiguation in a practical NLP application, and what are some limitations of using these models for this task?</p>
 <p>5- Schedule a chatgpt chat to send notification (Simulated)</p>
-<pre class="codehilite"><code>SIMULATED NOTIFICATION:
-Subject: ChatGPT Reminder
-
-Body:
-This is a simulated notification. Reminder to discuss &quot;Ambiguity in Natural Language: Lexical, Syntactic, Semantic&quot; follow-up questions. You inquired about leveraging pre-trained language models for WSD. Ready to discuss BERT, RoBERTa and limitations?
+<p>SIMULATED NOTIFICATION:
+Subject: ChatGPT Reminder</p>
+<p>Body:
+This is a simulated notification. Reminder to discuss "Ambiguity in Natural Language: Lexical, Syntactic, Semantic" follow-up questions. You inquired about leveraging pre-trained language models for WSD. Ready to discuss BERT, RoBERTa and limitations?
 Date: October 27, 2023
-Time: 9:00 AM PST
-</code></pre>
+Time: 9:00 AM PST</p>
 </body>
 </html>

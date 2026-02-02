@@ -22,7 +22,7 @@ Consider a machine translation system tasked with translating the sentence "I we
 
 We can use Word Sense Disambiguation (WSD) techniques for lexical ambiguity resolution in Python. One popular approach is using the Lesk algorithm, implemented in the `nltk` library. For syntactic ambiguity, we can use parsing techniques with libraries like `spaCy` or `nltk`.
 
-```python
+python
 import nltk
 from nltk.corpus import wordnet
 from nltk.wsd import lesk
@@ -60,7 +60,7 @@ for token in doc:
 
 # For more advanced syntactic ambiguity resolution, you would typically need to use a probabilistic context-free grammar (PCFG)
 # or other statistical parsing methods.
-```
+
 
 Explanation:
 

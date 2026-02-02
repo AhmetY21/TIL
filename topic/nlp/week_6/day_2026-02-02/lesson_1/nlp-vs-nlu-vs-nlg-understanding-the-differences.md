@@ -1,4 +1,3 @@
-```markdown
 ## Topic: NLP vs NLU vs NLG: Understanding the Differences
 
 **1- Provide formal definition, what is it and how can we use it?**
@@ -24,7 +23,7 @@ Let's consider a **customer service chatbot** application:
 We can use the `transformers` library from Hugging Face for both NLU and NLG tasks in Python.
 
 *   **NLU (Intent Recognition):**
-    ```python
+    python
     from transformers import pipeline
 
     classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
@@ -36,11 +35,11 @@ We can use the `transformers` library from Hugging Face for both NLU and NLG tas
     result = classifier(sequence_to_classify, candidate_labels, hypothesis_template=hypothesis_template)
 
     print(result)
-    ```
+    
     This example uses the `zero-shot-classification` pipeline to classify the intent of the user's input. It doesn't need pre-trained data for those specific labels.  You would then use the result (the label with the highest score) to trigger the appropriate action in your application.
 
 *   **NLG (Text Generation):**
-    ```python
+    python
     from transformers import pipeline
 
     generator = pipeline('text-generation', model='gpt2')
@@ -51,7 +50,7 @@ We can use the `transformers` library from Hugging Face for both NLU and NLG tas
                                 num_return_sequences=1)
 
     print(generated_text)
-    ```
+    
     This example uses the `text-generation` pipeline with the `gpt2` model to generate text based on a given prompt. The output will be a short, coherent text completion following the prompt.
 
 **Important Notes:**
@@ -65,4 +64,3 @@ How can we evaluate the performance of an NLU model, considering factors beyond 
 **5- Schedule a chatgpt chat to send notification (Simulated)**
 
 **Notification:** Scheduling a follow-up discussion with ChatGPT on "Evaluating NLU models beyond accuracy" for tomorrow at 2:00 PM EST.
-```

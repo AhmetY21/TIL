@@ -9,7 +9,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            max_width: 800px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             color: #333;
@@ -41,45 +41,34 @@
 <p><strong>Application Scenario:</strong> A chatbot designed to help users with financial transactions. If a user types "Transfer money to the bank," the chatbot needs to correctly interpret "bank" as a financial institution to initiate the correct transaction. If the chatbot misinterprets it as the riverbank, it will fail to understand the user's intent and provide an incorrect response. This can lead to a poor user experience and potentially financial errors. The chatbot must perform lexical disambiguation to ensure accurate understanding and appropriate action. Another scenario is if the chatbot receives the sentence "I saw the man on the hill with a telescope". The chatbot needs to understand if the speaker used the telescope or the man was holding it.</p>
 <p>3- Provide a method to apply in python (if possible)</p>
 <p>We can use Word Sense Disambiguation (WSD) techniques for lexical ambiguity resolution in Python. One popular approach is using the Lesk algorithm, implemented in the <code>nltk</code> library. For syntactic ambiguity, we can use parsing techniques with libraries like <code>spaCy</code> or <code>nltk</code>.</p>
-<pre class="codehilite"><code class="language-python">import nltk
+<p>python
+import nltk
 from nltk.corpus import wordnet
 from nltk.wsd import lesk
-import spacy
-
-# Download necessary NLTK resources (run once)
-# nltk.download('wordnet')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('punkt')
-
-# Lexical Ambiguity Resolution (Word Sense Disambiguation)
-sentence1 = &quot;I went to the bank to deposit money.&quot;
-sentence2 = &quot;I sat on the bank of the river.&quot;
-
-print(f&quot;Sentence 1: {sentence1}&quot;)
-print(f&quot;Sense of 'bank': {lesk(nltk.word_tokenize(sentence1), 'bank')}&quot;) # Output: Synset('bank.n.05') - financial institution
-
-
-print(f&quot;Sentence 2: {sentence2}&quot;)
-print(f&quot;Sense of 'bank': {lesk(nltk.word_tokenize(sentence2), 'bank')}&quot;) # Output: Synset('bank.n.01') - river bank
-
-# Syntactic Ambiguity Resolution using spaCy
-nlp = spacy.load(&quot;en_core_web_sm&quot;)
-sentence3 = &quot;I saw the man on the hill with a telescope.&quot;
-
-doc = nlp(sentence3)
-
-print(f&quot;Sentence 3: {sentence3}&quot;)
-print(&quot;Dependency Parse:&quot;)
+import spacy</p>
+<h1>Download necessary NLTK resources (run once)</h1>
+<h1>nltk.download('wordnet')</h1>
+<h1>nltk.download('averaged_perceptron_tagger')</h1>
+<h1>nltk.download('punkt')</h1>
+<h1>Lexical Ambiguity Resolution (Word Sense Disambiguation)</h1>
+<p>sentence1 = "I went to the bank to deposit money."
+sentence2 = "I sat on the bank of the river."</p>
+<p>print(f"Sentence 1: {sentence1}")
+print(f"Sense of 'bank': {lesk(nltk.word_tokenize(sentence1), 'bank')}") # Output: Synset('bank.n.05') - financial institution</p>
+<p>print(f"Sentence 2: {sentence2}")
+print(f"Sense of 'bank': {lesk(nltk.word_tokenize(sentence2), 'bank')}") # Output: Synset('bank.n.01') - river bank</p>
+<h1>Syntactic Ambiguity Resolution using spaCy</h1>
+<p>nlp = spacy.load("en_core_web_sm")
+sentence3 = "I saw the man on the hill with a telescope."</p>
+<p>doc = nlp(sentence3)</p>
+<p>print(f"Sentence 3: {sentence3}")
+print("Dependency Parse:")
 for token in doc:
-    print(f&quot;{token.text} -- {token.dep_} --&gt; {token.head.text}&quot;)
-
-#Note: spaCy provides a dependency parse but doesn't inherently resolve the ambiguity itself.
-#Analyzing the dependency parse helps in understanding the different possible structures.
-
-# For more advanced syntactic ambiguity resolution, you would typically need to use a probabilistic context-free grammar (PCFG)
-# or other statistical parsing methods.
-</code></pre>
-
+    print(f"{token.text} -- {token.dep_} --&gt; {token.head.text}")</p>
+<h1>Note: spaCy provides a dependency parse but doesn't inherently resolve the ambiguity itself.</h1>
+<h1>Analyzing the dependency parse helps in understanding the different possible structures.</h1>
+<h1>For more advanced syntactic ambiguity resolution, you would typically need to use a probabilistic context-free grammar (PCFG)</h1>
+<h1>or other statistical parsing methods.</h1>
 <p>Explanation:</p>
 <ul>
 <li><strong>Lexical Ambiguity:</strong> The <code>lesk</code> function from <code>nltk.wsd</code> uses the context of the sentence to determine the correct sense of the word "bank". It compares the definitions of different senses of "bank" with the words in the surrounding context.</li>
