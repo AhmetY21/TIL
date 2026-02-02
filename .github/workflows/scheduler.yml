@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -36,15 +37,27 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "feat: add new NLP lesson"
+          commit-message: "feat: add new NLP lesson (MD & HTML)"
           title: "New NLP Lesson Generated"
           body: |
-            This PR contains the automatically generated NLP lesson.
+            This PR contains the automatically generated NLP lesson in both Markdown and HTML formats.
             
             Triggered by schedule.
           branch: "auto-lesson-update"
           branch-suffix: timestamp
           delete-branch: true
+
+      - name: Generate Job Summary
+        if: always()
+        run: |
+          echo "## NLP Lesson Generation Summary" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.cpr.outputs.pull-request-operation }}" == "created" ]; then
+            echo "✅ New Pull Request created: [PR #${{ steps.cpr.outputs.pull-request-number }}](${{ steps.cpr.outputs.pull-request-url }})" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.cpr.outputs.pull-request-operation }}" == "updated" ]; then
+            echo "🔄 Pull Request updated: [PR #${{ steps.cpr.outputs.pull-request-number }}](${{ steps.cpr.outputs.pull-request-url }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No changes were detected or PR was not created." >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Auto-merge
         if: steps.cpr.outputs.pull-request-operation == 'created'
