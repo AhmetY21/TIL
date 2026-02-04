@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Expressions for Text Processing</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <p>Topic: Regular Expressions for Text Processing</p>
+<p>1- Provide formal definition, what is it and how can we use it?</p>
+<p>A regular expression (regex or regexp) is a sequence of characters that define a search pattern. Essentially, it's a powerful tool used to match, locate, and manage text based on defined patterns. Regular expressions are composed of literal characters and special characters (metacharacters) that have specific meanings.</p>
+<ul>
+<li>
+<p><strong>Formal Definition:</strong> A regular expression is a formal language consisting of constants and operators that denote sets of strings and operations over these sets. More formally, they can be defined recursively as follows:</p>
+<ul>
+<li>ε (the empty string) is a regular expression.</li>
+<li>If 'a' is a symbol (a single character), then 'a' is a regular expression.</li>
+<li>If R and S are regular expressions, then:<ul>
+<li>R|S (alternation): R or S</li>
+<li>RS (concatenation): R followed by S</li>
+<li>R* (Kleene star): Zero or more occurrences of R
+are also regular expressions.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>How can we use it?</strong>  Regular expressions are crucial for:</p>
+<ul>
+<li><strong>Pattern Matching:</strong>  Finding specific text sequences within a larger body of text. For example, finding all email addresses or phone numbers in a document.</li>
+<li><strong>Text Extraction:</strong> Isolating and extracting specific parts of text that match a pattern.  For example, extracting all dates in a particular format.</li>
+<li><strong>Text Validation:</strong> Verifying that a string conforms to a defined format. For example, ensuring a password meets certain complexity requirements.</li>
+<li><strong>Text Substitution:</strong> Replacing text that matches a pattern with a different string. For example, replacing all instances of "color" with "colour".</li>
+<li><strong>Data Cleaning:</strong> Cleaning and standardizing textual data by removing unwanted characters or formatting.</li>
+<li><strong>Tokenization:</strong>  Breaking down text into smaller units, such as words or sentences, based on defined patterns.</li>
+</ul>
+</li>
+</ul>
+<p>2- Provide an application scenario</p>
+<p><strong>Application Scenario: Sentiment Analysis of Customer Reviews</strong></p>
+<p>Imagine you're analyzing customer reviews for a product on an e-commerce website. You want to automatically identify reviews that contain certain keywords associated with positive or negative sentiment.</p>
+<p>For example:</p>
+<ul>
+<li>Positive Keywords: "excellent", "amazing", "fantastic", "love", "recommend"</li>
+<li>Negative Keywords: "terrible", "awful", "bad", "disappointed", "problem"</li>
+</ul>
+<p>You can use regular expressions to:</p>
+<ol>
+<li><strong>Detect the presence of these keywords in each review.</strong> This provides a preliminary indication of sentiment.</li>
+<li><strong>Extract surrounding phrases:</strong> For instance, if a review contains "absolutely amazing", you can use regex to extract "absolutely amazing" and analyze the context to strengthen sentiment determination.</li>
+<li><strong>Identify negated phrases:</strong> If a review contains "not good" or "not happy", a regex can help identify these negations and reverse the sentiment polarity of "good" or "happy" in those contexts.</li>
+<li><strong>Handle variations in spelling and grammar:</strong> Regex can accommodate slight variations in keyword spellings (e.g., "reccomend" instead of "recommend") or handle plural forms.</li>
+</ol>
+<p>Without regular expressions, achieving this level of nuanced text analysis would be significantly more difficult and require writing far more complex procedural code.  Regex allows you to express the search patterns concisely and efficiently.</p>
+<p>3- Provide a method to apply in python</p>
+<p>Python's <code>re</code> module provides comprehensive support for regular expressions.  Here's a demonstration focusing on finding email addresses in a text:</p>
+<p>python
+import re</p>
+<p>text = "Contact us at support@example.com or sales@another-example.org for assistance. Also, try info@yet-another.com."</p>
+<h1>Regular expression for matching email addresses</h1>
+<p>email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}"</p>
+<h1>Find all matches in the text</h1>
+<p>emails = re.findall(email_pattern, text)</p>
+<h1>Print the extracted email addresses</h1>
+<p>print(emails)</p>
+<h1>Example of using re.search to find the first email</h1>
+<p>first_email_match = re.search(email_pattern, text)
+if first_email_match:
+    print("First email found:", first_email_match.group(0)) #Access the matched string using group(0)</p>
+<h1>Example of replacing the emails with [REDACTED]</h1>
+<p>redacted_text = re.sub(email_pattern, "[REDACTED]", text)
+print(redacted_text)</p>
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><code>import re</code>: Imports the regular expression module.</li>
+<li><code>email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"</code>: Defines the regular expression pattern for an email address.  The <code>r</code> prefix indicates a raw string, which prevents backslashes from being interpreted as escape sequences. Let's break down the pattern:<ul>
+<li><code>[a-zA-Z0-9._%+-]+</code>: Matches one or more alphanumeric characters, periods, underscores, percent signs, plus signs, or hyphens (the part before the @ symbol).</li>
+<li><code>@</code>: Matches the "@" symbol.</li>
+<li><code>[a-zA-Z0-9.-]+</code>: Matches one or more alphanumeric characters, periods, or hyphens (the domain name).</li>
+<li><code>\.</code>: Matches a literal period (escaped with a backslash).</li>
+<li><code>[a-zA-Z]{2,}</code>: Matches two or more alphabetic characters (the top-level domain, e.g., "com", "org", "net").</li>
+</ul>
+</li>
+<li><code>re.findall(email_pattern, text)</code>: Finds all occurrences of the <code>email_pattern</code> in the <code>text</code> and returns them as a list.</li>
+<li><code>re.search(email_pattern, text)</code>: Returns a match object if found in the string. Useful if you only want to find the first occurence.</li>
+<li><code>re.sub(email_pattern, "[REDACTED]", text)</code>: Replaces all matches of the <code>email_pattern</code> with "[REDACTED]" in the text.</li>
+</ul>
+<p>4- Provide a follow up question about that topic</p>
+<p><strong>Follow-up Question:</strong></p>
+<p>How can regular expressions be used to handle different date formats (e.g., "MM/DD/YYYY", "YYYY-MM-DD", "DD-MMM-YYYY") within the same text corpus, and how would you normalize these different formats into a consistent format using Python's <code>re</code> module and the <code>datetime</code> library?</p>
+</body>
+</html>
