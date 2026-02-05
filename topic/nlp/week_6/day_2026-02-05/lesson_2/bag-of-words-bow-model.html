@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bag of Words (BoW) Model</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <p>Topic: Bag of Words (BoW) Model</p>
+<p>1- Provide formal definition, what is it and how can we use it?</p>
+<p>The Bag of Words (BoW) model is a text representation technique used in Natural Language Processing (NLP) and Information Retrieval (IR). It simplifies text data by representing it as a collection of its words, disregarding grammar and word order, but keeping track of word frequencies. Formally:</p>
+<ul>
+<li>
+<p><strong>Definition:</strong> Given a text document, the BoW model produces a vector representing the frequency (or presence) of each word in a predefined vocabulary. The vocabulary typically consists of all unique words observed across a collection of documents (the corpus).</p>
+</li>
+<li>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><strong>Vocabulary Creation:</strong> A vocabulary (a list of all unique words) is created from the entire corpus of documents.</li>
+<li><strong>Tokenization:</strong> Each document is tokenized into individual words (tokens).</li>
+<li><strong>Counting/Binary Encoding:</strong> For each document, a vector is created. Each element in the vector corresponds to a word in the vocabulary. The value of each element represents either:<ul>
+<li><strong>Frequency:</strong> How many times that word appears in the document.</li>
+<li><strong>Binary:</strong> Whether or not that word appears in the document (1 for present, 0 for absent).</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>Use Cases:</strong> BoW models are used for:</p>
+<ul>
+<li><strong>Text Classification:</strong> Categorizing documents into predefined classes (e.g., spam detection, sentiment analysis).</li>
+<li><strong>Information Retrieval:</strong> Finding documents that are relevant to a given query.</li>
+<li><strong>Topic Modeling:</strong> Discovering the underlying topics present in a corpus of documents (often as a component, not directly).</li>
+<li><strong>Feature Engineering:</strong> Creating numerical features from text data that can be used as input for machine learning models.</li>
+</ul>
+</li>
+</ul>
+<p>2- Provide an application scenario</p>
+<p><strong>Application Scenario: Sentiment Analysis of Movie Reviews</strong></p>
+<p>Imagine you want to build a system that can automatically classify movie reviews as either positive or negative.</p>
+<ul>
+<li>
+<p><strong>Data:</strong> You have a dataset of movie reviews labeled with their sentiment (positive or negative).</p>
+</li>
+<li>
+<p><strong>BoW Application:</strong></p>
+<ol>
+<li><strong>Vocabulary:</strong> A vocabulary is created from all the words in all the movie reviews.</li>
+<li><strong>Representation:</strong> Each movie review is then converted into a BoW vector. For instance, if the vocabulary contains the words "good", "bad", "amazing", "terrible", and a review says "This movie was good and amazing!", its BoW vector (using frequency) might be: <code>[1, 0, 1, 0]</code>. Assuming the vocabulary order is "good", "bad", "amazing", "terrible".</li>
+<li><strong>Classification:</strong> These BoW vectors are then used as features to train a classification model (e.g., Naive Bayes, Logistic Regression). The model learns to associate certain words (or their frequencies) with positive or negative sentiment.</li>
+<li><strong>Prediction:</strong> When a new movie review comes in, it's converted into a BoW vector, and the trained model predicts its sentiment.</li>
+</ol>
+</li>
+</ul>
+<p>3- Provide a method to apply in python</p>
+<p>python
+from sklearn.feature_extraction.text import CountVectorizer</p>
+<h1>Sample movie reviews</h1>
+<p>reviews = [
+    "This movie was fantastic and enjoyable.",
+    "The film was terrible and boring.",
+    "I loved the acting and the story.",
+    "The plot was confusing and the acting was bad."
+]</p>
+<h1>Create a CountVectorizer object</h1>
+<p>vectorizer = CountVectorizer()</p>
+<h1>Fit the vectorizer to the reviews to build the vocabulary</h1>
+<p>vectorizer.fit(reviews)</p>
+<h1>Transform the reviews into BoW vectors</h1>
+<p>bow_vectors = vectorizer.transform(reviews)</p>
+<h1>Print the vocabulary</h1>
+<p>print("Vocabulary:", vectorizer.vocabulary_)</p>
+<h1>Print the BoW vectors (sparse matrix format)</h1>
+<p>print("\nBoW Vectors (Sparse Matrix):")
+print(bow_vectors)</p>
+<h1>Convert BoW vectors to a dense array for easier viewing</h1>
+<p>bow_vectors_dense = bow_vectors.toarray()
+print("\nBoW Vectors (Dense Array):")
+print(bow_vectors_dense)</p>
+<h1>Get the feature names (words in the vocabulary)</h1>
+<p>feature_names = vectorizer.get_feature_names_out()
+print("\nFeature Names:", feature_names)</p>
+<h1>Print the BoW representation for the first review</h1>
+<p>print("\nBoW representation of the first review:")
+for i, word in enumerate(feature_names):
+    print(f"{word}: {bow_vectors_dense[0][i]}")</p>
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>CountVectorizer</code>:</strong> This class from <code>sklearn.feature_extraction.text</code> is used to create BoW representations.</li>
+<li><strong><code>fit(reviews)</code>:</strong> This method builds the vocabulary from the provided reviews.</li>
+<li><strong><code>transform(reviews)</code>:</strong> This method converts the reviews into BoW vectors. The output is a sparse matrix, which is an efficient representation for data with many zero values.</li>
+<li><strong><code>vocabulary_</code>:</strong>  This attribute of the <code>CountVectorizer</code> object provides a dictionary mapping words to their indices in the BoW vectors.</li>
+<li><strong><code>toarray()</code>:</strong> This converts the sparse matrix to a dense NumPy array.  Dense arrays are easier to read but less memory-efficient for large vocabularies and datasets.</li>
+<li><strong><code>get_feature_names_out()</code>:</strong> This returns an array of feature names (the words in the vocabulary).</li>
+</ul>
+<p>4- Provide a follow up question about that topic</p>
+<p>How can we improve the Bag of Words model to account for the importance of words in a document relative to the entire corpus, and how would we implement this improvement in Python using scikit-learn?  Specifically, describe Term Frequency-Inverse Document Frequency (TF-IDF) and give example code.</p>
+</body>
+</html>
