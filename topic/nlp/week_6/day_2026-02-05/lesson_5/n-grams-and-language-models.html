@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-Grams and Language Models</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Topic: N-Grams and Language Models</h2>
+<p><strong>1- Provide formal definition, what is it and how can we use it?</strong></p>
+<ul>
+<li>
+<p><strong>N-Grams:</strong> An N-gram is a contiguous sequence of <em>n</em> items (words, characters, syllables, etc.) from a given sequence of text or speech. For example, given the sentence "The quick brown fox jumps over the lazy dog", the 2-grams (or bigrams) would be: "The quick", "quick brown", "brown fox", "fox jumps", "jumps over", "over the", "the lazy", "lazy dog". 3-grams (or trigrams) would be: "The quick brown", "quick brown fox", "brown fox jumps", etc. 1-grams are also called unigrams.</p>
+</li>
+<li>
+<p><strong>Language Model (LM):</strong> A language model is a probability distribution over sequences of words. Formally, it assigns a probability P(w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>m</sub>) to any sequence of <em>m</em> words. The probability essentially quantifies how "likely" that sequence is to occur in the language.</p>
+</li>
+<li>
+<p><strong>N-gram Language Models:</strong> These are a type of language model that uses the n-gram concept to approximate the probability of a word sequence. The core idea is to estimate the probability of a word appearing based on the <em>n-1</em> preceding words.  This is based on the Markov assumption: the probability of a word depends only on the preceding <em>n-1</em> words.  The key formula is:</p>
+<p>P(w<sub>i</sub> | w<sub>i-n+1</sub>, ..., w<sub>i-1</sub>) = Count(w<sub>i-n+1</sub>, ..., w<sub>i-1</sub>, w<sub>i</sub>) / Count(w<sub>i-n+1</sub>, ..., w<sub>i-1</sub>)</p>
+<p>Where:</p>
+<ul>
+<li>w<sub>i</sub> is the i-th word in the sequence.</li>
+<li>Count(w<sub>i-n+1</sub>, ..., w<sub>i-1</sub>, w<sub>i</sub>) is the number of times the n-gram (w<sub>i-n+1</sub>, ..., w<sub>i-1</sub>, w<sub>i</sub>) appears in the training corpus.</li>
+<li>Count(w<sub>i-n+1</sub>, ..., w<sub>i-1</sub>) is the number of times the (n-1)-gram (w<sub>i-n+1</sub>, ..., w<sub>i-1</sub>) appears in the training corpus.</li>
+</ul>
+</li>
+<li>
+<p><strong>How we can use them:</strong> N-gram language models are used for a variety of tasks:</p>
+<ul>
+<li><strong>Text generation:</strong> Generating new text that resembles the style of the training data.</li>
+<li><strong>Machine Translation:</strong> Evaluating the fluency of translated sentences.</li>
+<li><strong>Speech Recognition:</strong> Improving the accuracy of speech-to-text systems by predicting the most likely word sequence.</li>
+<li><strong>Spelling Correction:</strong> Suggesting corrections for misspelled words based on the surrounding context.</li>
+<li><strong>Authorship Attribution:</strong> Identifying the author of a text based on their writing style (n-gram usage).</li>
+<li><strong>Sentiment Analysis:</strong>  While less common now due to more advanced techniques, n-grams can contribute to sentiment analysis by identifying common phrases associated with positive or negative sentiment.</li>
+<li><strong>Autocompletion/Text Prediction:</strong> Predicting the next word the user is likely to type.</li>
+</ul>
+</li>
+</ul>
+<p><strong>2- Provide an application scenario</strong></p>
+<p>Application scenario: <strong>Autocompletion in a search engine.</strong></p>
+<p>Imagine a user starts typing a search query into a search engine like Google. As they type, the search engine tries to predict what the user is going to type next.</p>
+<p>An N-gram language model can be used for this task.  The search engine has a vast corpus of previous search queries.  It trains an N-gram language model (e.g., a trigram model) on this corpus.</p>
+<p>When the user types "best Italian...", the search engine would look up all trigrams starting with "best Italian" in its model. Based on the probabilities learned from the corpus, it could predict:</p>
+<ul>
+<li>"best Italian restaurant" (high probability)</li>
+<li>"best Italian food" (medium probability)</li>
+<li>"best Italian recipes" (lower probability)</li>
+</ul>
+<p>The search engine then displays these predictions to the user, allowing them to quickly select the desired search query, improving user experience and reducing typing effort.</p>
+<p><strong>3- Provide a method to apply in python</strong></p>
+<p>python
+import nltk
+from nltk.util import ngrams
+from collections import defaultdict</p>
+<p>def create_ngram_model(corpus, n):
+    """
+    Creates an n-gram language model from a corpus of text.</p>
+<pre class="codehilite"><code>Args:
+    corpus: A list of sentences (strings).
+    n: The order of the n-gram model (e.g., 2 for bigrams, 3 for trigrams).
+
+Returns:
+    A dictionary representing the n-gram model. The keys are tuples representing 
+    n-grams, and the values are their probabilities. Also returns a set of vocabulary.
+&quot;&quot;&quot;
+model = defaultdict(lambda: defaultdict(lambda: 0))
+vocabulary = set()
+
+for sentence in corpus:
+    sentence = sentence.lower() #Normalize case
+    tokens = nltk.word_tokenize(sentence)
+    vocabulary.update(tokens)
+    for i in range(len(tokens)-n+1):
+        ngram = tuple(tokens[i:i+n-1])
+        next_word = tokens[i+n-1]
+        model[ngram][next_word] += 1
+
+# Calculate probabilities
+for ngram in model:
+    total_count = float(sum(model[ngram].values()))
+    for word in model[ngram]:
+        model[ngram][word] /= total_count
+
+return model, vocabulary
+</code></pre>
+
+<p>def predict_next_word(model, history, n, vocabulary):
+    """
+    Predicts the most likely next word given a history of n-1 words.</p>
+<pre class="codehilite"><code>Args:
+    model: The n-gram language model.
+    history: A tuple of n-1 words representing the history.
+    n: The order of the n-gram model.
+    vocabulary: A set containing the valid vocabulary
+
+Returns:
+    The most likely next word (string), or None if no prediction can be made.
+&quot;&quot;&quot;
+
+if history in model:
+    possible_words = model[history]
+    best_word = max(possible_words, key=possible_words.get)
+    if best_word in vocabulary:
+        return best_word
+    else:
+        return &quot;UNK&quot; #Token to replace unknown word. Not ideal solution.
+else:
+    return None # No prediction available
+</code></pre>
+
+<h1>Example usage:</h1>
+<p>corpus = [
+    "The quick brown fox jumps over the lazy dog.",
+    "A quick brown fox jumps over the lazy cat.",
+    "The cat sleeps."
+]</p>
+<p>n = 3  # Trigram model
+model, vocabulary = create_ngram_model(corpus, n)</p>
+<p>history = ("the", "quick")
+next_word = predict_next_word(model, history, n, vocabulary)</p>
+<p>if next_word:
+    print(f"Given history '{history}', the predicted next word is: {next_word}")
+else:
+    print(f"No prediction available for history '{history}'.")</p>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>create_ngram_model(corpus, n)</code>:</strong><ul>
+<li>Takes a list of sentences (<code>corpus</code>) and the n-gram order (<code>n</code>) as input.</li>
+<li>Tokenizes each sentence using <code>nltk.word_tokenize</code> (you'll need to <code>pip install nltk</code> and <code>nltk.download('punkt')</code> if you haven't already).</li>
+<li>Creates n-grams from the tokens using <code>ngrams</code> from <code>nltk.util</code>.</li>
+<li>Counts the occurrences of each n-gram and the words that follow it.</li>
+<li>Calculates the probabilities of each word given its preceding n-1 words.</li>
+<li>Returns a dictionary representing the model and a set representing the vocabulary.</li>
+</ul>
+</li>
+<li><strong><code>predict_next_word(model, history, n, vocabulary)</code>:</strong><ul>
+<li>Takes the model, a history (tuple of n-1 words), the order, and vocabulary.</li>
+<li>Looks up the history in the model.</li>
+<li>If the history exists, it finds the word with the highest probability following that history.</li>
+<li>Returns the predicted word.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Smoothing:</strong> This code doesn't implement smoothing techniques (like Laplace smoothing or Kneser-Ney smoothing). Without smoothing, the model will assign zero probability to n-grams that weren't seen in the training data, leading to poor performance on unseen text. Smoothing is crucial for real-world applications.</li>
+<li><strong>Out-of-Vocabulary (OOV) Words:</strong> The code doesn't explicitly handle OOV words. It will treat words not seen during training as unknown. A common approach is to replace rare words with an <code>&lt;UNK&gt;</code> token during preprocessing.</li>
+<li><strong>Tokenization:</strong> The choice of tokenizer can significantly impact the performance of the model. Consider using a more sophisticated tokenizer if needed.</li>
+</ul>
+<p><strong>4- Provide a follow up question about that topic</strong></p>
+<p>How can we address the problem of <em>sparsity</em> in N-gram language models, especially when dealing with relatively small training datasets, and what are the common smoothing techniques used to mitigate this issue? Explain how one such smoothing technique works (e.g., Laplace smoothing or Kneser-Ney smoothing).</p>
+</body>
+</html>
