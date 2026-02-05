@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TF-IDF (Term Frequency-Inverse Document Frequency)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <p>Topic: TF-IDF (Term Frequency-Inverse Document Frequency)</p>
+<p>1- <strong>Provide formal definition, what is it and how can we use it?</strong></p>
+<p>TF-IDF (Term Frequency-Inverse Document Frequency) is a numerical statistic that reflects how important a word is to a document in a collection or corpus. It is often used as a weighting factor in information retrieval and text mining. The TF-IDF value increases proportionally to the number of times a word appears in the document but is offset by the frequency of the word in the corpus, which helps to adjust for the fact that some words appear more frequently in general.</p>
+<p><strong>Components:</strong></p>
+<ul>
+<li>
+<p><strong>Term Frequency (TF):</strong> Measures how frequently a term (word) occurs in a document. The more times a term appears in a document, the higher its TF score. A common formula is:</p>
+<p>TF(t, d) = (Number of times term t appears in document d) / (Total number of terms in document d)</p>
+</li>
+<li>
+<p><strong>Inverse Document Frequency (IDF):</strong> Measures how important a term is across the entire corpus. It penalizes terms that are common across many documents and highlights terms that are rare and informative. A common formula is:</p>
+<p>IDF(t, D) = log_e( (Total number of documents in the corpus D) / (Number of documents containing term t) )</p>
+</li>
+</ul>
+<p><strong>TF-IDF Calculation:</strong></p>
+<p>The TF-IDF value for a term t in document d in corpus D is simply the product of its TF and IDF values:</p>
+<p>TF-IDF(t, d, D) = TF(t, d) * IDF(t, D)</p>
+<p><strong>How we use it:</strong></p>
+<p>We use TF-IDF to:</p>
+<ul>
+<li><strong>Rank documents for search queries:</strong> Documents with higher TF-IDF scores for the query terms are considered more relevant and ranked higher.</li>
+<li><strong>Identify important terms in a document:</strong> Terms with high TF-IDF scores are likely to be important keywords for that document.</li>
+<li><strong>Feature engineering for text classification/clustering:</strong>  TF-IDF vectors can be used as features to train machine learning models for tasks like text classification, sentiment analysis, and document clustering.</li>
+<li><strong>Summarization:</strong>  Identify key sentences/phrases based on TF-IDF scores of the words they contain.</li>
+</ul>
+<p>2- <strong>Provide an application scenario</strong></p>
+<p><strong>Application Scenario: Web Search Engine</strong></p>
+<p>Imagine you're building a search engine. A user searches for "artificial intelligence applications".</p>
+<ul>
+<li>The search engine needs to find the most relevant web pages from its index.</li>
+<li>Using TF-IDF, the search engine can:<ul>
+<li>Calculate the TF-IDF score for each word ("artificial", "intelligence", "applications") in each indexed webpage.</li>
+<li>Combine the TF-IDF scores for these words in each document to get an overall relevance score for each document with respect to the search query.</li>
+<li>Rank the webpages based on their relevance scores, displaying the highest-ranking pages (those with the highest TF-IDF scores for the query terms) at the top of the search results.</li>
+</ul>
+</li>
+</ul>
+<p>Webpages that frequently use the terms "artificial", "intelligence", and "applications" <em>and</em> where those terms are relatively rare across the <em>entire internet</em> (making them distinctive to those pages) will be ranked higher than pages where those terms are common or only appear a few times.  This provides a better, more relevant search experience.</p>
+<p>3- <strong>Provide a method to apply in python</strong></p>
+<p>python
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd</p>
+<h1>Sample documents</h1>
+<p>documents = [
+    "This is the first document.",
+    "This document is the second document.",
+    "And this is the third one.",
+    "Is this the first document?",
+]</p>
+<h1>Create a TfidfVectorizer object</h1>
+<p>vectorizer = TfidfVectorizer()</p>
+<h1>Fit and transform the documents</h1>
+<p>tfidf_matrix = vectorizer.fit_transform(documents)</p>
+<h1>Get the feature names (words)</h1>
+<p>feature_names = vectorizer.get_feature_names_out()</p>
+<h1>Convert the TF-IDF matrix to a Pandas DataFrame for easier viewing</h1>
+<p>df_tfidf = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names)</p>
+<h1>Print the DataFrame</h1>
+<p>print(df_tfidf)</p>
+<h1>Example: Accessing TF-IDF score for a specific word in a specific document</h1>
+<p>document_index = 0 # first document
+word_index = 1 # Index of 'document'
+word = 'document'
+try:
+    word_index = feature_names.tolist().index(word)
+    tfidf_score = df_tfidf.iloc[document_index, word_index]
+    print(f"\nTF-IDF score for '{word}' in document {document_index+1}: {tfidf_score}")
+except ValueError:
+    print(f"\nWord '{word}' not found in vocabulary.")</p>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports <code>TfidfVectorizer</code> from <code>sklearn.feature_extraction.text</code> to calculate TF-IDF and <code>pandas</code> for data manipulation.</li>
+<li><strong>Sample Documents:</strong> Defines a list of sample documents.</li>
+<li><strong>Create TfidfVectorizer:</strong> Creates an instance of the <code>TfidfVectorizer</code>.</li>
+<li><strong>Fit and Transform:</strong><ul>
+<li><code>fit_transform(documents)</code>:  This method does two things:<ul>
+<li><code>fit()</code>: Learns the vocabulary (unique words) from the documents.</li>
+<li><code>transform()</code>: Transforms the documents into a TF-IDF matrix. Each row represents a document, and each column represents a word in the vocabulary.  The values in the matrix are the TF-IDF scores.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Get Feature Names:</strong>  <code>vectorizer.get_feature_names_out()</code> retrieves the list of words (features) that correspond to the columns of the TF-IDF matrix.</li>
+<li><strong>Create DataFrame:</strong>  Converts the sparse TF-IDF matrix into a Pandas DataFrame for better readability and analysis.</li>
+<li><strong>Print DataFrame:</strong> Prints the DataFrame, showing the TF-IDF scores for each word in each document.</li>
+<li><strong>Access Specific TF-IDF Score (Example):</strong> Demonstrates how to access the TF-IDF score for a specific word in a specific document using the DataFrame.  Error handling is included to manage cases when the word is not present in the vocabulary.</li>
+</ol>
+<p>4- <strong>Provide a follow up question about that topic</strong></p>
+<p>How can the TF-IDF scores be normalized or adjusted to handle documents of drastically different lengths to improve search relevance when shorter documents might have artificially inflated TF scores?</p>
+</body>
+</html>
