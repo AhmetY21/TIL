@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluation Metrics: Precision, Recall, F1-Score</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Topic: Evaluation Metrics: Precision, Recall, F1-Score</h2>
+<p><strong>1- Provide formal definition, what is it and how can we use it?</strong></p>
+<p>Precision, Recall, and F1-Score are evaluation metrics used to assess the performance of classification models, especially in scenarios where class distribution is imbalanced. They are calculated based on the counts of True Positives (TP), False Positives (FP), and False Negatives (FN).</p>
+<ul>
+<li><strong>True Positive (TP):</strong> The model correctly predicts the positive class.</li>
+<li><strong>False Positive (FP):</strong> The model incorrectly predicts the positive class when it's actually negative. (Also known as Type I error).</li>
+<li><strong>False Negative (FN):</strong> The model incorrectly predicts the negative class when it's actually positive. (Also known as Type II error).</li>
+<li><strong>True Negative (TN):</strong> The model correctly predicts the negative class.</li>
+</ul>
+<p><strong>Definitions:</strong></p>
+<ul>
+<li><strong>Precision:</strong>  Out of all the instances predicted as positive, how many were actually positive?  It measures the accuracy of the positive predictions.<ul>
+<li>Formula:  <code>Precision = TP / (TP + FP)</code></li>
+</ul>
+</li>
+<li><strong>Recall (Sensitivity):</strong> Out of all the actual positive instances, how many were correctly predicted as positive? It measures the model's ability to find all the positive instances.<ul>
+<li>Formula:  <code>Recall = TP / (TP + FN)</code></li>
+</ul>
+</li>
+<li><strong>F1-Score:</strong> The harmonic mean of precision and recall. It provides a single score that balances both precision and recall. It's useful when you want to find a balance between minimizing false positives and false negatives.<ul>
+<li>Formula: <code>F1-Score = 2 * (Precision * Recall) / (Precision + Recall)</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>These metrics help us understand different aspects of our model's performance:</p>
+<ul>
+<li><strong>High Precision, Low Recall:</strong>  The model is very careful about predicting the positive class, resulting in fewer false positives, but it misses many actual positive instances. This is suitable when the cost of a false positive is very high.</li>
+<li><strong>Low Precision, High Recall:</strong> The model identifies most of the actual positive instances but also makes a lot of false positive predictions.  This is suitable when the cost of a false negative is very high.</li>
+<li><strong>High Precision, High Recall (High F1-Score):</strong>  The ideal scenario where the model performs well in identifying positive instances without making too many false positive errors.</li>
+<li><strong>Low Precision, Low Recall (Low F1-Score):</strong> The model is performing poorly. It's missing positive cases and misclassifying negative cases as positive.</li>
+</ul>
+<p><strong>2- Provide an application scenario</strong></p>
+<p>Consider a spam email detection system.</p>
+<ul>
+<li><strong>Positive Class:</strong> Spam email</li>
+<li>
+<p><strong>Negative Class:</strong> Non-spam email (Ham)</p>
+</li>
+<li>
+<p><strong>High Precision is important:</strong> We want to minimize the number of legitimate (non-spam) emails incorrectly classified as spam (FP).  If a legitimate email is marked as spam, the user might miss important information. The cost of a false positive is high.</p>
+</li>
+<li>
+<p><strong>High Recall is also important:</strong> We want to correctly identify as many spam emails as possible (TP).  If a spam email is not detected, it can be annoying or even dangerous for the user. The cost of a false negative is also high, but perhaps slightly less so than a false positive.</p>
+</li>
+</ul>
+<p>In this scenario, we would want to use the F1-Score to find a balance between precision and recall, aiming for a model that correctly identifies a large proportion of spam emails without incorrectly classifying too many legitimate emails as spam. A high F1 score would indicate a well-performing spam detection system.</p>
+<p><strong>3- Provide a method to apply in python</strong></p>
+<p>We can use the <code>sklearn.metrics</code> module in Python to calculate these metrics.</p>
+<p>python
+from sklearn.metrics import precision_score, recall_score, f1_score</p>
+<h1>Example:</h1>
+<p>y_true = [0, 1, 0, 1, 0, 0, 1, 1, 0, 1] # Actual labels
+y_pred = [0, 1, 1, 1, 0, 0, 0, 1, 1, 1] # Predicted labels</p>
+<h1>Calculate precision</h1>
+<p>precision = precision_score(y_true, y_pred)
+print(f"Precision: {precision}")</p>
+<h1>Calculate recall</h1>
+<p>recall = recall_score(y_true, y_pred)
+print(f"Recall: {recall}")</p>
+<h1>Calculate F1-score</h1>
+<p>f1 = f1_score(y_true, y_pred)
+print(f"F1-Score: {f1}")</p>
+<h1>For multi-class classification, you can specify the 'average' parameter:</h1>
+<h1>'micro': Calculate metrics globally by counting the total true positives, false negatives and false positives.</h1>
+<h1>'macro': Calculate metrics for each label, and find their unweighted mean. This does not take label imbalance into account.</h1>
+<h1>'weighted': Calculate metrics for each label, and find their average weighted by support (the number of true instances for each label). This alters ‘macro’ to account for label imbalance; it can result in an F-score that is not between precision and recall.</h1>
+<h1>'binary': Only report results for the class specified by pos_label. This is applicable only if targets (y_{true,pred}) contain exactly two classes.</h1>
+<p>from sklearn.metrics import classification_report
+print(classification_report(y_true, y_pred))</p>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>We import the necessary functions from <code>sklearn.metrics</code>.</li>
+<li>We define <code>y_true</code> (actual labels) and <code>y_pred</code> (predicted labels).</li>
+<li>We call <code>precision_score</code>, <code>recall_score</code>, and <code>f1_score</code> with the true and predicted labels as arguments.</li>
+<li>We print the results.</li>
+<li>The classification_report function provides all three metrics and the support for each class.</li>
+</ol>
+<p><strong>4- Provide a follow up question about that topic</strong></p>
+<p>How does the choice of the <code>average</code> parameter in functions like <code>precision_score</code>, <code>recall_score</code>, and <code>f1_score</code> affect the interpretation of the metrics in a multi-class classification problem, and when would you choose one averaging method over another (e.g., 'micro', 'macro', 'weighted')?</p>
+</body>
+</html>
