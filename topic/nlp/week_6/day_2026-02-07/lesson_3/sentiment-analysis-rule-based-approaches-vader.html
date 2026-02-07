@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis: Rule-based Approaches (VADER)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Topic: Sentiment Analysis: Rule-based Approaches (VADER)</h2>
+<p><strong>1- Provide formal definition, what is it and how can we use it?</strong></p>
+<p>VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool specifically attuned to sentiments expressed in social media.  It relies on a dictionary (or lexicon) containing sentiment scores for individual words and phrases (e.g., "awesome" = +3.1, "terrible" = -3.2, "sort of" = -1.5). These scores, representing the intensity of positive or negative sentiment, are assigned by human raters.  Beyond just looking up individual words, VADER also incorporates a set of grammatical and syntactical rules to understand context and amplify or negate the sentiment.  For instance, it handles:</p>
+<ul>
+<li><strong>Capitalization:</strong> Increased capitalization implies increased intensity (e.g., "AWESOME" is more positive than "awesome").</li>
+<li><strong>Exclamation points:</strong> More exclamation points increase intensity (e.g., "Awesome!!" is more positive than "Awesome.").</li>
+<li><strong>Degree modifiers (boosters):</strong> Words like "extremely", "very", "kind of" modify the intensity (e.g., "extremely awesome" is more positive than "awesome").</li>
+<li><strong>Conjunctions:</strong> Words like "but" can shift sentiment.</li>
+<li><strong>Negation:</strong> Identifying and handling negation words like "not", "never", "hardly".</li>
+<li><strong>Idioms and slang:</strong> Many entries in the lexicon are designed to capture nuances common in online communication.</li>
+<li><strong>Emoticons:</strong> Recognizing common emoticons and their associated sentiment (e.g., ":-)" is positive).</li>
+</ul>
+<p>VADER outputs four sentiment scores:</p>
+<ul>
+<li><strong>Positive:</strong> Proportion of text that is positive.</li>
+<li><strong>Negative:</strong> Proportion of text that is negative.</li>
+<li><strong>Neutral:</strong> Proportion of text that is neutral.</li>
+<li><strong>Compound:</strong> A normalized, weighted composite score representing the overall sentiment of the text.  It ranges from -1 (most negative) to +1 (most positive).  A compound score of 0 indicates neutrality.</li>
+</ul>
+<p>We can use VADER to analyze text and determine its overall sentiment, which is useful for tasks like: understanding customer feedback on social media, gauging public opinion on political topics, or identifying potentially problematic online content. VADER is particularly effective on short, informal text such as tweets and social media posts where slang, emoticons, and unconventional grammar are common. It is less effective than machine learning based models in domains that require a deep understanding of context, or when faced with figurative language (sarcasm, irony, etc.) that VADER's rules cannot easily capture.</p>
+<p><strong>2- Provide an application scenario</strong></p>
+<p>Imagine a company wants to understand how customers are reacting to the launch of their new smartphone.  They collect tweets mentioning the phone using relevant hashtags and keywords. They can use VADER to analyze each tweet and determine the overall sentiment expressed.</p>
+<ul>
+<li>Tweets with a highly positive compound score (e.g., &gt; 0.5) could be considered positive feedback, indicating customer satisfaction and potential for positive word-of-mouth.</li>
+<li>Tweets with a highly negative compound score (e.g., &lt; -0.5) could be considered negative feedback, highlighting potential issues with the phone that need to be addressed.</li>
+<li>Tweets with a neutral compound score (around 0) might represent factual statements or questions about the phone, requiring further analysis to understand the underlying sentiment.</li>
+</ul>
+<p>By aggregating the sentiment scores across all tweets, the company can get a quick overview of the overall public perception of their new phone. They can then delve deeper into specific negative feedback to identify common problems and develop solutions.  They can also track sentiment trends over time to see how customer perception changes after updates or marketing campaigns.</p>
+<p><strong>3- Provide a method to apply in python</strong></p>
+<p>python
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer</p>
+<h1>Download VADER lexicon (only needs to be done once)</h1>
+<p>nltk.download('vader_lexicon')</p>
+<p>def analyze_sentiment(text):
+    """
+    Analyzes the sentiment of a given text using VADER.</p>
+<pre class="codehilite"><code>Args:
+    text (str): The text to analyze.
+
+Returns:
+    dict: A dictionary containing the sentiment scores (positive, negative, neutral, compound).
+&quot;&quot;&quot;
+analyzer = SentimentIntensityAnalyzer()
+scores = analyzer.polarity_scores(text)
+return scores
+</code></pre>
+
+<h1>Example usage</h1>
+<p>text = "This new phone is absolutely amazing! I love it!"
+sentiment_scores = analyze_sentiment(text)
+print(f"Sentiment scores for: '{text}'")
+print(sentiment_scores)</p>
+<p>text = "The battery life is terrible, and the camera is mediocre. I'm very disappointed."
+sentiment_scores = analyze_sentiment(text)
+print(f"Sentiment scores for: '{text}'")
+print(sentiment_scores)</p>
+<p>text = "The phone is blue. It has 128GB of storage."
+sentiment_scores = analyze_sentiment(text)
+print(f"Sentiment scores for: '{text}'")
+print(sentiment_scores)</p>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import necessary libraries:</strong>  We import <code>nltk</code> and <code>SentimentIntensityAnalyzer</code> from <code>nltk.sentiment.vader</code>.</li>
+<li><strong>Download VADER lexicon:</strong> The first time you run this code, you'll need to download the VADER lexicon using <code>nltk.download('vader_lexicon')</code>.  This downloads the pre-trained dictionary and rules.</li>
+<li><strong>Define <code>analyze_sentiment</code> function:</strong> This function takes text as input and creates a <code>SentimentIntensityAnalyzer</code> object. It then calls the <code>polarity_scores()</code> method to get the sentiment scores.</li>
+<li><strong>Call the function and print the results:</strong>  We demonstrate how to use the function with example texts and print the resulting sentiment scores.  The output will be a dictionary showing the <code>neg</code>, <code>neu</code>, <code>pos</code>, and <code>compound</code> scores.</li>
+</ol>
+<p><strong>4- Provide a follow up question about that topic</strong></p>
+<p>How does VADER compare to other sentiment analysis techniques, such as those based on machine learning (e.g., using a pre-trained transformer model fine-tuned for sentiment classification), in terms of accuracy, computational cost, and the types of data they are best suited for?  Specifically, in what scenarios would you <em>prefer</em> using VADER, and in what scenarios would a more complex approach be necessary, even if it required more resources?</p>
+</body>
+</html>
