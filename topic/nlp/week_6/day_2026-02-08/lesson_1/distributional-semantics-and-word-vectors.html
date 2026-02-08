@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributional Semantics and Word Vectors</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Topic: Distributional Semantics and Word Vectors</h2>
+<p><strong>1- Provide formal definition, what is it and how can we use it?</strong></p>
+<ul>
+<li>
+<p><strong>Distributional Semantics:</strong> The core idea of distributional semantics is that the meaning of a word can be inferred from the words that frequently occur with it ("You shall know a word by the company it keeps," J.R. Firth). In other words, words that appear in similar contexts tend to have similar meanings. This is a data-driven approach that contrasts with symbolic approaches where meaning is defined using ontologies or logic.</p>
+</li>
+<li>
+<p><strong>Word Vectors (Word Embeddings):</strong> Word vectors are numerical representations of words that capture their semantic relationships based on the distributional hypothesis. These vectors are typically high-dimensional (e.g., 100-300 dimensions) and are learned from large corpora of text data. The dimensions themselves are not explicitly interpretable, but the relative positions of words in the vector space reflect their semantic similarity. For example, words like "king" and "queen" would be located closer together in the vector space than "king" and "apple".</p>
+</li>
+<li>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Semantic Similarity:</strong> Compute the similarity between words or phrases based on the cosine similarity (or other distance metrics) of their corresponding word vectors. This can be used for tasks like finding synonyms or related terms.</li>
+<li><strong>Analogies:</strong> Solve analogy problems like "a is to b as c is to ?" by performing vector arithmetic. For example, <code>vector("king") - vector("man") + vector("woman")</code> should result in a vector close to <code>vector("queen")</code>.</li>
+<li><strong>Text Classification:</strong> Use word vectors as features for machine learning models to classify text documents based on their content. Word vectors can be aggregated (e.g., averaged or summed) to represent the meaning of a whole document.</li>
+<li><strong>Information Retrieval:</strong> Improve search results by retrieving documents that contain words semantically related to the query terms, even if they don't contain the exact words in the query.</li>
+<li><strong>Machine Translation:</strong> Align words across different languages by mapping their word vectors into a shared semantic space.</li>
+</ul>
+</li>
+</ul>
+<p><strong>2- Provide an application scenario</strong></p>
+<p><strong>Scenario:</strong> Sentiment analysis of product reviews.</p>
+<p><strong>Application:</strong> Imagine you want to automatically determine whether customer reviews for a new laptop are generally positive or negative. Instead of relying on simple keyword matching (e.g., counting the number of positive and negative words), you can use word vectors to capture the nuanced sentiment expressed in the reviews.</p>
+<ol>
+<li><strong>Word Vector Representation:</strong> Each word in the review is represented by its corresponding word vector.</li>
+<li><strong>Review Representation:</strong> The word vectors of all the words in a review are aggregated (e.g., averaged) to create a single vector representing the overall meaning of the review.</li>
+<li><strong>Sentiment Classification:</strong> A machine learning classifier (e.g., logistic regression, support vector machine) is trained on a dataset of labeled reviews (positive, negative, neutral). The aggregated word vectors are used as features for the classifier.</li>
+<li><strong>Prediction:</strong> Once trained, the classifier can predict the sentiment of new, unseen reviews based on their aggregated word vector representations.</li>
+</ol>
+<p>This approach allows the sentiment analysis system to understand the sentiment expressed in the context of the entire review and to capture semantic relationships between words (e.g., recognizing that "great" is similar to "fantastic").</p>
+<p><strong>3- Provide a method to apply in python</strong></p>
+<p>python
+import gensim
+from gensim.models import Word2Vec
+from sklearn.metrics.pairwise import cosine_similarity</p>
+<h1>Sample corpus (replace with your own data)</h1>
+<p>sentences = [
+    ["king", "is", "a", "strong", "man"],
+    ["queen", "is", "a", "powerful", "woman"],
+    ["man", "is", "mortal"],
+    ["woman", "is", "mortal"],
+    ["king", "rules", "the", "kingdom"],
+    ["queen", "rules", "the", "kingdom"]
+]</p>
+<h1>Train a Word2Vec model</h1>
+<p>model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, workers=4)  # vector_size is the dimensionality of the word vectors.</p>
+<h1>Access the word vector for "king"</h1>
+<p>king_vector = model.wv["king"]
+print("Vector for 'king':", king_vector)</p>
+<h1>Calculate the similarity between "king" and "queen"</h1>
+<p>similarity = cosine_similarity([model.wv["king"]], [model.wv["queen"]])[0][0]
+print("Similarity between 'king' and 'queen':", similarity)</p>
+<h1>Find the most similar words to "king"</h1>
+<p>similar_words = model.wv.most_similar("king", topn=5)
+print("Words similar to 'king':", similar_words)</p>
+<h1>Example: Solving analogies</h1>
+<h1>The following finds the word which is closest to the vector</h1>
+<h1>model.wv["king"] - model.wv["man"] + model.wv["woman"]</h1>
+<h1>king - man + woman = ?</h1>
+<p>result = model.wv.most_similar(positive=['king', 'woman'], negative=['man'], topn=1)
+print("king - man + woman = ?: ", result)</p>
+<h1>Save the model</h1>
+<p>model.save("word2vec.model")</p>
+<h1>Load the model</h1>
+<p>loaded_model = Word2Vec.load("word2vec.model")
+print("Loaded Model:", loaded_model)</p>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Import <code>gensim</code> for Word2Vec and <code>sklearn</code> for cosine similarity.</li>
+<li><strong>Corpus:</strong> <code>sentences</code> is a list of sentences, our training data. Replace this with your own corpus.</li>
+<li><strong>Word2Vec Model:</strong> <code>Word2Vec</code> is initialized and trained on the corpus.<ul>
+<li><code>vector_size</code>: Defines the dimensionality of the word vectors.  A higher dimension can capture more nuanced relationships, but requires more data.</li>
+<li><code>window</code>: The maximum distance between the current and predicted word within a sentence.</li>
+<li><code>min_count</code>: Ignores all words with total frequency lower than this.</li>
+<li><code>workers</code>: Use these many worker threads to train the model (=faster training with multicore machines).</li>
+</ul>
+</li>
+<li><strong>Accessing Word Vectors:</strong> <code>model.wv["king"]</code> retrieves the word vector for the word "king".</li>
+<li><strong>Cosine Similarity:</strong> <code>cosine_similarity</code> calculates the cosine similarity between two word vectors. The closer the cosine similarity is to 1, the more similar the words are.</li>
+<li><strong>Most Similar Words:</strong> <code>model.wv.most_similar</code> finds the words that are most similar to a given word based on their vector representations.</li>
+<li><strong>Analogy:</strong> Demonstrates a simple analogy: king - man + woman ≈ queen.</li>
+<li><strong>Save and Load Model:</strong> This example shows how to save a word2vec model and load it for future usage.</li>
+</ol>
+<p><strong>4- Provide a follow up question about that topic</strong></p>
+<p>How can we handle Out-Of-Vocabulary (OOV) words when using pre-trained word embeddings like Word2Vec or GloVe, especially if the OOV words are important for the task at hand (e.g., named entities in a news article)? What are the different strategies and their trade-offs?</p>
+</body>
+</html>
