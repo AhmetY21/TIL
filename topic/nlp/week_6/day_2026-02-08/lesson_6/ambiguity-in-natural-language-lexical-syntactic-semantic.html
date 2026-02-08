@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ambiguity in Natural Language: Lexical, Syntactic, Semantic</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<hr />
+<p>title: "Ambiguity in Natural Language: Lexical, Syntactic, Semantic"
+date: "2026-02-08"
+week: 6
+lesson: 6
+slug: "ambiguity-in-natural-language-lexical-syntactic-semantic"</p>
+<hr />
+<h1 id="topic-ambiguity-in-natural-language-lexical-syntactic-semantic">Topic: Ambiguity in Natural Language: Lexical, Syntactic, Semantic</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Ambiguity in Natural Language Processing (NLP) refers to the property of language where a single linguistic expression (word, phrase, sentence) can have multiple possible interpretations. Understanding and resolving ambiguity is crucial for NLP tasks to accurately process and understand human language. There are three primary types of ambiguity:</p>
+<ul>
+<li>
+<p><strong>Lexical Ambiguity:</strong> This occurs when a word has multiple meanings. It's about a single word having different possible senses (definitions). We can use lexical disambiguation techniques to determine the appropriate sense based on context.</p>
+</li>
+<li>
+<p><strong>Syntactic Ambiguity (Structural Ambiguity):</strong> This occurs when a sentence can be parsed in multiple ways, each resulting in a different meaning.  It's about the grammatical structure of a sentence being interpreted in various forms. Understanding the syntactic structure is fundamental to resolving this type of ambiguity.</p>
+</li>
+<li>
+<p><strong>Semantic Ambiguity:</strong> This arises when a sentence has a single syntactic structure but different possible interpretations due to the interaction of word meanings. It often involves resolving pronoun references, quantifier scope, or dealing with general world knowledge. Semantic understanding of the entire sentence and surrounding context is crucial.</p>
+</li>
+</ul>
+<p>We use the understanding of these ambiguities to:</p>
+<ul>
+<li><strong>Improve NLP model accuracy:</strong> By explicitly modeling ambiguity, we can build more robust and reliable NLP systems.</li>
+<li><strong>Design better parsing algorithms:</strong> Parsing algorithms must be able to handle syntactic ambiguity effectively.</li>
+<li><strong>Improve machine translation:</strong> Accurate translation depends on correctly resolving ambiguities in the source language.</li>
+<li><strong>Enhance information retrieval:</strong> Understanding the different possible meanings of a query allows for more relevant search results.</li>
+<li><strong>Develop more human-like AI:</strong>  Humans naturally resolve ambiguity; making AI systems do the same makes them more natural.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Lexical Ambiguity Example:</strong> "I went to the bank to deposit money." and "I sat on the bank of the river." The word "bank" has two distinct meanings: a financial institution and the edge of a river. In a financial application, the former meaning is far more likely. For a chatbot providing information about local parks and waterways, the latter meaning would be relevant.</p>
+<p><strong>Syntactic Ambiguity Example:</strong> "I saw the man on the hill with a telescope." This sentence can be interpreted in two ways:</p>
+<ol>
+<li>I saw the man who was on the hill, and I had a telescope.</li>
+<li>I saw the man who was on the hill with the telescope.</li>
+</ol>
+<p>This ambiguity impacts applications such as machine translation. The correct parse is crucial for accurately conveying the intended meaning in the target language.</p>
+<p><strong>Semantic Ambiguity Example:</strong> "The cat sat on the mat, it was comfortable." The pronoun "it" could refer to either "cat" or "mat."  Determining the correct reference requires understanding the relationships between entities and the context of the sentence.  In a dialogue system, the interpretation affects which noun to use in subsequent sentences to maintain coherence.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single "resolve ambiguity" function in Python, several libraries and techniques can be used to address different types of ambiguity.</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.wsd import lesk
+from nltk.corpus import wordnet as wn
+
+# Lexical Disambiguation using Word Sense Disambiguation (WSD) with Lesk Algorithm
+sentence1 = &quot;I went to the bank to deposit money.&quot;
+sentence2 = &quot;I sat on the bank of the river.&quot;
+
+# Tokenize the sentences
+tokens1 = nltk.word_tokenize(sentence1)
+tokens2 = nltk.word_tokenize(sentence2)
+
+# Use Lesk algorithm to disambiguate &quot;bank&quot; in each sentence
+bank_sense1 = lesk(tokens1, 'bank')
+bank_sense2 = lesk(tokens2, 'bank')
+
+print(f&quot;Sense of 'bank' in '{sentence1}': {bank_sense1}&quot;)
+print(f&quot;Sense of 'bank' in '{sentence2}': {bank_sense2}&quot;)
+
+#Accessing the meaning from wordnet
+if bank_sense1:
+  print(f&quot;Definition of '{bank_sense1}': {bank_sense1.definition()}&quot;)
+
+if bank_sense2:
+  print(f&quot;Definition of '{bank_sense2}': {bank_sense2.definition()}&quot;)
+
+# Syntactic parsing (Illustrative, doesn't fully resolve ambiguity)
+from nltk import CFG
+from nltk import ChartParser
+
+grammar = CFG.fromstring(&quot;&quot;&quot;
+    S -&gt; NP VP
+    VP -&gt; V NP PP
+    VP -&gt; V NP
+    NP -&gt; Det N
+    NP -&gt; Det N PP
+    PP -&gt; P NP
+    V -&gt; 'saw'
+    Det -&gt; 'the' | 'a'
+    N -&gt; 'man' | 'hill' | 'telescope'
+    P -&gt; 'on' | 'with'
+&quot;&quot;&quot;)
+
+parser = ChartParser(grammar)
+sentence = &quot;I saw the man on the hill with a telescope&quot;.split()
+trees = list(parser.parse(sentence))
+print(f&quot;Number of possible parses: {len(trees)}&quot;)
+for tree in trees:
+    print(tree)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Lexical Disambiguation (Lesk Algorithm):</strong>  The <code>nltk.wsd.lesk</code> function attempts to determine the correct sense of a word (like "bank") based on the surrounding context (the other words in the sentence). It utilizes WordNet, a lexical database, to find the sense with the highest overlap in its definition with the surrounding words.  It's a simplified example, and more sophisticated WSD techniques exist.</li>
+<li><strong>Syntactic Parsing:</strong> The code demonstrates creating a simple context-free grammar (CFG) and using a chart parser to find possible parse trees for a syntactically ambiguous sentence. Note that the <code>nltk.ChartParser</code> is an example and that while it can find all the possible parses, it <em>doesn't</em> choose the "correct" one. Resolving which parse is correct requires incorporating semantic information or using more advanced parsing techniques.</li>
+</ul>
+<p>This example showcases simple methods. Modern NLP utilizes deep learning models (e.g., BERT, Transformers) trained on massive datasets to implicitly learn to resolve these ambiguities.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do deep learning models, particularly transformers, handle ambiguity in natural language compared to the traditional methods demonstrated in the Python example (Lesk algorithm and CFG parsing)?  What are the limitations of deep learning approaches in resolving ambiguity, and are there situations where traditional methods might still be preferable?</p>
+</body>
+</html>

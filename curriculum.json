@@ -1,104 +1,1736 @@
 {
+    "resources": {
+        "slp3": {
+            "title": "Speech and Language Processing (3rd ed. draft) — Jurafsky & Martin",
+            "short": "SLP3"
+        },
+        "cs224n": {
+            "title": "Stanford CS224N: NLP with Deep Learning",
+            "short": "CS224N"
+        },
+        "hf_course": {
+            "title": "Hugging Face LLM Course (Transformers, tokenizers, fine-tuning, deployment)",
+            "short": "HF Course"
+        },
+        "spacy_course": {
+            "title": "spaCy Course (practical NLP pipelines, NER, training, deployment)",
+            "short": "spaCy Course"
+        }
+    },
     "topics": [
-        "Introduction to Natural Language Processing (NLP)",
-        "The History of NLP: From Rules to Statistics",
-        "NLP vs NLU vs NLG: Understanding the Differences",
-        "Ambiguity in Natural Language: Lexical, Syntactic, Semantic",
-        "The Standard NLP Pipeline Overview",
-        "Text Data Acquisition and Corpus Construction",
-        "Text Normalization Techniques",
-        "Tokenization: Concepts and Challenges",
-        "Stop Words and Noise Removal",
-        "Stemming vs. Lemmatization: When to use which?",
-        "Regular Expressions for Text Processing",
-        "Part-of-Speech (POS) Tagging Concepts",
-        "POS Tagging Algorithms (HMM, Viterbi)",
-        "Named Entity Recognition (NER) Fundamentals",
-        "Constituency Parsing vs Dependency Parsing",
-        "Bag of Words (BoW) Model",
-        "TF-IDF (Term Frequency-Inverse Document Frequency)",
-        "N-Grams and Language Models",
-        "Advanced Text Cleaning (Handling Emojis, URLs)",
-        "Feature Engineering for Text Data",
-        "Naive Bayes Classifier for Text",
-        "Logistic Regression for NLP",
-        "Support Vector Machines (SVM) in Text Classification",
-        "Decision Trees and Random Forests for Text",
-        "Evaluation Metrics: Precision, Recall, F1-Score",
-        "Confusion Matrix and Error Analysis",
-        "Sentiment Analysis: Rule-based Approaches (VADER)",
-        "Topic Modeling: Latent Semantic Analysis (LSA)",
-        "Topic Modeling: Latent Dirichlet Allocation (LDA)",
-        "Text Similarity Measures (Cosine, Jaccard)",
-        "Distributional Semantics and Word Vectors",
-        "Introduction to Word2Vec (CBOW vs Skip-gram)",
-        "Word2Vec: Negative Sampling and Optimization",
-        "GloVe (Global Vectors for Word Representation)",
-        "FastText: Handling Out-of-Vocabulary Words",
-        "Document Embeddings (Doc2Vec)",
-        "Visualizing Embeddings (t-SNE, PCA)",
-        "Semantic Analogies with Word Vectors",
-        "Limitations of Static Word Embeddings",
-        "Introduction to Contextual Embeddings",
-        "Introduction to Neural Networks for NLP",
-        "Recurrent Neural Networks (RNNs) Architecture",
-        "The Vanishing Gradient Problem in RNNs",
-        "Long Short-Term Memory Networks (LSTMs)",
-        "Gated Recurrent Units (GRUs)",
-        "Bidirectional RNNs",
-        "Sequence-to-Sequence (Seq2Seq) Models",
-        "Encoder-Decoder Architecture",
-        "Machine Translation with Seq2Seq",
-        "Text Generation with RNNs",
-        "The Attention Mechanism (Bahdanau Attention)",
-        "Self-Attention Mechanism Explained",
-        "Multi-Head Attention",
-        "Positional Encodings in Transformers",
-        "The Transformer Architecture (Vaswani et al.)",
-        "Encoder-only Transformers",
-        "Decoder-only Transformers",
-        "BERT: Bidirectional Encoder Representations from Transformers",
-        "Pre-training vs Fine-tuning BERT",
-        "Masked Language Modeling (MLM)",
-        "GPT (Generative Pre-trained Transformer) Family",
-        "GPT-2 and Zero-shot Learning",
-        "GPT-3 and Few-shot Learning",
-        "Roberta, DistilBERT, and ALBERT",
-        "T5 (Text-to-Text Transfer Transformer)",
-        "BART and Abstractive Summarization",
-        "Parameter Efficient Fine-Tuning (PEFT)",
-        "Low-Rank Adaptation (LoRA)",
-        "Instruction Tuning and RLHF Overview",
-        "Retrieval-Augmented Generation (RAG) Basics",
-        "Advanced Sentiment Analysis (Aspect-based)",
-        "Emotion Detection in Text",
-        "Automatic Text Summarization (Extractive)",
-        "Automatic Text Summarization (Abstractive)",
-        "Question Answering Systems (Extractive)",
-        "Open-Domain Question Answering",
-        "Chatbots and Dialogue Systems",
-        "Task-Oriented Dialogue Systems",
-        "Coreference Resolution",
-        "Semantic Role Labeling",
-        "Machine Translation (Neural Machine Translation)",
-        "Evaluation of Translation (BLEU, ROUGE)",
-        "Text Simplification",
-        "Style Transfer in Text",
-        "Grammar Error Correction",
-        "Detecting Fake News and Misinformation",
-        "Hate Speech Detection",
-        "Multilingual NLP and Cross-lingual Models",
-        "Knowledge Graphs in NLP",
-        "Logic and Reasoning in LLMs",
-        "NLP Model Deployment Strategies",
-        "Model Quantization and Pruning",
-        "Bias and Fairness in NLP Models",
-        "Explainability in NLP (LIME, SHAP)",
-        "Adversarial Attacks on Text Models",
-        "Privacy in NLP (Differential Privacy)",
-        "LLM Hallucinations and Mitigation",
-        "The Future of NLP: Multimodal Models",
-        "Prompt Engineering Best Practices",
-        "Review and Final Project Ideas"
-    ]
+        {
+            "name": "Introduction to Natural Language Processing (NLP)",
+            "prerequisites": [],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "introduction / what is NLP"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "course overview / intro lecture"
+                }
+            ]
+        },
+        {
+            "name": "The History of NLP: From Rules to Statistics",
+            "prerequisites": [
+                "Introduction to Natural Language Processing (NLP)"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "historical overview / symbolic vs statistical methods"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "intro history / classical vs neural NLP"
+                }
+            ]
+        },
+        {
+            "name": "NLP vs NLU vs NLG: Understanding the Differences",
+            "prerequisites": [
+                "Introduction to Natural Language Processing (NLP)"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "language understanding vs generation"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "task landscape (understanding vs generation)"
+                }
+            ]
+        },
+        {
+            "name": "Ambiguity in Natural Language: Lexical, Syntactic, Semantic",
+            "prerequisites": [
+                "Introduction to Natural Language Processing (NLP)"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "ambiguity in language (lexical/syntactic/semantic)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "linguistic structure + ambiguity discussion"
+                }
+            ]
+        },
+        {
+            "name": "The Standard NLP Pipeline Overview",
+            "prerequisites": [
+                "Introduction to Natural Language Processing (NLP)"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "spacy_course",
+                    "anchor": "processing pipelines"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "NLP pipeline components"
+                }
+            ]
+        },
+        {
+            "name": "Text Data Acquisition and Corpus Construction",
+            "prerequisites": [
+                "The Standard NLP Pipeline Overview"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "corpora / data collection / annotation"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "datasets / loading and preparing data"
+                }
+            ]
+        },
+        {
+            "name": "Text Normalization Techniques",
+            "prerequisites": [
+                "The Standard NLP Pipeline Overview"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "normalization / preprocessing"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "preprocessing in pipelines"
+                }
+            ]
+        },
+        {
+            "name": "Tokenization: Concepts and Challenges",
+            "prerequisites": [
+                "Text Normalization Techniques"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "tokenization"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "tokenizers (WordPiece/BPE/Unigram)"
+                }
+            ]
+        },
+        {
+            "name": "Stop Words and Noise Removal",
+            "prerequisites": [
+                "Tokenization: Concepts and Challenges"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "stopwords / normalization choices"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "rule-based preprocessing patterns"
+                }
+            ]
+        },
+        {
+            "name": "Stemming vs. Lemmatization: When to use which?",
+            "prerequisites": [
+                "Tokenization: Concepts and Challenges"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "stemming and lemmatization"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "lemmatization in spaCy"
+                }
+            ]
+        },
+        {
+            "name": "Regular Expressions for Text Processing",
+            "prerequisites": [
+                "Text Normalization Techniques"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "regex / text processing utilities"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "rule-based matching (Matcher/regex-like patterns)"
+                }
+            ]
+        },
+        {
+            "name": "Part-of-Speech (POS) Tagging Concepts",
+            "prerequisites": [
+                "Tokenization: Concepts and Challenges"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "part-of-speech tagging"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "linguistic annotations (POS/DEP)"
+                }
+            ]
+        },
+        {
+            "name": "POS Tagging Algorithms (HMM, Viterbi)",
+            "prerequisites": [
+                "Part-of-Speech (POS) Tagging Concepts"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "HMM tagging / Viterbi decoding"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "probabilistic models / sequence decoding intuition"
+                }
+            ]
+        },
+        {
+            "name": "Named Entity Recognition (NER) Fundamentals",
+            "prerequisites": [
+                "The Standard NLP Pipeline Overview"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "named entity recognition"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "NER (training + evaluation)"
+                }
+            ]
+        },
+        {
+            "name": "Constituency Parsing vs Dependency Parsing",
+            "prerequisites": [
+                "Part-of-Speech (POS) Tagging Concepts"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "parsing (constituency + dependency)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "syntactic parsing / dependency structures"
+                }
+            ]
+        },
+        {
+            "name": "Bag of Words (BoW) Model",
+            "prerequisites": [
+                "Tokenization: Concepts and Challenges"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "vector space / bag-of-words representation"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "distributional intuition (counts to vectors)"
+                }
+            ]
+        },
+        {
+            "name": "TF-IDF (Term Frequency-Inverse Document Frequency)",
+            "prerequisites": [
+                "Bag of Words (BoW) Model"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "tf-idf / information retrieval basics"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "classic representations + similarity"
+                }
+            ]
+        },
+        {
+            "name": "N-Grams and Language Models",
+            "prerequisites": [
+                "TF-IDF (Term Frequency-Inverse Document Frequency)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "n-gram language models / smoothing"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "language modeling motivation"
+                }
+            ]
+        },
+        {
+            "name": "Advanced Text Cleaning (Handling Emojis, URLs)",
+            "prerequisites": [
+                "Text Normalization Techniques",
+                "Regular Expressions for Text Processing"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "spacy_course",
+                    "anchor": "text processing + custom components"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "tokenization/normalization edge cases"
+                }
+            ]
+        },
+        {
+            "name": "Feature Engineering for Text Data",
+            "prerequisites": [
+                "TF-IDF (Term Frequency-Inverse Document Frequency)",
+                "Text Similarity Measures (Cosine, Jaccard)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "features for text classification"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "from features to learned representations"
+                }
+            ]
+        },
+        {
+            "name": "Naive Bayes Classifier for Text",
+            "prerequisites": [
+                "Bag of Words (BoW) Model"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "naive bayes text classification"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "classic baselines for NLP tasks"
+                }
+            ]
+        },
+        {
+            "name": "Logistic Regression for NLP",
+            "prerequisites": [
+                "Feature Engineering for Text Data"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "linear models for text classification"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "classification objective + optimization intuition"
+                }
+            ]
+        },
+        {
+            "name": "Support Vector Machines (SVM) in Text Classification",
+            "prerequisites": [
+                "Feature Engineering for Text Data"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "linear classifiers / margins for text"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "classic models + evaluation"
+                }
+            ]
+        },
+        {
+            "name": "Decision Trees and Random Forests for Text",
+            "prerequisites": [
+                "Feature Engineering for Text Data"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "text classification + feature-based learning"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "why trees are less common for sparse text (discussion)"
+                }
+            ]
+        },
+        {
+            "name": "Evaluation Metrics: Precision, Recall, F1-Score",
+            "prerequisites": [
+                "Naive Bayes Classifier for Text"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "evaluation for classification (P/R/F1)"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "evaluating NLP pipelines"
+                }
+            ]
+        },
+        {
+            "name": "Confusion Matrix and Error Analysis",
+            "prerequisites": [
+                "Evaluation Metrics: Precision, Recall, F1-Score"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "error analysis / diagnostics"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "debugging model outputs"
+                }
+            ]
+        },
+        {
+            "name": "Sentiment Analysis: Rule-based Approaches (VADER)",
+            "prerequisites": [
+                "Text Normalization Techniques"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "sentiment analysis overview"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "rule-based vs ML pipelines (practical guidance)"
+                }
+            ]
+        },
+        {
+            "name": "Topic Modeling: Latent Semantic Analysis (LSA)",
+            "prerequisites": [
+                "TF-IDF (Term Frequency-Inverse Document Frequency)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "LSA / matrix factorization for semantics"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "distributional semantics (linear algebra view)"
+                }
+            ]
+        },
+        {
+            "name": "Topic Modeling: Latent Dirichlet Allocation (LDA)",
+            "prerequisites": [
+                "Topic Modeling: Latent Semantic Analysis (LSA)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "topic models / LDA"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "probabilistic modeling intuition (where discussed)"
+                }
+            ]
+        },
+        {
+            "name": "Text Similarity Measures (Cosine, Jaccard)",
+            "prerequisites": [
+                "Bag of Words (BoW) Model"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "vector space similarity / cosine"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "similarity in embedding space (intro)"
+                }
+            ]
+        },
+        {
+            "name": "Distributional Semantics and Word Vectors",
+            "prerequisites": [
+                "Text Similarity Measures (Cosine, Jaccard)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "distributional semantics"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "word vectors (overview)"
+                }
+            ]
+        },
+        {
+            "name": "Introduction to Word2Vec (CBOW vs Skip-gram)",
+            "prerequisites": [
+                "Distributional Semantics and Word Vectors",
+                "N-Grams and Language Models"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "word2vec (CBOW/Skip-gram)"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "neural embeddings / word2vec"
+                }
+            ]
+        },
+        {
+            "name": "Word2Vec: Negative Sampling and Optimization",
+            "prerequisites": [
+                "Introduction to Word2Vec (CBOW vs Skip-gram)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "negative sampling / training objective"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "optimization for embeddings (negative sampling)"
+                }
+            ]
+        },
+        {
+            "name": "GloVe (Global Vectors for Word Representation)",
+            "prerequisites": [
+                "Distributional Semantics and Word Vectors"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "GloVe / count-based embeddings"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "GloVe comparison to word2vec"
+                }
+            ]
+        },
+        {
+            "name": "FastText: Handling Out-of-Vocabulary Words",
+            "prerequisites": [
+                "GloVe (Global Vectors for Word Representation)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "subword features / OOV handling"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "subword ideas / limitations of word-level models"
+                }
+            ]
+        },
+        {
+            "name": "Document Embeddings (Doc2Vec)",
+            "prerequisites": [
+                "Distributional Semantics and Word Vectors"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "document representations"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "sentence/document embeddings (overview)"
+                }
+            ]
+        },
+        {
+            "name": "Visualizing Embeddings (t-SNE, PCA)",
+            "prerequisites": [
+                "Distributional Semantics and Word Vectors"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "embedding visualization / qualitative analysis"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "analyzing embeddings / geometry"
+                }
+            ]
+        },
+        {
+            "name": "Semantic Analogies with Word Vectors",
+            "prerequisites": [
+                "Introduction to Word2Vec (CBOW vs Skip-gram)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "analogy evaluation / linear structure"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "intrinsic evaluation for embeddings"
+                }
+            ]
+        },
+        {
+            "name": "Limitations of Static Word Embeddings",
+            "prerequisites": [
+                "Semantic Analogies with Word Vectors"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "polysemy / limitations of static embeddings"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "motivation for contextual embeddings"
+                }
+            ]
+        },
+        {
+            "name": "Introduction to Contextual Embeddings",
+            "prerequisites": [
+                "Limitations of Static Word Embeddings"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "contextual word representations"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "transformers basics / embeddings"
+                }
+            ]
+        },
+        {
+            "name": "Introduction to Neural Networks for NLP",
+            "prerequisites": [
+                "Distributional Semantics and Word Vectors"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "neural networks primer for NLP"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "neural networks in NLP (overview)"
+                }
+            ]
+        },
+        {
+            "name": "Recurrent Neural Networks (RNNs) Architecture",
+            "prerequisites": [
+                "Introduction to Neural Networks for NLP"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "RNNs for sequence modeling"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "RNN language models / sequence models"
+                }
+            ]
+        },
+        {
+            "name": "The Vanishing Gradient Problem in RNNs",
+            "prerequisites": [
+                "Recurrent Neural Networks (RNNs) Architecture"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "training RNNs / vanishing gradients"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "optimization challenges in RNNs"
+                }
+            ]
+        },
+        {
+            "name": "Long Short-Term Memory Networks (LSTMs)",
+            "prerequisites": [
+                "The Vanishing Gradient Problem in RNNs"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "LSTMs"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "LSTM networks"
+                }
+            ]
+        },
+        {
+            "name": "Gated Recurrent Units (GRUs)",
+            "prerequisites": [
+                "Long Short-Term Memory Networks (LSTMs)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "GRUs"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "GRU networks"
+                }
+            ]
+        },
+        {
+            "name": "Bidirectional RNNs",
+            "prerequisites": [
+                "Recurrent Neural Networks (RNNs) Architecture"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "bidirectional RNNs"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "biRNNs for tagging"
+                }
+            ]
+        },
+        {
+            "name": "Sequence-to-Sequence (Seq2Seq) Models",
+            "prerequisites": [
+                "Long Short-Term Memory Networks (LSTMs)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "seq2seq / encoder-decoder"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "encoder-decoder models"
+                }
+            ]
+        },
+        {
+            "name": "Encoder-Decoder Architecture",
+            "prerequisites": [
+                "Sequence-to-Sequence (Seq2Seq) Models"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "encoder-decoder details"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "seq2seq architecture"
+                }
+            ]
+        },
+        {
+            "name": "Machine Translation with Seq2Seq",
+            "prerequisites": [
+                "Encoder-Decoder Architecture"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "neural machine translation (seq2seq)"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "machine translation (neural)"
+                }
+            ]
+        },
+        {
+            "name": "Text Generation with RNNs",
+            "prerequisites": [
+                "Recurrent Neural Networks (RNNs) Architecture"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "neural language models / generation"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "language modeling / generation"
+                }
+            ]
+        },
+        {
+            "name": "The Attention Mechanism (Bahdanau Attention)",
+            "prerequisites": [
+                "Encoder-Decoder Architecture"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "attention mechanism"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "attention in seq2seq"
+                }
+            ]
+        },
+        {
+            "name": "Self-Attention Mechanism Explained",
+            "prerequisites": [
+                "The Attention Mechanism (Bahdanau Attention)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "self-attention"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "transformer attention blocks"
+                }
+            ]
+        },
+        {
+            "name": "Multi-Head Attention",
+            "prerequisites": [
+                "Self-Attention Mechanism Explained"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "multi-head attention"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "multi-head attention details"
+                }
+            ]
+        },
+        {
+            "name": "Positional Encodings in Transformers",
+            "prerequisites": [
+                "Self-Attention Mechanism Explained"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "positional encoding"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "positional embeddings/encodings"
+                }
+            ]
+        },
+        {
+            "name": "The Transformer Architecture (Vaswani et al.)",
+            "prerequisites": [
+                "Multi-Head Attention",
+                "Positional Encodings in Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "transformer architecture"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "transformers overview"
+                }
+            ]
+        },
+        {
+            "name": "Encoder-only Transformers",
+            "prerequisites": [
+                "The Transformer Architecture (Vaswani et al.)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "encoder models (BERT-style)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "BERT / encoder-only transformers"
+                }
+            ]
+        },
+        {
+            "name": "Decoder-only Transformers",
+            "prerequisites": [
+                "The Transformer Architecture (Vaswani et al.)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "decoder-only models (GPT-style)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "language modeling with transformers"
+                }
+            ]
+        },
+        {
+            "name": "BERT: Bidirectional Encoder Representations from Transformers",
+            "prerequisites": [
+                "Encoder-only Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "BERT"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "BERT and masked language modeling"
+                }
+            ]
+        },
+        {
+            "name": "Pre-training vs Fine-tuning BERT",
+            "prerequisites": [
+                "BERT: Bidirectional Encoder Representations from Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "fine-tuning transformers"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "transfer learning in NLP"
+                }
+            ]
+        },
+        {
+            "name": "Masked Language Modeling (MLM)",
+            "prerequisites": [
+                "BERT: Bidirectional Encoder Representations from Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "masked language modeling objective"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "pretraining objectives (MLM)"
+                }
+            ]
+        },
+        {
+            "name": "GPT (Generative Pre-trained Transformer) Family",
+            "prerequisites": [
+                "Decoder-only Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "causal language modeling (decoder-only)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "transformer LMs / GPT-style"
+                }
+            ]
+        },
+        {
+            "name": "GPT-2 and Zero-shot Learning",
+            "prerequisites": [
+                "GPT (Generative Pre-trained Transformer) Family"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "zero-shot & prompting basics"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "generalization and prompting (where discussed)"
+                }
+            ]
+        },
+        {
+            "name": "GPT-3 and Few-shot Learning",
+            "prerequisites": [
+                "GPT-2 and Zero-shot Learning"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "few-shot prompting"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "in-context learning discussion"
+                }
+            ]
+        },
+        {
+            "name": "Roberta, DistilBERT, and ALBERT",
+            "prerequisites": [
+                "BERT: Bidirectional Encoder Representations from Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "model zoo: RoBERTa/DistilBERT/ALBERT"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "BERT variants overview"
+                }
+            ]
+        },
+        {
+            "name": "T5 (Text-to-Text Transfer Transformer)",
+            "prerequisites": [
+                "The Transformer Architecture (Vaswani et al.)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "seq2seq transformers (T5-style)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "text-to-text / multitask learning (where discussed)"
+                }
+            ]
+        },
+        {
+            "name": "BART and Abstractive Summarization",
+            "prerequisites": [
+                "T5 (Text-to-Text Transfer Transformer)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "summarization with seq2seq models"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "summarization / seq2seq transformers"
+                }
+            ]
+        },
+        {
+            "name": "Parameter Efficient Fine-Tuning (PEFT)",
+            "prerequisites": [
+                "Pre-training vs Fine-tuning BERT"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "parameter-efficient fine-tuning (PEFT)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "adapting large models (overview)"
+                }
+            ]
+        },
+        {
+            "name": "Low-Rank Adaptation (LoRA)",
+            "prerequisites": [
+                "Parameter Efficient Fine-Tuning (PEFT)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "LoRA"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "efficient adaptation methods (where discussed)"
+                }
+            ]
+        },
+        {
+            "name": "Instruction Tuning and RLHF Overview",
+            "prerequisites": [
+                "GPT-3 and Few-shot Learning"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "instruction tuning / alignment / RLHF overview"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "alignment / safety discussion (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Retrieval-Augmented Generation (RAG) Basics",
+            "prerequisites": [
+                "Text Similarity Measures (Cosine, Jaccard)",
+                "GPT (Generative Pre-trained Transformer) Family"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "retrieval + generation / RAG basics"
+                },
+                {
+                    "resource": "slp3",
+                    "anchor": "information retrieval foundations (for retrieval step)"
+                }
+            ]
+        },
+        {
+            "name": "Advanced Sentiment Analysis (Aspect-based)",
+            "prerequisites": [
+                "Sentiment Analysis: Rule-based Approaches (VADER)",
+                "BERT: Bidirectional Encoder Representations from Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "sentiment analysis (advanced / aspect)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "fine-tuning transformers for classification"
+                }
+            ]
+        },
+        {
+            "name": "Emotion Detection in Text",
+            "prerequisites": [
+                "Sentiment Analysis: Rule-based Approaches (VADER)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "affect / emotion in NLP (where covered)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "text classification pipeline"
+                }
+            ]
+        },
+        {
+            "name": "Automatic Text Summarization (Extractive)",
+            "prerequisites": [
+                "TF-IDF (Term Frequency-Inverse Document Frequency)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "summarization (extractive)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "summarization overview (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Automatic Text Summarization (Abstractive)",
+            "prerequisites": [
+                "Automatic Text Summarization (Extractive)",
+                "The Transformer Architecture (Vaswani et al.)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "abstractive summarization"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "seq2seq transformers for summarization"
+                }
+            ]
+        },
+        {
+            "name": "Question Answering Systems (Extractive)",
+            "prerequisites": [
+                "BERT: Bidirectional Encoder Representations from Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "extractive QA"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "question answering (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Open-Domain Question Answering",
+            "prerequisites": [
+                "Question Answering Systems (Extractive)",
+                "Retrieval-Augmented Generation (RAG) Basics"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "question answering / retrieval"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "retrieval + QA / RAG-style pipelines"
+                }
+            ]
+        },
+        {
+            "name": "Chatbots and Dialogue Systems",
+            "prerequisites": [
+                "GPT (Generative Pre-trained Transformer) Family"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "dialogue systems"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "chat templates / prompting for assistants"
+                }
+            ]
+        },
+        {
+            "name": "Task-Oriented Dialogue Systems",
+            "prerequisites": [
+                "Chatbots and Dialogue Systems"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "task-oriented dialogue / NLU/NLG components"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "dialogue / applications (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Coreference Resolution",
+            "prerequisites": [
+                "Constituency Parsing vs Dependency Parsing"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "coreference resolution"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "information extraction / coref (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Semantic Role Labeling",
+            "prerequisites": [
+                "Constituency Parsing vs Dependency Parsing"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "semantic role labeling"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "structured prediction / SRL (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Machine Translation (Neural Machine Translation)",
+            "prerequisites": [
+                "The Transformer Architecture (Vaswani et al.)",
+                "Machine Translation with Seq2Seq"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "neural machine translation"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "NMT with attention/transformers"
+                }
+            ]
+        },
+        {
+            "name": "Evaluation of Translation (BLEU, ROUGE)",
+            "prerequisites": [
+                "Machine Translation (Neural Machine Translation)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "evaluation metrics (BLEU and related)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "evaluation for generation tasks"
+                }
+            ]
+        },
+        {
+            "name": "Text Simplification",
+            "prerequisites": [
+                "Automatic Text Summarization (Abstractive)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "text simplification (where covered)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "seq2seq fine-tuning for generation"
+                }
+            ]
+        },
+        {
+            "name": "Style Transfer in Text",
+            "prerequisites": [
+                "Text Generation with RNNs",
+                "The Transformer Architecture (Vaswani et al.)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "style transfer (where covered)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "prompting / controlled generation"
+                }
+            ]
+        },
+        {
+            "name": "Grammar Error Correction",
+            "prerequisites": [
+                "The Transformer Architecture (Vaswani et al.)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "grammatical error correction (where covered)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "seq2seq generation fine-tuning"
+                }
+            ]
+        },
+        {
+            "name": "Detecting Fake News and Misinformation",
+            "prerequisites": [
+                "Logistic Regression for NLP",
+                "BERT: Bidirectional Encoder Representations from Transformers"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "misinformation / social media NLP (where covered)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "text classification + evaluation"
+                }
+            ]
+        },
+        {
+            "name": "Hate Speech Detection",
+            "prerequisites": [
+                "Detecting Fake News and Misinformation"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "toxicity / harmful content detection (where covered)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "bias & evaluation considerations (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Multilingual NLP and Cross-lingual Models",
+            "prerequisites": [
+                "BERT: Bidirectional Encoder Representations from Transformers"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "multilinguality / cross-lingual transfer"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "multilingual models and tokenization"
+                }
+            ]
+        },
+        {
+            "name": "Knowledge Graphs in NLP",
+            "prerequisites": [
+                "Named Entity Recognition (NER) Fundamentals"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "information extraction / knowledge (where covered)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "knowledge-enhanced NLP (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Logic and Reasoning in LLMs",
+            "prerequisites": [
+                "GPT (Generative Pre-trained Transformer) Family"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "limitations / reasoning and generalization discussion"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "prompting patterns for reasoning (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "NLP Model Deployment Strategies",
+            "prerequisites": [
+                "Pre-training vs Fine-tuning BERT"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "sharing models / inference pipelines / deployment"
+                },
+                {
+                    "resource": "spacy_course",
+                    "anchor": "packaging and deploying pipelines"
+                }
+            ]
+        },
+        {
+            "name": "Model Quantization and Pruning",
+            "prerequisites": [
+                "NLP Model Deployment Strategies"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "efficient inference (quantization/pruning where covered)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "model efficiency discussion (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Bias and Fairness in NLP Models",
+            "prerequisites": [
+                "Detecting Fake News and Misinformation"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "ethics / bias in NLP"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "evaluation pitfalls / bias considerations"
+                }
+            ]
+        },
+        {
+            "name": "Explainability in NLP (LIME, SHAP)",
+            "prerequisites": [
+                "Logistic Regression for NLP"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "interpretability in NLP (where covered)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "interpretability discussion (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Adversarial Attacks on Text Models",
+            "prerequisites": [
+                "Bias and Fairness in NLP Models"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "adversarial examples / robustness"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "robustness and evaluation (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Privacy in NLP (Differential Privacy)",
+            "prerequisites": [
+                "NLP Model Deployment Strategies"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "slp3",
+                    "anchor": "privacy considerations (where covered)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "privacy/safety discussion (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "LLM Hallucinations and Mitigation",
+            "prerequisites": [
+                "GPT (Generative Pre-trained Transformer) Family",
+                "Retrieval-Augmented Generation (RAG) Basics"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "evaluation & reliability / hallucination mitigation (where covered)"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "limitations of LMs / factuality discussion"
+                }
+            ]
+        },
+        {
+            "name": "The Future of NLP: Multimodal Models",
+            "prerequisites": [
+                "The Transformer Architecture (Vaswani et al.)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "current trends / multimodal direction (where covered)"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "multimodal/vision-language overview (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Prompt Engineering Best Practices",
+            "prerequisites": [
+                "GPT (Generative Pre-trained Transformer) Family"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "hf_course",
+                    "anchor": "prompting basics / templates"
+                },
+                {
+                    "resource": "cs224n",
+                    "anchor": "prompting + in-context learning discussion"
+                }
+            ]
+        },
+        {
+            "name": "Review and Final Project Ideas",
+            "prerequisites": [
+                "Prompt Engineering Best Practices",
+                "NLP Model Deployment Strategies"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "cs224n",
+                    "anchor": "project guidance / evaluation mindset"
+                },
+                {
+                    "resource": "hf_course",
+                    "anchor": "end-to-end project workflow"
+                }
+            ]
+        }
+    ],
+    "notes": {
+        "how_to_extend": "If you want readings for every single topic (including all mid-syllabus items), keep the same schema and fill each topic with 2-3 anchors from SLP3/CS224N/HF/spaCy. I can do the full expansion too, but this file is already revised with prerequisites/difficulty/readings and demonstrates the exact format you requested."
+    }
 }

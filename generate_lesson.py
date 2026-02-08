@@ -1,7 +1,23 @@
+"""
+NLP Daily Lesson Generator (Gemini) -> Markdown + HTML + Index
+
+Fixes vs your original:
+- Preserves internal code fences (no more replacing all ``` which breaks code blocks)
+- Only unwraps an OUTER ```markdown ... ``` wrapper if the entire response is wrapped
+- Adds YAML front matter to each Markdown (title/date/week/lesson/slug)
+- Better Markdown->HTML conversion (tables, toc, fenced_code, codehilite, admonition)
+- Index sorting is correct (week/day/lesson parsed as numbers + date)
+- Topic selection is deterministic using a state file (optional) + supports slug-scan fallback
+"""
+
 import os
-import datetime
+import re
 import glob
 import json
+import datetime
+from dataclasses import dataclass
+from typing import Optional, Tuple, List, Dict, Any
+
 import google.generativeai as genai
 from slugify import slugify
 from dotenv import load_dotenv
@@ -9,332 +25,520 @@ import markdown
 
 load_dotenv()
 
+# -----------------------------
 # Configuration
+# -----------------------------
 API_KEY = os.environ.get("GEMINI_API_KEY")
+
 TOPIC_BASE_DIR = "topic/nlp"
 CURRICULUM_FILE = "curriculum.json"
 
-def get_existing_topic_slugs():
-    """Scans the directory for existing .md files and returns their slugs."""
+# Optional: use a state file to remember the next topic index (more robust than scanning slugs)
+STATE_FILE = os.path.join(TOPIC_BASE_DIR, "state.json")
+
+# Gemini model
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+
+# Lesson cadence (every N hours)
+LESSON_EVERY_HOURS = 4  # 4 => 6 lessons/day
+
+# Markdown extensions for HTML conversion
+MD_EXTENSIONS = [
+    "fenced_code",
+    "tables",
+    "toc",
+    "codehilite",
+    "admonition",
+]
+
+
+# -----------------------------
+# Helpers
+# -----------------------------
+def unwrap_outer_markdown_fence(text: str) -> str:
+    """
+    If the *entire* response is wrapped like:
+      ```markdown
+      ...
+      ```
+    unwrap it. Preserve internal code fences.
+    """
+    t = text.strip()
+    m = re.match(r"^```(?:markdown)?\s*\n([\s\S]*?)\n```$", t)
+    return m.group(1).strip() if m else t
+
+
+def safe_write(path: str, content: str) -> None:
+    dirname = os.path.dirname(path)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+
+def safe_read_json(path: str) -> Dict[str, Any]:
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def safe_write_json(path: str, obj: Dict[str, Any]) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, indent=2)
+
+
+@dataclass(frozen=True)
+class LessonInfo:
+    week_num: int
+    date_str: str  # YYYY-MM-DD
+    lesson_num: int
+    now: datetime.datetime
+
+
+def get_lesson_info(now: Optional[datetime.datetime] = None) -> LessonInfo:
+    now = now or datetime.datetime.now()
+    week_num = now.isocalendar()[1]
+    date_str = now.strftime("%Y-%m-%d")
+    lesson_num = (now.hour // LESSON_EVERY_HOURS) + 1
+    return LessonInfo(week_num=week_num, date_str=date_str, lesson_num=lesson_num, now=now)
+
+
+def get_existing_topic_slugs() -> set:
+    """Scans TOPIC_BASE_DIR for existing .md files and returns filename slugs."""
     slugs = set()
     files = glob.glob(os.path.join(TOPIC_BASE_DIR, "**/*.md"), recursive=True)
     for f in files:
-        # Filename without extension is the slug
         slug = os.path.basename(f).replace(".md", "")
         slugs.add(slug)
     return slugs
 
-def get_next_topic():
-    """Reads curriculum.json and returns the first topic that hasn't been generated."""
+
+def read_curriculum_topics() -> List[str]:
     if not os.path.exists(CURRICULUM_FILE):
-        print(f"Error: {CURRICULUM_FILE} not found.")
-        return None
+        raise FileNotFoundError(f"{CURRICULUM_FILE} not found.")
+    data = safe_read_json(CURRICULUM_FILE)
+    raw_topics = data.get("topics", [])
 
-    with open(CURRICULUM_FILE, 'r') as f:
-        data = json.load(f)
-        curriculum_topics = data.get("topics", [])
+    if not isinstance(raw_topics, list):
+        raise ValueError("curriculum.json must contain: { 'topics': [...] }")
 
+    # Extract names if they are dicts, or use strings directly
+    topics = []
+    for t in raw_topics:
+        if isinstance(t, str):
+            topics.append(t)
+        elif isinstance(t, dict) and "name" in t:
+            topics.append(t["name"])
+
+    if not topics:
+        raise ValueError("No valid topics found in curriculum.json (topics must be strings or objects with a 'name' field)")
+
+    return topics
+
+
+def load_state() -> Dict[str, Any]:
+    if os.path.exists(STATE_FILE):
+        try:
+            return safe_read_json(STATE_FILE)
+        except Exception:
+            # If state is corrupted, ignore and rebuild from filesystem scan
+            return {}
+    return {}
+
+
+def save_state(state: Dict[str, Any]) -> None:
+    safe_write_json(STATE_FILE, state)
+
+
+def get_next_topic() -> Optional[str]:
+    """
+    Chooses the next topic. Priority:
+    1) STATE_FILE next_index (deterministic)
+    2) filesystem slug scan fallback (your original method)
+    """
+    topics = read_curriculum_topics()
+
+    # 1) State-driven progression (recommended)
+    state = load_state()
+    next_index = state.get("next_index")
+    if isinstance(next_index, int) and 0 <= next_index < len(topics):
+        topic = topics[next_index]
+        print(f"Next topic (state): [{next_index}] {topic}")
+        return topic
+
+    # 2) Fallback: slug-scan
     existing_slugs = get_existing_topic_slugs()
-
-    for topic in curriculum_topics:
+    for idx, topic in enumerate(topics):
         slug = slugify(topic)
         if slug not in existing_slugs:
-            print(f"Next topic selected: {topic}")
+            save_state({"next_index": idx, "total_topics": len(topics)})
+            print(f"Next topic (scan->state): [{idx}] {topic}")
             return topic
-    
+
     print("All topics in the curriculum have been covered!")
     return None
 
-def get_lesson_info():
-    now = datetime.datetime.now()
-    # ISO Week number
-    week_num = now.isocalendar()[1]
-    # Date string for folder
-    date_str = now.strftime("%Y-%m-%d")
-    # Lesson number (every 4 hours: 0, 4, 8, 12, 16, 20) -> 1, 2, 3, 4, 5, 6
-    lesson_num = (now.hour // 4) + 1
-    return week_num, date_str, lesson_num, now
 
-def generate_content():
-    topic_name = get_next_topic()
-    if not topic_name:
-        return None, None
+def advance_state_after_success(topic_name: str) -> None:
+    """Increment next_index if state exists; otherwise create it from the topic match."""
+    topics = read_curriculum_topics()
+    state = load_state()
 
-    prompt = f"""
-Teach me about the following topic in Natural Language Processing: "{topic_name}".
+    if "next_index" in state and isinstance(state["next_index"], int):
+        state["next_index"] = min(state["next_index"] + 1, len(topics))
+        state["last_topic"] = topic_name
+        save_state(state)
+        return
 
-Please strictly follow this format:
-Topic: {topic_name}
+    # If state not present, find index of topic and set next_index=index+1
+    try:
+        idx = topics.index(topic_name)
+        save_state({"next_index": min(idx + 1, len(topics)), "last_topic": topic_name, "total_topics": len(topics)})
+    except ValueError:
+        pass
 
-1- Provide formal definition, what is it and how can we use it?
-2- Provide an application scenario
-3- Provide a method to apply in python 
-4- Provide a follow up question about that topic
 
+def build_prompt(topic_name: str) -> str:
+    # Structured headings => consistent HTML
+    return f"""Teach me about the following topic in Natural Language Processing: "{topic_name}".
+
+Please strictly follow this format and headings:
+
+# Topic: {topic_name}
+
+## 1) Formal definition (what is it, and how can we use it?)
+## 2) Application scenario
+## 3) Python method (if possible)
+- Put code inside a fenced code block using ```python
+## 4) Follow-up question
 
 Ensure the response is formatted in valid Markdown.
 """
 
+
+def generate_content() -> Tuple[Optional[str], Optional[str]]:
+    topic_name = get_next_topic()
+    if not topic_name:
+        return None, None
+
+    prompt = build_prompt(topic_name)
+
     if not API_KEY:
         print("WARNING: GEMINI_API_KEY not found. Using MOCK response for testing.")
-        return f"""Topic: {topic_name} (Mock)
+        mock = (
+            f"# Topic: {topic_name} (Mock)\n\n"
+            "## 1) Formal definition (what is it, and how can we use it?)\n"
+            f"Mock definition for **{topic_name}**...\n\n"
+            "## 2) Application scenario\n"
+            "Mock scenario...\n\n"
+            "## 3) Python method (if possible)\n"
+            "```python\n"
+            'print("Hello NLP")\n'
+            "```\n\n"
+            "## 4) Follow-up question\n"
+            f"What is one limitation of {topic_name} in real-world NLP pipelines?\n"
+        )
+        return mock, topic_name
 
-1- Formal Definition:
-Mock definition for {topic_name}...
-
-2- Application Scenario:
-Mock scenario...
-
-3- Python Method:
-```python
-# Mock code
-print("Hello NLP")
-```
-
-4- Follow up:
-Mock question?
-
-5- Schedule:
-Standard notification...
-""", topic_name
-    
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-2.0-flash')
-    
+    model = genai.GenerativeModel(GEMINI_MODEL)
+
     response = model.generate_content(prompt)
-    content = response.text
+    content = getattr(response, "text", None)
+    if not content:
+        print("ERROR: Model returned empty content.")
+        return None, topic_name
+
     return content, topic_name
 
-def convert_md_to_html(content, title):
-    """Converts markdown content to a full HTML page."""
-    # Strip leading/trailing code blocks if Gemini added them
-    clean_content = content.replace("```markdown", "").replace("```", "").strip()
-    html_body = markdown.markdown(clean_content, extensions=['fenced_code', 'codehilite'])
-    
-    html_content = f"""
-<!DOCTYPE html>
+
+def add_front_matter(md: str, *, title: str, date_str: str, week_num: int, lesson_num: int, slug: str) -> str:
+    fm = (
+        "---\n"
+        f'title: "{title}"\n'
+        f'date: "{date_str}"\n'
+        f"week: {week_num}\n"
+        f"lesson: {lesson_num}\n"
+        f'slug: "{slug}"\n'
+        "---\n\n"
+    )
+    if md.lstrip().startswith("---\n"):
+        return md
+    return fm + md
+
+
+def convert_md_to_html(md_text: str, title: str) -> str:
+    html_body = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
+
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <style>
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-        }}
-        h1, h2, h3 {{ color: #2c3e50; }}
-        code {{ background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }}
-        pre {{ background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }}
-        blockquote {{ border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }}
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <style>
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }}
+    h1, h2, h3 {{ color: #111827; }}
+    a {{ color: #2563eb; text-decoration: none; }}
+    a:hover {{ text-decoration: underline; }}
+    code {{ background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }}
+    pre {{ background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }}
+    pre code {{ background: transparent; padding: 0; }}
+    blockquote {{ border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }}
+    table {{ width: 100%; border-collapse: collapse; margin: 16px 0; }}
+    th, td {{ border: 1px solid #e5e7eb; padding: 8px; text-align: left; }}
+    th {{ background: #f9fafb; }}
+    hr {{ border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }}
+  </style>
 </head>
 <body>
-    {html_body}
+{html_body}
 </body>
 </html>
 """
-    return html_content
 
-def save_content(content, topic_name, week_num, date_str, lesson_num):
+
+def extract_topic_title_fallback(md: str) -> Optional[str]:
+    """
+    Fallback parser if topic_name isn't passed.
+    Looks for '# Topic: ...' or 'Topic: ...'
+    """
+    lines = [ln.strip() for ln in md.splitlines() if ln.strip()]
+    for ln in lines[:30]:
+        m1 = re.match(r"^#\s*Topic:\s*(.+)$", ln, re.IGNORECASE)
+        if m1:
+            return m1.group(1).replace("(Mock)", "").strip()
+        m2 = re.match(r"^Topic:\s*(.+)$", ln, re.IGNORECASE)
+        if m2:
+            return m2.group(1).replace("(Mock)", "").strip()
+    return None
+
+
+def save_content(content: str, topic_name: Optional[str], info: LessonInfo) -> Optional[str]:
     if not content:
         return None
-        
-    # Robust topic name (use provided one if extraction fails)
-    if not topic_name:
-        lines = content.strip().split('\n')
-        topic_line = next((line for line in lines if "Topic:" in line), None)
-        if topic_line:
-            topic_name = topic_line.split("Topic:")[-1].replace("(Mock)", "").replace("*", "").replace("#", "").strip()
-        else:
-            topic_name = "Unknown NLP Topic"
 
-    slug = slugify(topic_name)
-    
-    # Construct path
-    # topic/nlp/week_WW/day_YYYY-MM-DD/lesson_N/
-    week_dir = f"week_{week_num}"
-    day_dir = f"day_{date_str}"
-    lesson_dir = f"lesson_{lesson_num}"
-    
+    raw_md = unwrap_outer_markdown_fence(content)
+
+    title = (topic_name or extract_topic_title_fallback(raw_md) or "Unknown NLP Topic").strip()
+    title = title.replace("(Mock)", "").strip()
+
+    slug = slugify(title)
+
+    week_dir = f"week_{info.week_num}"
+    day_dir = f"day_{info.date_str}"
+    lesson_dir = f"lesson_{info.lesson_num}"
     output_dir = os.path.join(TOPIC_BASE_DIR, week_dir, day_dir, lesson_dir)
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Strip potential markdown wrapping from Gemini
-    clean_content = content.replace("```markdown", "").replace("```", "").strip()
-    
-    # Save Markdown
+
+    final_md = add_front_matter(
+        raw_md,
+        title=title,
+        date_str=info.date_str,
+        week_num=info.week_num,
+        lesson_num=info.lesson_num,
+        slug=slug,
+    )
+
     filename_md = f"{slug}.md"
     filepath_md = os.path.join(output_dir, filename_md)
-    with open(filepath_md, "w") as f:
-        f.write(clean_content)
-        
-    # Save HTML
+    safe_write(filepath_md, final_md)
+
     filename_html = f"{slug}.html"
     filepath_html = os.path.join(output_dir, filename_html)
-    html_content = convert_md_to_html(clean_content, topic_name)
-    with open(filepath_html, "w") as f:
-        f.write(html_content)
-        
+    html_content = convert_md_to_html(final_md, title)
+    safe_write(filepath_html, html_content)
+
     print(f"Generated Markdown: {filepath_md}")
     print(f"Generated HTML: {filepath_html}")
     return filepath_md
 
-def update_index_page():
-    """Scans the topic directory and rebuilds the index.html page."""
-    lessons = []
+
+def parse_lesson_path(rel_path: str) -> Optional[Dict[str, Any]]:
+    """
+    Expected: topic/nlp/week_6/day_2026-02-02/lesson_3/some-topic.html
+    """
+    parts = rel_path.split(os.sep)
+    if len(parts) < 6:
+        return None
+    if parts[0] != "topic" or parts[1] != "nlp":
+        return None
+
+    m_week = re.match(r"^week_(\d+)$", parts[2])
+    m_day = re.match(r"^day_(\d{4}-\d{2}-\d{2})$", parts[3])
+    m_lsn = re.match(r"^lesson_(\d+)$", parts[4])
+    if not (m_week and m_day and m_lsn):
+        return None
+
+    week_num = int(m_week.group(1))
+    day_str = m_day.group(1)
+    lesson_num = int(m_lsn.group(1))
+
+    name = os.path.basename(parts[5]).replace(".html", "").replace("-", " ").title()
+
+    return {
+        "week_num": week_num,
+        "day_str": day_str,
+        "lesson_num": lesson_num,
+        "name": name,
+    }
+
+
+def update_index_page() -> None:
+    lessons: List[Dict[str, Any]] = []
     files = glob.glob(os.path.join(TOPIC_BASE_DIR, "**/*.html"), recursive=True)
-    
-    for f in files:
-        if os.path.basename(f) == "index.html":
+
+    for abs_path in files:
+        if os.path.basename(abs_path) == "index.html":
             continue
-        
-        # Get relative path for the link
-        rel_path = os.path.relpath(f, ".")
-        
-        # Extract metadata from path: topic/nlp/week_6/day_2026-02-02/lesson_6/filename.html
-        parts = rel_path.split(os.sep)
-        if len(parts) >= 5:
-            week = parts[2].replace("week_", "Week ")
-            day = parts[3].replace("day_", "")
-            lesson_name = os.path.basename(f).replace(".html", "").replace("-", " ").title()
-            
-            lessons.append({
-                "week": week,
-                "day": day,
-                "name": lesson_name,
+
+        rel_path = os.path.relpath(abs_path, ".")
+        meta = parse_lesson_path(rel_path)
+        if not meta:
+            continue
+
+        lessons.append(
+            {
+                **meta,
                 "html_path": rel_path,
-                "md_path": rel_path.replace(".html", ".md")
-            })
+                "md_path": rel_path.replace(".html", ".md"),
+            }
+        )
 
-    # Sort lessons: newest first
-    lessons.sort(key=lambda x: (x["week"], x["day"]), reverse=True)
+    # Newest first
+    lessons.sort(key=lambda x: (x["day_str"], x["lesson_num"], x["week_num"]), reverse=True)
 
-    # Generate HTML content
     lessons_html = ""
-    current_week = None
-    
+    current_week_label = None
+
     for lesson in lessons:
-        if lesson["week"] != current_week:
-            if current_week is not None:
+        week_label = f"Week {lesson['week_num']}"
+        if week_label != current_week_label:
+            if current_week_label is not None:
                 lessons_html += "</div>"
-            current_week = lesson["week"]
-            lessons_html += f"<h2 class='week-title'>{current_week}</h2><div class='week-container'>"
-            
+            current_week_label = week_label
+            lessons_html += f"<h2 class='week-title'>{week_label}</h2><div class='week-container'>"
+
         lessons_html += f"""
         <div class="lesson-card">
-            <div class="lesson-date">{lesson["day"]}</div>
+            <div class="lesson-date">{lesson["day_str"]} · Lesson {lesson["lesson_num"]}</div>
             <div class="lesson-name">{lesson["name"]}</div>
             <div class="lesson-links">
                 <a href="{lesson["html_path"]}" class="btn btn-primary">View Lesson (HTML)</a>
-
+                <a href="{lesson["md_path"]}" class="btn btn-secondary">Source (Markdown)</a>
             </div>
         </div>
         """
-    
-    if current_week is not None:
+
+    if current_week_label is not None:
         lessons_html += "</div>"
 
-    index_content = f"""
-<!DOCTYPE html>
+    index_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NLP Learning Hub</title>
-    <style>
-        :root {{
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary: #64748b;
-            --bg: #f8fafc;
-            --text: #1e293b;
-        }}
-        body {{
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            margin: 0;
-            padding: 40px 20px;
-        }}
-        .container {{ max-width: 900px; margin: 0 auto; }}
-        header {{ text-align: center; margin-bottom: 50px; }}
-        h1 {{ font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }}
-        .subtitle {{ color: var(--secondary); font-size: 1.1rem; }}
-        
-        .week-title {{ 
-            margin-top: 40px; 
-            padding-bottom: 10px; 
-            border-bottom: 2px solid #e2e8f0;
-            color: #334155;
-        }}
-        .week-container {{
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }}
-        
-        .lesson-card {{
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }}
-        .lesson-card:hover {{
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }}
-        
-        .lesson-date {{ font-size: 0.875rem; color: var(--secondary); font-weight: 500; }}
-        .lesson-name {{ font-size: 1.25rem; font-weight: 700; margin: 8px 0 20px; color: #1e293b; }}
-        
-        .lesson-links {{ display: flex; gap: 10px; }}
-        .btn {{
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 600;
-            transition: background 0.2s;
-            flex: 1;
-            text-align: center;
-        }}
-        .btn-primary {{ background: var(--primary); color: white; }}
-        .btn-primary:hover {{ background: var(--primary-hover); }}
-        .btn-secondary {{ background: #f1f5f9; color: var(--secondary); }}
-        .btn-secondary:hover {{ background: #e2e8f0; }}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NLP Learning Hub</title>
+  <style>
+    :root {{
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #64748b;
+      --bg: #f8fafc;
+      --text: #1e293b;
+    }}
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      margin: 0;
+      padding: 40px 20px;
+    }}
+    .container {{ max-width: 1000px; margin: 0 auto; }}
+    header {{ text-align: center; margin-bottom: 50px; }}
+    h1 {{ font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }}
+    .subtitle {{ color: var(--secondary); font-size: 1.1rem; }}
+
+    .week-title {{
+      margin-top: 40px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+      color: #334155;
+    }}
+    .week-container {{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }}
+
+    .lesson-card {{
+      background: white;
+      padding: 22px;
+      border-radius: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }}
+    .lesson-card:hover {{
+      transform: translateY(-4px);
+      box-shadow: 0 10px 18px -8px rgba(0,0,0,0.18);
+    }}
+
+    .lesson-date {{ font-size: 0.9rem; color: var(--secondary); font-weight: 600; }}
+    .lesson-name {{ font-size: 1.2rem; font-weight: 800; margin: 10px 0 18px; color: #0f172a; }}
+
+    .lesson-links {{ display: flex; gap: 10px; }}
+    .btn {{
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      transition: background 0.18s;
+      flex: 1;
+      text-align: center;
+    }}
+    .btn-primary {{ background: var(--primary); color: white; }}
+    .btn-primary:hover {{ background: var(--primary-hover); }}
+    .btn-secondary {{ background: #f1f5f9; color: var(--secondary); }}
+    .btn-secondary:hover {{ background: #e2e8f0; }}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>NLP Learning Hub</h1>
-            <p class="subtitle">A curriculum-based journey into Natural Language Processing</p>
-        </header>
-        
-        {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
-    </div>
+  <div class="container">
+    <header>
+      <h1>NLP Learning Hub</h1>
+      <p class="subtitle">A curriculum-based journey into Natural Language Processing</p>
+    </header>
+
+    {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
+  </div>
 </body>
 </html>
 """
-    with open("index.html", "w") as f:
-        f.write(index_content)
+    safe_write("index.html", index_content)
     print("Updated index.html")
 
-if __name__ == "__main__":
+
+def main() -> int:
     try:
         print("Starting content generation...")
         content, topic = generate_content()
+
         if content:
-            week, date_val, lesson, _ = get_lesson_info()
-            filepath = save_content(content, topic, week, date_val, lesson)
+            info = get_lesson_info()
+            filepath = save_content(content, topic, info)
+            if filepath:
+                advance_state_after_success(topic_name=topic or "")
             print("Generating/Updating Index Hub...")
             update_index_page()
             print("Done.")
@@ -342,6 +546,12 @@ if __name__ == "__main__":
             print("No new content, checking index updates...")
             update_index_page()
             print("Done.")
+        return 0
+
     except Exception as e:
         print(f"Error: {e}")
-        exit(1)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

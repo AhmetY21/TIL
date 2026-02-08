@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLP vs NLU vs NLG: Understanding the Differences</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<hr />
+<p>title: "NLP vs NLU vs NLG: Understanding the Differences"
+date: "2026-02-08"
+week: 6
+lesson: 6
+slug: "nlp-vs-nlu-vs-nlg-understanding-the-differences"</p>
+<hr />
+<h1 id="topic-nlp-vs-nlu-vs-nlg-understanding-the-differences">Topic: NLP vs NLU vs NLG: Understanding the Differences</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<ul>
+<li>
+<p><strong>NLP (Natural Language Processing):</strong> This is the overarching field of computer science, artificial intelligence, and computational linguistics concerned with the interactions between computers and human (natural) languages. NLP's goal is to enable computers to understand, interpret, and generate human language. It encompasses NLU and NLG. NLP is used for a wide range of tasks, including machine translation, sentiment analysis, speech recognition, text summarization, question answering, and chatbot development. Think of it as the umbrella term covering everything related to computers and human language.</p>
+</li>
+<li>
+<p><strong>NLU (Natural Language Understanding):</strong> This is a subfield of NLP that focuses on enabling computers to <em>understand</em> the meaning and intent behind human language. It goes beyond simply recognizing words; it aims to extract the semantic meaning, relationships between words, and the speaker's intention. NLU is crucial for tasks like intent classification (understanding what the user wants to do), entity recognition (identifying key pieces of information like names, dates, and locations), and relationship extraction (understanding how entities relate to each other). NLU takes input (text or speech) and outputs structured information, such as intents, entities, and relationships.</p>
+</li>
+<li>
+<p><strong>NLG (Natural Language Generation):</strong> This is another subfield of NLP that focuses on enabling computers to <em>generate</em> human-like text from structured data. It takes structured information (e.g., data in a database, results of a calculation, or output from an NLU system) and transforms it into coherent and grammatically correct natural language. NLG is used in applications like report generation, automated content creation, chatbot responses, and summarization. NLG essentially does the opposite of NLU, taking structured data as input and producing natural language output.</p>
+</li>
+</ul>
+<p>In summary:</p>
+<ul>
+<li>NLP is the broad field.</li>
+<li>NLU focuses on <em>understanding</em> language.</li>
+<li>NLG focuses on <em>generating</em> language.</li>
+</ul>
+<p>We can use these technologies to build intelligent systems that can communicate with humans in a natural and intuitive way.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a customer service chatbot for an online bookstore:</p>
+<ol>
+<li>
+<p><strong>User Input:</strong> "I want to return the book 'The Hitchhiker's Guide to the Galaxy' because it arrived damaged."</p>
+</li>
+<li>
+<p><strong>NLU Processing:</strong></p>
+<ul>
+<li><strong>Intent Classification:</strong> The NLU system identifies the user's intent as "return_book."</li>
+<li><strong>Entity Recognition:</strong> The NLU system identifies "The Hitchhiker's Guide to the Galaxy" as the <code>book_title</code> entity and "damaged" as the <code>reason_for_return</code> entity.</li>
+</ul>
+</li>
+<li>
+<p><strong>System Logic (within NLP):</strong> The system accesses the user's order history to confirm that they purchased "The Hitchhiker's Guide to the Galaxy."</p>
+</li>
+<li>
+<p><strong>NLG Processing:</strong></p>
+<ul>
+<li>The NLG system takes the extracted information (intent, entities, order confirmation) and generates a response: "Okay, I see you want to return 'The Hitchhiker's Guide to the Galaxy' because it arrived damaged. I have initiated the return process for you. A return shipping label will be emailed to you within 24 hours."</li>
+</ul>
+</li>
+</ol>
+<p>In this scenario, NLU extracts the meaning from the user's input, the system uses that information to perform a task, and NLG generates a natural-sounding response to the user.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simplified example using the <code>transformers</code> library (specifically a pre-trained language model) for intent classification (a key part of NLU):</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load a pre-trained text classification model (fine-tuned for intent recognition is ideal)
+classifier = pipeline(&quot;text-classification&quot;, model=&quot;nlptown/bert-base-multilingual-uncased-sentiment&quot;) # Using sentiment because intent classifiers often need specific training data
+
+# User input
+text = &quot;I want to return the book 'The Hitchhiker's Guide to the Galaxy' because it arrived damaged.&quot;
+
+# Perform intent classification
+result = classifier(text)
+
+# Print the result
+print(result) # Output something like: [{'label': 'negative', 'score': 0.99...}] (Since we used a sentiment model, 'negative' roughly approximates intent)
+
+#This output represents the model's prediction - 'label' is predicted intent and 'score' represents model confidence
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p>We import the <code>pipeline</code> function from the <code>transformers</code> library. This is a convenient way to use pre-trained NLP models.</p>
+</li>
+<li>
+<p>We create a <code>classifier</code> object using the <code>pipeline</code> function. We specify the task as "text-classification" (which can be used for intent classification) and specify the <code>model</code>. In the ideal world, you would use an existing pre-trained model specifically for Intent Classification trained on your specific intents. In this example, we use the "nlptown/bert-base-multilingual-uncased-sentiment" model which is readily available (although not perfect for the intent of returning a book) since intent classifiers need very specific training data tailored to their use case.</p>
+</li>
+<li>
+<p>We pass the user's input text to the <code>classifier</code> object.</p>
+</li>
+<li>
+<p>The <code>classifier</code> object returns a list of dictionaries, where each dictionary contains the predicted label (intent) and its corresponding score (confidence). Since we are using the example sentiment model, negative sentiment loosely translates into a desire for a return, as the user is not happy.</p>
+</li>
+</ol>
+<p><strong>Note:</strong> This is a simplified example.  For a real-world application, you would need to:</p>
+<ul>
+<li>Train a custom model specifically for your set of intents (e.g., <code>return_book</code>, <code>track_order</code>, <code>ask_question</code>). This is called fine-tuning.</li>
+<li>Use a more sophisticated NLU framework like Rasa, Dialogflow, or LUIS, which provides tools for managing intents, entities, and dialog flow.</li>
+<li>Use a seperate Python library for NLG, such as <code>transformers</code> again, to generate natural language responses.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that NLU and NLG are both subfields of NLP, and that modern NLP systems often combine both NLU and NLG components, how does the rise of end-to-end models (like large language models such as GPT-3) which attempt to directly map from input to output text, blurring the lines between explicit NLU and NLG modules, impact the traditional distinction between NLP, NLU, and NLG?  Does it make the distinction less relevant, or simply change how we implement and understand these concepts?</p>
+</body>
+</html>
