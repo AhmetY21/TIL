@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastText: Handling Out-of-Vocabulary Words</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <p>Topic: FastText: Handling Out-of-Vocabulary Words</p>
+<p>1- Provide formal definition, what is it and how can we use it?</p>
+<p><strong>Definition:</strong> Out-of-vocabulary (OOV) words are words that are encountered during the testing or inference phase of a natural language processing (NLP) model but were not seen during the model's training phase. This is a common problem in NLP because language is constantly evolving, and it's impossible for any training dataset to contain all possible words.</p>
+<p>FastText addresses the OOV problem by representing each word as the sum of the character n-grams that compose it. Character n-grams are subsequences of n characters within a word. For example, for the word "apple" and n=3, the character n-grams would be "<ap", "app", "ppl", "ple", "le>". The angle brackets denote the beginning and end of the word.</p>
+<p>During training, FastText learns vector representations (embeddings) for each character n-gram in addition to the whole word itself. When an OOV word is encountered, FastText decomposes it into its constituent n-grams, retrieves the pre-trained vector embeddings for each of these n-grams, and averages (or sums) them to create a vector representation for the unknown word. This allows FastText to generate a reasonable vector representation for OOV words based on the similarity of their constituent character sequences to the n-grams of known words.</p>
+<p><strong>How to use it:</strong> FastText can be used in various NLP tasks, such as:</p>
+<ul>
+<li><strong>Word Similarity:</strong> Calculate the similarity between words, even if some are OOV, by comparing their vector representations.</li>
+<li><strong>Text Classification:</strong> Use FastText as a feature extractor for text classification models, where OOV words are handled gracefully.</li>
+<li><strong>Language Modeling:</strong> Incorporate FastText's ability to handle OOV words into language models to improve their ability to predict unseen words.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Enhance NER systems by providing embeddings for OOV entities based on their character structure.</li>
+</ul>
+<p>2- Provide an application scenario</p>
+<p><strong>Application Scenario: Handling Misspellings in Customer Reviews</strong></p>
+<p>Consider a sentiment analysis task where you're analyzing customer reviews. Customer reviews are often riddled with misspellings and informal language. A standard word embedding model (like Word2Vec or GloVe) would struggle with misspelled words because it would likely treat them as completely unknown and assign them a random or zero vector.</p>
+<p>For example, a review might contain the word "amazng" instead of "amazing." Using a standard embedding, your sentiment analysis model might fail to recognize that "amazng" is close in meaning to "amazing" and misclassify the review's sentiment.</p>
+<p>FastText, on the other hand, would decompose "amazng" into character n-grams like "ama", "maz", "azn", "zng", etc. Because these n-grams are likely to appear in other words in the training data, FastText can create a reasonable vector representation for "amazng" that is similar to the vector representation of "amazing." This allows the sentiment analysis model to correctly interpret the review's sentiment, even with the misspelling.</p>
+<p>3- Provide a method to apply in python</p>
+<p>python
+import fasttext</p>
+<h1>Train a FastText model (supervised learning for text classification)</h1>
+<h1>Assuming you have a file named 'train.txt' in the correct format</h1>
+<h1>(each line: '<strong>label</strong><label> <text>')</h1>
+<p>model = fasttext.train_supervised(input='train.txt', epoch=25, lr=0.1, wordNgrams=2)</p>
+<h1>To get vector for a word (including OOV words)</h1>
+<p>word_vector = model.get_word_vector("amazing")
+word_vector_oov = model.get_word_vector("amazng") # Misspelled version</p>
+<p>print(f"Vector for 'amazing': {word_vector[:5]}...") # Print first 5 elements for brevity
+print(f"Vector for 'amazng': {word_vector_oov[:5]}...") # Print first 5 elements for brevity</p>
+<h1>To get the nearest neighbors to a word, can be used to show similarity even with OOV</h1>
+<p>nearest_neighbors = model.get_nearest_neighbors("amazng")
+print(f"Nearest neighbors to 'amazng': {nearest_neighbors[:5]}...")</p>
+<h1>Save the model</h1>
+<p>model.save_model("fasttext_model.bin")</p>
+<h1>Load a pre-trained FastText model for word vectors (unsupervised)</h1>
+<h1>Download a pre-trained model from https://fasttext.cc/docs/en/pretrained-vectors.html</h1>
+<h1>Example: model = fasttext.load_model("cc.en.300.bin")  (replace with your downloaded model)</h1>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>fasttext.train_supervised()</code></strong>: This function trains a supervised FastText model, typically used for text classification.  It expects the input file to be formatted with labels prefixed with <code>__label__</code>. <code>wordNgrams=2</code> specifies that the model should also use word bigrams during training, which can improve performance. Key Parameters are <code>input</code> to define the training data location, <code>lr</code> for the learning rate and <code>epoch</code> to define the number of training epochs.</p>
+</li>
+<li>
+<p><strong><code>model.get_word_vector(word)</code></strong>: This function retrieves the vector representation for a given word.  Crucially, this works even for OOV words because FastText decomposes the word into character n-grams and combines their vectors.</p>
+</li>
+<li>
+<p><strong><code>model.get_nearest_neighbors(word)</code></strong>: Returns a list of nearest neighbor word with their similarity score.</p>
+</li>
+<li>
+<p><strong><code>model.save_model(filename)</code></strong>: Saves the trained model to a file, which can be loaded later.</p>
+</li>
+<li>
+<p><strong><code>fasttext.load_model(path)</code></strong>: This function loads a pre-trained FastText model, allowing you to use pre-existing word embeddings for your task.  You need to download a pre-trained model file (e.g., from the FastText website) and specify its path. Pre-trained models generally have a higher performance due to the larger training data.</p>
+</li>
+</ol>
+<p><strong>Important:</strong> This example shows how to use FastText to obtain word vectors and find nearest neighbors for both known and OOV words.  To incorporate FastText into a larger NLP pipeline (e.g., sentiment analysis), you would use the word vectors as features in your classification model.</p>
+<p>4- Provide a follow up question about that topic</p>
+<p>How does the choice of the n-gram size (the 'n' in character n-grams) affect the performance of FastText in handling OOV words, and what factors should be considered when selecting an appropriate n-gram size for a specific task or language?</p>
+</body>
+</html>
