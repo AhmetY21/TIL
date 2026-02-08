@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Embeddings (Doc2Vec)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <p>Topic: Document Embeddings (Doc2Vec)</p>
+<p>1- Provide formal definition, what is it and how can we use it?</p>
+<p>Document embeddings, specifically Doc2Vec (also known as Paragraph Vectors), are a technique in Natural Language Processing (NLP) used to represent entire documents (paragraphs, articles, books, etc.) as fixed-length vectors.  Unlike word embeddings (like Word2Vec or GloVe) which represent individual words, Doc2Vec aims to capture the semantic meaning and context of an entire document.</p>
+<p><strong>Formal Definition:</strong> Doc2Vec learns vector representations for documents by training a neural network to predict words within the document or to predict the document itself, given its context.  The learned document vector is a numerical representation that encodes semantic and syntactic information about the document.</p>
+<p><strong>How it works (briefly):</strong> There are two main architectures for Doc2Vec:</p>
+<ul>
+<li><strong>Distributed Memory Model of Paragraph Vectors (PV-DM):</strong> This model predicts the next word given the document vector and a few context words. The document vector acts as a "memory" to retain information about the document's topic. It's similar to Word2Vec's Continuous Bag-of-Words (CBOW) model, but with the addition of the document vector.</li>
+<li><strong>Distributed Bag of Words version of Paragraph Vector (PV-DBOW):</strong> This model predicts words randomly sampled from the document, given the document vector.  It ignores the word order within the document.  It's similar to Word2Vec's Skip-gram model, but the input is the document vector.</li>
+</ul>
+<p><strong>How we can use it:</strong> Document embeddings can be used for various NLP tasks, including:</p>
+<ul>
+<li><strong>Document Similarity:</strong> Measuring the cosine similarity or other distance metrics between document vectors to determine how semantically similar two documents are.</li>
+<li><strong>Document Classification:</strong> Training a classifier (e.g., logistic regression, support vector machine) on top of the document embeddings to categorize documents into different classes.</li>
+<li><strong>Information Retrieval:</strong>  Indexing document embeddings and querying the index with the embedding of a new document to retrieve similar documents.</li>
+<li><strong>Sentiment Analysis:</strong> Using document embeddings as features for sentiment analysis models.</li>
+<li><strong>Topic Modeling:</strong>  Clustering document embeddings to discover underlying topics in a corpus.</li>
+</ul>
+<p>2- Provide an application scenario</p>
+<p><strong>Application Scenario: Customer Support Ticket Categorization</strong></p>
+<p>Imagine a large customer support organization receiving thousands of tickets daily. Each ticket contains a description of the customer's problem. Manually categorizing these tickets (e.g., "billing issue," "technical problem," "account access") is time-consuming and resource-intensive.</p>
+<p>Doc2Vec can be used to automate this process. Here's how:</p>
+<ol>
+<li><strong>Train Doc2Vec:</strong> Train a Doc2Vec model on a large dataset of historical customer support tickets and their corresponding categories. Each ticket description is treated as a document.</li>
+<li><strong>Generate Embeddings:</strong>  For each new incoming ticket, generate a document embedding using the trained Doc2Vec model.</li>
+<li><strong>Classification:</strong> Train a classifier (e.g., logistic regression) on the document embeddings and their known categories from the training data.  The classifier learns to associate specific embedding patterns with different categories.</li>
+<li><strong>Automatic Categorization:</strong>  When a new ticket arrives, generate its embedding and use the trained classifier to predict its category automatically.</li>
+</ol>
+<p>This application helps route tickets to the appropriate support teams more quickly, improving customer service efficiency.</p>
+<p>3- Provide a method to apply in python</p>
+<p>python
+import gensim
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import re</p>
+<h1>Download necessary NLTK data (if not already downloaded)</h1>
+<p>nltk.download('punkt')
+nltk.download('stopwords')</p>
+<p>def preprocess_text(text):
+    """
+    Preprocesses text by removing punctuation, converting to lowercase,
+    removing stop words, and tokenizing.
+    """
+    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+    text = text.lower()  # Convert to lowercase
+    tokens = word_tokenize(text)  # Tokenize
+    stop_words = set(stopwords.words('english'))
+    tokens = [w for w in tokens if not w in stop_words]  # Remove stop words
+    return tokens</p>
+<p>def train_doc2vec_model(documents, vector_size=100, window=5, min_count=1, epochs=20):
+    """
+    Trains a Doc2Vec model on a list of documents.</p>
+<pre class="codehilite"><code>Args:
+    documents: A list of strings, where each string is a document.
+    vector_size: The dimensionality of the document vectors.
+    window: The maximum distance between the current and predicted word within a sentence.
+    min_count: Ignores all words with total frequency lower than this.
+    epochs: Number of iterations (epochs) over the corpus.
+
+Returns:
+    A trained Doc2Vec model.
+&quot;&quot;&quot;
+
+# Preprocess the documents and create TaggedDocument objects
+tagged_data = [TaggedDocument(words=preprocess_text(doc), tags=[i]) for i, doc in enumerate(documents)]
+
+# Initialize and train the Doc2Vec model
+model = Doc2Vec(vector_size=vector_size,
+                window=window,
+                min_count=min_count,
+                workers=4,
+                dm=0, # Use PV-DBOW model
+                epochs=epochs)  # PV-DBOW often works better, especially with smaller datasets.  Can change to dm=1 for PV-DM
+model.build_vocab(tagged_data)
+
+model.train(tagged_data,
+            total_examples=model.corpus_count,
+            epochs=model.epochs)
+
+return model
+</code></pre>
+
+<h1>Example usage:</h1>
+<p>if <strong>name</strong> == '<strong>main</strong>':
+    # Sample documents
+    documents = [
+        "This is the first document about machine learning.",
+        "The second document discusses natural language processing.",
+        "This is a document about both machine learning and natural language processing.",
+        "Another document focusing on deep learning techniques."
+    ]</p>
+<pre class="codehilite"><code># Train the Doc2Vec model
+model = train_doc2vec_model(documents)
+
+# Get the vector for the first document
+vector = model.dv[0] # Access document vector via its tag (its index in the documents list)
+print(&quot;Document vector for the first document:&quot;, vector)
+
+# Infer vector for a new document
+new_document = &quot;This document talks about deep learning.&quot;
+inferred_vector = model.infer_vector(preprocess_text(new_document))
+print(&quot;Inferred vector for new document:&quot;, inferred_vector)
+
+# Calculate similarity between the first document and the new document
+similarity = model.dv.cosine_similarities(0, [inferred_vector])[0]
+print(&quot;Similarity between first document and new document:&quot;, similarity)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports necessary libraries like <code>gensim</code>, <code>nltk</code>, and <code>re</code>.</li>
+<li><strong><code>preprocess_text(text)</code> Function:</strong>  This function preprocesses the input text by:<ul>
+<li>Removing punctuation.</li>
+<li>Converting the text to lowercase.</li>
+<li>Tokenizing the text into words.</li>
+<li>Removing common English stop words (e.g., "the," "a," "is").</li>
+</ul>
+</li>
+<li><strong><code>train_doc2vec_model(documents)</code> Function:</strong>  This function trains the Doc2Vec model:<ul>
+<li><strong>Tagged Documents:</strong>  It converts the list of documents into <code>TaggedDocument</code> objects.  Each document is associated with a unique tag (in this case, its index in the list). The tag is crucial for later accessing the document vector.</li>
+<li><strong>Model Initialization:</strong> It initializes a <code>Doc2Vec</code> model with specified parameters:<ul>
+<li><code>vector_size</code>: Dimensionality of the document vectors.</li>
+<li><code>window</code>: The window size for considering context words.</li>
+<li><code>min_count</code>:  Ignores words with frequency less than <code>min_count</code>.</li>
+<li><code>workers</code>: Number of worker threads to train the model.</li>
+<li><code>dm=0</code>: Selects PV-DBOW model (dm=1 for PV-DM).  PV-DBOW is generally preferred when the dataset is small.</li>
+<li><code>epochs</code>: The number of training epochs.</li>
+</ul>
+</li>
+<li><strong>Build Vocabulary:</strong>  It builds the vocabulary from the tagged documents.</li>
+<li><strong>Train Model:</strong>  It trains the Doc2Vec model using the <code>train()</code> method.</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong><ul>
+<li>Defines a list of sample documents.</li>
+<li>Trains the Doc2Vec model using the <code>train_doc2vec_model()</code> function.</li>
+<li>Retrieves the vector for the first document using <code>model.dv[0]</code>. Note that you need to access the document embeddings through the <code>dv</code> (DocvecsArray) property.</li>
+<li>Infers the vector for a new, unseen document using <code>model.infer_vector()</code>. This is a crucial step to get vector representations of documents not seen during training.</li>
+<li>Calculates the cosine similarity between the first document's vector and the inferred vector of the new document, illustrating how to compare documents based on their embeddings.  It gets the cosine similarity using <code>model.dv.cosine_similarities()</code>.</li>
+</ul>
+</li>
+</ol>
+<p>4- Provide a follow up question about that topic</p>
+<p>How can I evaluate the quality of the document embeddings generated by Doc2Vec, especially when I don't have pre-defined labels for my documents, and what are some best practices for fine-tuning the Doc2Vec model's hyperparameters (e.g., <code>vector_size</code>, <code>window</code>, <code>min_count</code>, <code>epochs</code>, <code>dm</code>) to improve performance on downstream tasks like document clustering or similarity search?</p>
+</body>
+</html>
