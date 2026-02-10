@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Potential Outcomes (Counterfactual) Framework</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-potential-outcomes-counterfactual-framework">Topic: Potential Outcomes (Counterfactual) Framework</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Potential Outcomes (Counterfactual) Framework, also known as the Rubin Causal Model, is a statistical framework for defining and estimating causal effects. It revolves around the concept of "potential outcomes," which are the outcomes that <em>would</em> have been observed for each individual under different possible treatments or exposures.</p>
+<p><strong>Formal Definition:</strong></p>
+<p>For each individual <em>i</em>, let:</p>
+<ul>
+<li><em>T<sub>i</sub></em> be the treatment assignment.  <em>T<sub>i</sub></em> = 1 if the individual receives the treatment, and <em>T<sub>i</sub></em> = 0 if the individual receives the control.</li>
+<li><em>Y<sub>i</sub>(1)</em> be the <em>potential outcome</em> for individual <em>i</em> if they were to receive the treatment (<em>T<sub>i</sub></em> = 1). This is what <em>Y<sub>i</sub></em> <em>would</em> be.</li>
+<li><em>Y<sub>i</sub>(0)</em> be the <em>potential outcome</em> for individual <em>i</em> if they were to receive the control (<em>T<sub>i</sub></em> = 0). This is what <em>Y<sub>i</sub></em> <em>would</em> be.</li>
+<li><em>Y<sub>i</sub></em> be the observed outcome for individual <em>i</em>. We only observe one of the potential outcomes for each individual, depending on their treatment assignment:<ul>
+<li><em>Y<sub>i</sub></em> = <em>Y<sub>i</sub>(1)</em> if <em>T<sub>i</sub></em> = 1</li>
+<li><em>Y<sub>i</sub></em> = <em>Y<sub>i</sub>(0)</em> if <em>T<sub>i</sub></em> = 0</li>
+</ul>
+</li>
+</ul>
+<p>The fundamental problem of causal inference is that we can only observe one potential outcome for each individual.  We can <em>never</em> observe <em>Y<sub>i</sub>(1)</em> and <em>Y<sub>i</sub>(0)</em> simultaneously for the same individual. This is the <strong>fundamental problem of causal inference</strong>.</p>
+<p><strong>Causal Effect:</strong></p>
+<p>The individual treatment effect (ITE) for individual <em>i</em> is defined as the difference between their potential outcomes under treatment and control:</p>
+<ul>
+<li>ITE<sub>i</sub> = <em>Y<sub>i</sub>(1)</em> - <em>Y<sub>i</sub>(0)</em></li>
+</ul>
+<p>Since we can't observe both <em>Y<sub>i</sub>(1)</em> and <em>Y<sub>i</sub>(0)</em>, we can't directly compute the ITE for any individual. Therefore, we often focus on estimating the <strong>Average Treatment Effect (ATE)</strong>:</p>
+<ul>
+<li>ATE = E[<em>Y<sub>i</sub>(1)</em>] - E[<em>Y<sub>i</sub>(0)</em>]</li>
+</ul>
+<p>Where E[] denotes the expected value.</p>
+<p><strong>How we use it:</strong></p>
+<p>The potential outcomes framework allows us to formally define causal effects and think clearly about the assumptions required to estimate them. The framework relies on assumptions like:</p>
+<ul>
+<li><strong>Stable Unit Treatment Value Assumption (SUTVA):</strong> This has two components:<ul>
+<li><strong>No Interference:</strong> An individual's potential outcome is only affected by their own treatment assignment, not by the treatment assignments of others.</li>
+<li><strong>No Multiple Versions of Treatment:</strong>  The treatment is consistently applied across individuals, and there are no hidden variations in the treatment that affect the outcome.</li>
+</ul>
+</li>
+<li><strong>Ignorability/Exchangeability:</strong> Treatment assignment is independent of potential outcomes.  In other words, the treatment is assigned randomly, or we can control for confounders that affect both treatment assignment and potential outcomes.  Formally: <em>Y(0), Y(1)  ⊥ T | X</em>, where X are observed covariates.</li>
+<li><strong>Positivity/Overlap:</strong> For every value of the covariates <em>X</em>, there is a positive probability of receiving both treatment and control. This ensures we can compare individuals with similar characteristics under both treatment conditions.</li>
+</ul>
+<p>By explicitly stating these assumptions, we can assess their plausibility in a given context and choose appropriate statistical methods to estimate causal effects.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine we want to study the effect of a new drug on blood pressure.</p>
+<ul>
+<li><em>T<sub>i</sub></em> = 1 if individual <em>i</em> receives the new drug, and <em>T<sub>i</sub></em> = 0 if they receive a placebo.</li>
+<li><em>Y<sub>i</sub>(1)</em> is the blood pressure of individual <em>i</em> if they were to receive the new drug.</li>
+<li><em>Y<sub>i</sub>(0)</em> is the blood pressure of individual <em>i</em> if they were to receive the placebo.</li>
+<li><em>Y<sub>i</sub></em> is the observed blood pressure of individual <em>i</em> after the treatment period.</li>
+</ul>
+<p>We want to estimate the ATE, which is the average difference in blood pressure if everyone received the new drug versus if everyone received the placebo:  ATE = E[<em>Y<sub>i</sub>(1)</em>] - E[<em>Y<sub>i</sub>(0)</em>].</p>
+<p>To do this, we can conduct a randomized controlled trial (RCT). If the treatment is randomly assigned, and SUTVA holds, we can estimate the ATE by simply taking the difference in the average blood pressure between the treatment and control groups:</p>
+<p>Estimated ATE =  Mean blood pressure in the drug group - Mean blood pressure in the placebo group.</p>
+<p>However, if treatment is NOT randomly assigned (e.g., doctors are more likely to prescribe the drug to patients with higher blood pressure), then we need to control for confounding variables (e.g., pre-existing health conditions, age, weight) using techniques like matching, propensity score weighting, or regression adjustment.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While the potential outcomes framework itself is a conceptual framework, Python can be used to <em>estimate</em> causal effects within this framework, especially when dealing with observational data where treatment is not randomly assigned. One common approach is to use propensity score matching or weighting with libraries like <code>scikit-learn</code> and <code>statsmodels</code>.</p>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# Generate some simulated data (replace with your actual data)
+np.random.seed(42)
+n = 1000
+data = pd.DataFrame({
+    'age': np.random.randint(20, 70, n),
+    'income': np.random.normal(50000, 20000, n),
+    'health': np.random.normal(0, 1, n),
+    'treatment': np.random.binomial(1, 0.3 + 0.2 * (np.random.rand(n) - 0.5), n) # Treatment is influenced by other factors
+})
+data['outcome'] = 2 * data['treatment'] + 0.5 * data['age'] - 0.3 * data['income'] + np.random.normal(0, 100, n)
+
+# Propensity Score Estimation
+X = data[['age', 'income', 'health']]
+y = data['treatment']
+
+# Using logistic regression to estimate propensity scores
+model = LogisticRegression(random_state=42)
+model.fit(X, y)
+data['propensity_score'] = model.predict_proba(X)[:, 1]
+
+# Inverse Probability of Treatment Weighting (IPTW)
+data['iptw'] = np.where(data['treatment'] == 1, 1 / data['propensity_score'], 1 / (1 - data['propensity_score']))
+
+# Estimate ATE using weighted regression
+formula = 'outcome ~ treatment'
+weighted_model = smf.wls(formula, data=data, weights=data['iptw']).fit()
+print(weighted_model.summary())
+
+# The coefficient for 'treatment' in the weighted model is the estimated ATE.
+ate_estimate = weighted_model.params['treatment']
+print(f&quot;\nEstimated ATE: {ate_estimate}&quot;)
+
+
+# Alternatively, using a simple difference in means (naive estimate - biased!)
+ate_naive = data[data['treatment']==1]['outcome'].mean() - data[data['treatment']==0]['outcome'].mean()
+print(f&quot;Naive ATE estimate (biased): {ate_naive}&quot;)
+</code></pre>
+
+<p>This code demonstrates propensity score weighting, a common technique for causal inference under the potential outcomes framework.  It first estimates the propensity score (the probability of receiving treatment given observed covariates) using logistic regression. Then, it calculates inverse probability of treatment weights (IPTW) and uses them in a weighted regression model to estimate the ATE. The naive ATE calculation shows how simply comparing means without accounting for confounding can lead to biased results.  Many libraries exist for more robust matching and weighting techniques.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the potential outcomes framework relate to other causal inference techniques like directed acyclic graphs (DAGs), and how can these different approaches be used together to strengthen causal claims? Specifically, how do DAGs help to identify confounders and mediators that need to be accounted for when estimating causal effects using potential outcomes?</p>
+</body>
+</html>
