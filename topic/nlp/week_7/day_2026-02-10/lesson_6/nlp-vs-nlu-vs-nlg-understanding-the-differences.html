@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLP vs NLU vs NLG: Understanding the Differences</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-nlp-vs-nlu-vs-nlg-understanding-the-differences">Topic: NLP vs NLU vs NLG: Understanding the Differences</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<ul>
+<li>
+<p><strong>NLP (Natural Language Processing):</strong> This is the overarching field encompassing the ability of computers to understand, interpret, and generate human language. It is a broad area that involves a range of techniques from statistical methods to deep learning. Think of it as the parent category. NLP enables machines to perform tasks like translation, text summarization, sentiment analysis, and question answering. We use NLP to allow machines to work with text and speech data in meaningful ways.</p>
+</li>
+<li>
+<p><strong>NLU (Natural Language Understanding):</strong> This is a subfield of NLP focusing specifically on <em>understanding</em> the meaning and intent behind human language. It's about interpreting the semantics, identifying entities, and extracting relationships within the text. NLU aims to convert raw text into a structured, machine-readable representation. We use NLU to determine what a user means when they say something, going beyond just recognizing the words themselves. For example, "Book a flight to London" is interpreted as the <em>intent</em> to book a flight, and "London" is identified as the <em>destination</em> entity.</p>
+</li>
+<li>
+<p><strong>NLG (Natural Language Generation):</strong> This is another subfield of NLP, focusing on the reverse process: taking structured data or information and turning it into natural language text that humans can understand. NLG aims to generate coherent, grammatically correct, and contextually appropriate text. We use NLG to automatically create reports, summaries, product descriptions, or even hold conversations with users.</p>
+</li>
+</ul>
+<p>In short:
+* NLP = The big picture.
+* NLU = Understanding what humans say.
+* NLG = Writing like a human.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a chatbot application designed to help users book flights:</p>
+<ul>
+<li>
+<p><strong>NLU:</strong> When a user types "I want a flight from New York to Los Angeles next Tuesday," the NLU component is responsible for understanding the user's <em>intent</em> (booking a flight) and extracting the relevant <em>entities</em> (origin city: New York, destination city: Los Angeles, date: next Tuesday). The NLU system must correctly interpret these entities even if the user expresses the request in different ways ("Fly me from NYC to LA on Tuesday," etc.).</p>
+</li>
+<li>
+<p><strong>NLP (including NLU):</strong>  The entire flight booking system requires NLP at various stages. It might use NLP for sentiment analysis on customer reviews of airlines, or for topic modelling to understand common customer complaints related to flight delays.  NLP provides the tools and techniques that enables the full functionality of the bot.</p>
+</li>
+<li>
+<p><strong>NLG:</strong> After processing the user's request and finding available flights, the NLG component generates a response like: "I found 3 flights from New York to Los Angeles on Tuesday: Flight 1 departs at 8:00 AM for $300, Flight 2 departs at 12:00 PM for $350, Flight 3 departs at 4:00 PM for $400. Which flight would you like to book?". This generated text needs to be grammatically correct, informative, and tailored to the user's initial request.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single Python method that embodies <em>all</em> of NLP, NLU, or NLG, here's an example using the <code>spaCy</code> library for NLU, showcasing entity recognition:</p>
+<pre class="codehilite"><code class="language-python">import spacy
+
+# Load the English language model
+nlp = spacy.load(&quot;en_core_web_sm&quot;)
+
+text = &quot;I want to book a flight from New York to Los Angeles next Tuesday.&quot;
+
+# Process the text with spaCy
+doc = nlp(text)
+
+# Extract entities
+for ent in doc.ents:
+    print(f&quot;Entity: {ent.text}, Label: {ent.label_}&quot;)
+
+# Code to generate a canned response, though basic it shows generation:
+origin_city = &quot;&quot;
+destination_city = &quot;&quot;
+date = &quot;&quot;
+
+for ent in doc.ents:
+    if ent.label_ == &quot;GPE&quot; and origin_city == &quot;&quot;:
+        origin_city = ent.text
+    elif ent.label_ == &quot;GPE&quot;:
+        destination_city = ent.text
+    elif ent.label_ == &quot;DATE&quot;:
+        date = ent.text
+
+if origin_city and destination_city and date:
+    print(f&quot;Okay, searching for flights from {origin_city} to {destination_city} on {date}.&quot;)
+else:
+    print(&quot;Could not understand the cities and date provided. Please try again&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>We load a pre-trained spaCy language model.  <code>en_core_web_sm</code> is a small English model.</li>
+<li>We process the input text using <code>nlp(text)</code>, which returns a <code>Doc</code> object.</li>
+<li>We iterate through the detected entities using <code>doc.ents</code>.</li>
+<li>For each entity, we print its text and its label (e.g., "New York" is a <code>GPE</code> - geopolitical entity).</li>
+<li>The code extracts the entities and assigns them to variables.</li>
+<li>The code then uses these variables to generate a simple response, demonstrating a basic NLG aspect by creating a text output based on structured information.</li>
+</ol>
+<p>For more sophisticated NLG, libraries like <code>transformers</code> (specifically, models like GPT-2 or BART) are commonly used.  NLU is also enhanced with deep learning models using <code>transformers</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that NLU focuses on understanding intent, and NLG focuses on generating text, how does the evaluation of NLU systems differ from the evaluation of NLG systems? What metrics are typically used for each?</p>
+</body>
+</html>
