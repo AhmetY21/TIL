@@ -1,0 +1,805 @@
+{
+    "meta": {
+        "subject": "Causal Inference",
+        "slug": "causal-inference",
+        "subtitle": "A curriculum-based journey into Causal Inference",
+        "prompt_domain": "Causal Inference"
+    },
+    "resources": {
+        "whatif": {
+            "title": "Causal Inference: What If — Hernán & Robins (free online book)",
+            "short": "What If"
+        },
+        "effect": {
+            "title": "The Effect: An Introduction to Research Design and Causality — Nick Huntington-Klein (online text)",
+            "short": "The Effect"
+        },
+        "mixtape": {
+            "title": "Causal Inference: The Mixtape — Scott Cunningham (online text)",
+            "short": "Mixtape"
+        },
+        "dowhy": {
+            "title": "DoWhy (PyWhy) Documentation — causal thinking + identification + estimation + refutation",
+            "short": "DoWhy"
+        },
+        "econml": {
+            "title": "EconML (PyWhy) Documentation — heterogeneous treatment effects (CATE) + ML-based estimators",
+            "short": "EconML"
+        },
+        "dagitty": {
+            "title": "DAGitty Manual — drawing DAGs + adjustment sets + d-separation tooling",
+            "short": "DAGitty"
+        },
+        "doubleml": {
+            "title": "DoubleML Documentation — double/debiased machine learning framework",
+            "short": "DoubleML"
+        },
+        "causalml": {
+            "title": "CausalML Documentation — uplift modeling + meta-learners + validation tools",
+            "short": "CausalML"
+        }
+    },
+    "topics": [
+        {
+            "name": "What is Causal Inference? (Causation vs Association)",
+            "prerequisites": [],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "introduction / what causal inference is about"
+                },
+                {
+                    "resource": "whatif",
+                    "anchor": "Chapter 1 / definition of causal effect"
+                }
+            ]
+        },
+        {
+            "name": "Potential Outcomes (Counterfactual) Framework",
+            "prerequisites": [
+                "What is Causal Inference? (Causation vs Association)"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "Part I / counterfactual outcomes and causal effects"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "potential outcomes intuition / counterfactual thinking"
+                }
+            ]
+        },
+        {
+            "name": "Causal Estimands: ATE, ATT, ATC, CATE",
+            "prerequisites": [
+                "Potential Outcomes (Counterfactual) Framework"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "estimands / ATE vs ATT vs heterogeneity"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "introduction / CATE problem setup"
+                }
+            ]
+        },
+        {
+            "name": "Identification vs Estimation vs Inference",
+            "prerequisites": [
+                "Causal Estimands: ATE, ATT, ATC, CATE"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "identification as a design problem"
+                },
+                {
+                    "resource": "mixtape",
+                    "anchor": "intro / research designs and identification"
+                }
+            ]
+        },
+        {
+            "name": "The Ideal Experiment and Randomization",
+            "prerequisites": [
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "randomized experiments / exchangeability"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "random assignment and causal interpretation"
+                }
+            ]
+        },
+        {
+            "name": "Causal Graphs (DAGs) Basics",
+            "prerequisites": [
+                "Potential Outcomes (Counterfactual) Framework"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "DAGs / causal diagrams overview"
+                },
+                {
+                    "resource": "dagitty",
+                    "anchor": "getting started / drawing DAGs"
+                }
+            ]
+        },
+        {
+            "name": "d-Separation and Backdoor Paths",
+            "prerequisites": [
+                "Causal Graphs (DAGs) Basics"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "dagitty",
+                    "anchor": "d-separation / biasing paths / key definitions"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "backdoor criterion intuition"
+                }
+            ]
+        },
+        {
+            "name": "Confounders, Colliders, and Mediators (What to Adjust For?)",
+            "prerequisites": [
+                "d-Separation and Backdoor Paths"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "confounding vs collider bias vs mediation"
+                },
+                {
+                    "resource": "dagitty",
+                    "anchor": "adjustment sets / minimal sufficient sets"
+                }
+            ]
+        },
+        {
+            "name": "Estimating Effects by Covariate Adjustment (Regression as Adjustment)",
+            "prerequisites": [
+                "Confounders, Colliders, and Mediators (What to Adjust For?)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "Part II / adjustment and standardization"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "regression adjustment and interpretation"
+                }
+            ]
+        },
+        {
+            "name": "Standardization and G-Formula (Outcome Modeling)",
+            "prerequisites": [
+                "Estimating Effects by Covariate Adjustment (Regression as Adjustment)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "g-formula / standardization (causal inference with models)"
+                },
+                {
+                    "resource": "dowhy",
+                    "anchor": "estimation methods / backdoor adjustment estimators"
+                }
+            ]
+        },
+        {
+            "name": "Propensity Scores: Definition and Intuition",
+            "prerequisites": [
+                "Estimating Effects by Covariate Adjustment (Regression as Adjustment)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "propensity score methods"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "propensity scores and balancing"
+                }
+            ]
+        },
+        {
+            "name": "Propensity Score Matching (PSM)",
+            "prerequisites": [
+                "Propensity Scores: Definition and Intuition"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "matching design / diagnostics and common pitfalls"
+                },
+                {
+                    "resource": "mixtape",
+                    "anchor": "matching / selection on observables"
+                }
+            ]
+        },
+        {
+            "name": "Inverse Probability Weighting (IPW)",
+            "prerequisites": [
+                "Propensity Scores: Definition and Intuition"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "IP weighting / marginal structural models intro"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "weighting estimators and balance checks"
+                }
+            ]
+        },
+        {
+            "name": "Doubly Robust Estimation (AIPW / DR Learners)",
+            "prerequisites": [
+                "Inverse Probability Weighting (IPW)",
+                "Standardization and G-Formula (Outcome Modeling)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "doubly robust ideas / combining models and weights"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "DML-style estimators / doubly robust learners overview"
+                }
+            ]
+        },
+        {
+            "name": "Assumptions: SUTVA, Consistency, Exchangeability, Positivity",
+            "prerequisites": [
+                "Potential Outcomes (Counterfactual) Framework"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "core identifiability conditions / positivity and exchangeability"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "assumptions checklist / threats to validity"
+                }
+            ]
+        },
+        {
+            "name": "Common Failure Modes: Positivity Violations and Extrapolation",
+            "prerequisites": [
+                "Assumptions: SUTVA, Consistency, Exchangeability, Positivity"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "positivity violations / practical implications"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "overlap / trimming / common support"
+                }
+            ]
+        },
+        {
+            "name": "Sensitivity Analysis for Unobserved Confounding",
+            "prerequisites": [
+                "Estimating Effects by Covariate Adjustment (Regression as Adjustment)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "sensitivity analysis concepts and approaches"
+                },
+                {
+                    "resource": "dowhy",
+                    "anchor": "refutation / sensitivity and robustness checks"
+                }
+            ]
+        },
+        {
+            "name": "DoWhy Workflow: Model → Identify → Estimate → Refute",
+            "prerequisites": [
+                "Causal Graphs (DAGs) Basics",
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "dowhy",
+                    "anchor": "overview / the 4-step causal inference workflow"
+                },
+                {
+                    "resource": "dagitty",
+                    "anchor": "adjustment sets / using software to support identification"
+                }
+            ]
+        },
+        {
+            "name": "Refutation Tests (Placebo, Subset, Random Common Cause)",
+            "prerequisites": [
+                "DoWhy Workflow: Model → Identify → Estimate → Refute"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "dowhy",
+                    "anchor": "refuters / placebo and robustness checks"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "design-based falsification ideas"
+                }
+            ]
+        },
+        {
+            "name": "Heterogeneous Treatment Effects (Why CATE?)",
+            "prerequisites": [
+                "Causal Estimands: ATE, ATT, ATC, CATE"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "econml",
+                    "anchor": "user guide / heterogeneous treatment effects motivation"
+                },
+                {
+                    "resource": "causalml",
+                    "anchor": "about / CATE and uplift framing"
+                }
+            ]
+        },
+        {
+            "name": "Meta-Learners: T-Learner, S-Learner, X-Learner",
+            "prerequisites": [
+                "Heterogeneous Treatment Effects (Why CATE?)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "causalml",
+                    "anchor": "meta-learners examples / training and estimation"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "meta-learners / API patterns (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Uplift Modeling vs CATE (Practical Differences)",
+            "prerequisites": [
+                "Meta-Learners: T-Learner, S-Learner, X-Learner"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "causalml",
+                    "anchor": "uplift modeling overview / use cases"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "CATE vs policy / decision-making motivation"
+                }
+            ]
+        },
+        {
+            "name": "Causal Forests (Nonparametric CATE Estimation)",
+            "prerequisites": [
+                "Heterogeneous Treatment Effects (Why CATE?)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "econml",
+                    "anchor": "CausalForestDML / what it estimates and how"
+                },
+                {
+                    "resource": "doubleml",
+                    "anchor": "ML nuisance estimation + valid inference motivation"
+                }
+            ]
+        },
+        {
+            "name": "Double / Debiased Machine Learning (DML) Core Idea",
+            "prerequisites": [
+                "Doubly Robust Estimation (AIPW / DR Learners)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "doubleml",
+                    "anchor": "user guide / basics of double machine learning"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "DML estimators / residualization intuition"
+                }
+            ]
+        },
+        {
+            "name": "Cross-Fitting and Orthogonalization",
+            "prerequisites": [
+                "Double / Debiased Machine Learning (DML) Core Idea"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "doubleml",
+                    "anchor": "the role of sample splitting / cross-fitting"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "orthogonal moments / nuisance estimation patterns"
+                }
+            ]
+        },
+        {
+            "name": "Instrumental Variables (IV): Relevance and Exclusion",
+            "prerequisites": [
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "mixtape",
+                    "anchor": "instrumental variables / LATE intuition"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "IV assumptions and interpretation"
+                }
+            ]
+        },
+        {
+            "name": "Two-Stage Least Squares (2SLS) and LATE",
+            "prerequisites": [
+                "Instrumental Variables (IV): Relevance and Exclusion"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "mixtape",
+                    "anchor": "2SLS mechanics / LATE and compliance types"
+                },
+                {
+                    "resource": "whatif",
+                    "anchor": "IV overview / identification with instruments"
+                }
+            ]
+        },
+        {
+            "name": "Heterogeneous Effects with Instruments (Causal IV Forest)",
+            "prerequisites": [
+                "Two-Stage Least Squares (2SLS) and LATE",
+                "Heterogeneous Treatment Effects (Why CATE?)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "econml",
+                    "anchor": "CausalIVForest / what it estimates"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "overview / heterogeneous treatment effects under endogeneity"
+                }
+            ]
+        },
+        {
+            "name": "Regression Discontinuity Design (RDD)",
+            "prerequisites": [
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "mixtape",
+                    "anchor": "RDD design and identification"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "RDD intuition and diagnostics"
+                }
+            ]
+        },
+        {
+            "name": "Difference-in-Differences (DiD)",
+            "prerequisites": [
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "mixtape",
+                    "anchor": "difference-in-differences / parallel trends"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "DiD design, assumptions, and threats"
+                }
+            ]
+        },
+        {
+            "name": "Event Studies and Dynamic Treatment Effects",
+            "prerequisites": [
+                "Difference-in-Differences (DiD)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "mixtape",
+                    "anchor": "event study design / leads and lags"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "dynamic effects and interpretation"
+                }
+            ]
+        },
+        {
+            "name": "Synthetic Control (SCM) Basics",
+            "prerequisites": [
+                "Difference-in-Differences (DiD)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "mixtape",
+                    "anchor": "synthetic control motivation and setup"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "comparative case studies / synthetic control intuition"
+                }
+            ]
+        },
+        {
+            "name": "Front-Door Identification (When Confounding is Unobserved)",
+            "prerequisites": [
+                "Causal Graphs (DAGs) Basics",
+                "Confounders, Colliders, and Mediators (What to Adjust For?)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "front-door idea and mediator-based identification"
+                },
+                {
+                    "resource": "dowhy",
+                    "anchor": "identification / frontdoor estimands (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Mediation Analysis: Direct vs Indirect Effects",
+            "prerequisites": [
+                "Confounders, Colliders, and Mediators (What to Adjust For?)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "mediation / direct and indirect effects (where covered)"
+                },
+                {
+                    "resource": "dowhy",
+                    "anchor": "mediation analysis / effect decomposition (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Time-Varying Treatments and Time-Varying Confounding",
+            "prerequisites": [
+                "Assumptions: SUTVA, Consistency, Exchangeability, Positivity"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "Part III / longitudinal data and time-varying confounding"
+                },
+                {
+                    "resource": "dowhy",
+                    "anchor": "GCM or advanced workflows (as applicable)"
+                }
+            ]
+        },
+        {
+            "name": "Marginal Structural Models (MSMs) and Stabilized Weights",
+            "prerequisites": [
+                "Time-Varying Treatments and Time-Varying Confounding",
+                "Inverse Probability Weighting (IPW)"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "MSMs / stabilized IP weights"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "weighting perspective and diagnostics"
+                }
+            ]
+        },
+        {
+            "name": "Target Trial Emulation (Designing Observational Studies like RCTs)",
+            "prerequisites": [
+                "The Ideal Experiment and Randomization",
+                "Assumptions: SUTVA, Consistency, Exchangeability, Positivity"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "whatif",
+                    "anchor": "target trial emulation ideas (where discussed)"
+                },
+                {
+                    "resource": "effect",
+                    "anchor": "research design mindset / emulate experiments"
+                }
+            ]
+        },
+        {
+            "name": "Measurement Error, Missing Data, and Selection Bias (Causal View)",
+            "prerequisites": [
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "selection issues and validity threats"
+                },
+                {
+                    "resource": "whatif",
+                    "anchor": "bias sources and causal interpretation (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "External Validity: Transportability and Generalization",
+            "prerequisites": [
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "generalizability / when results move across settings"
+                },
+                {
+                    "resource": "whatif",
+                    "anchor": "transport / generalization discussions (where covered)"
+                }
+            ]
+        },
+        {
+            "name": "Causal Discovery (Careful: What it can and cannot do)",
+            "prerequisites": [
+                "Causal Graphs (DAGs) Basics",
+                "Identification vs Estimation vs Inference"
+            ],
+            "difficulty": "advanced",
+            "readings": [
+                {
+                    "resource": "dowhy",
+                    "anchor": "graphical causal model (GCM) / structure learning notes (where covered)"
+                },
+                {
+                    "resource": "dagitty",
+                    "anchor": "model implications / d-separation and testable implications"
+                }
+            ]
+        },
+        {
+            "name": "Practical Diagnostics: Balance, Overlap, Placebos, Falsification",
+            "prerequisites": [
+                "Propensity Score Matching (PSM)",
+                "Inverse Probability Weighting (IPW)",
+                "Refutation Tests (Placebo, Subset, Random Common Cause)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "effect",
+                    "anchor": "diagnostics / balance and overlap checks"
+                },
+                {
+                    "resource": "dowhy",
+                    "anchor": "refutation / robustness toolkit"
+                }
+            ]
+        },
+        {
+            "name": "End-to-End Python Pipeline (DoWhy + EconML)",
+            "prerequisites": [
+                "DoWhy Workflow: Model → Identify → Estimate → Refute",
+                "Heterogeneous Treatment Effects (Why CATE?)"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "dowhy",
+                    "anchor": "getting started / estimation + refutation examples"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "user guide / end-to-end CATE estimation examples"
+                }
+            ]
+        },
+        {
+            "name": "When to Use DoubleML vs EconML vs CausalML (Tooling Map)",
+            "prerequisites": [
+                "Double / Debiased Machine Learning (DML) Core Idea",
+                "Meta-Learners: T-Learner, S-Learner, X-Learner"
+            ],
+            "difficulty": "intermediate",
+            "readings": [
+                {
+                    "resource": "doubleml",
+                    "anchor": "documentation / what problems DoubleML is designed for"
+                },
+                {
+                    "resource": "econml",
+                    "anchor": "overview / estimator families and when to use them"
+                }
+            ]
+        },
+        {
+            "name": "Capstone Project Ideas (Pick one design + one library)",
+            "prerequisites": [
+                "Practical Diagnostics: Balance, Overlap, Placebos, Falsification",
+                "End-to-End Python Pipeline (DoWhy + EconML)"
+            ],
+            "difficulty": "beginner",
+            "readings": [
+                {
+                    "resource": "mixtape",
+                    "anchor": "choose a design (DiD/RD/IV/SCM) and replicate"
+                },
+                {
+                    "resource": "dowhy",
+                    "anchor": "use refutation to stress test conclusions"
+                }
+            ]
+        }
+    ],
+    "notes": {
+        "how_to_extend": "To expand this into a longer syllabus like your NLP example: (1) split each major method into (a) assumptions, (b) identification, (c) estimation, (d) diagnostics, (e) failure modes; (2) add 1-2 applied topics per method (e.g., marketing uplift, policy evaluation, finance risk interventions); (3) for every topic, attach 2-3 anchors: one conceptual (What If / The Effect / Mixtape) + one practical (DoWhy / EconML / DoubleML / CausalML / DAGitty)."
+    }
+}

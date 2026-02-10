@@ -1,4 +1,4 @@
-name: NLP Lesson Scheduler
+name: Lesson Scheduler
 
 on:
   schedule:
@@ -12,6 +12,13 @@ permissions:
 jobs:
   generate-lesson:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        curriculum:
+          - curriculum_nlp.json
+          - curriculum_causal.json
+      fail-fast: false
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,30 +34,39 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Extract curriculum slug
+        id: slug
+        run: |
+          SLUG=$(python -c "import json; print(json.load(open('${{ matrix.curriculum }}'))['meta']['slug'])")
+          echo "slug=$SLUG" >> $GITHUB_OUTPUT
+          SUBJECT=$(python -c "import json; print(json.load(open('${{ matrix.curriculum }}'))['meta']['subject'])")
+          echo "subject=$SUBJECT" >> $GITHUB_OUTPUT
+
       - name: Generate Content
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python generate_lesson.py
+        run: python generate_lesson.py --curriculum ${{ matrix.curriculum }}
 
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "feat: add new NLP lesson (MD & HTML)"
-          title: "New NLP Lesson Generated"
+          commit-message: "feat: add new ${{ steps.slug.outputs.subject }} lesson (MD & HTML)"
+          title: "New ${{ steps.slug.outputs.subject }} Lesson Generated"
           body: |
-            This PR contains the automatically generated NLP lesson in both Markdown and HTML formats.
+            This PR contains the automatically generated **${{ steps.slug.outputs.subject }}** lesson in both Markdown and HTML formats.
             
+            Curriculum: `${{ matrix.curriculum }}`
             Triggered by schedule.
-          branch: "auto-lesson-update"
+          branch: "auto-${{ steps.slug.outputs.slug }}-lesson-update"
           branch-suffix: timestamp
           delete-branch: true
 
       - name: Generate Job Summary
         if: always()
         run: |
-          echo "## NLP Lesson Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## ${{ steps.slug.outputs.subject }} Lesson Generation Summary" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.cpr.outputs.pull-request-operation }}" == "created" ]; then
             echo "✅ New Pull Request created: [PR #${{ steps.cpr.outputs.pull-request-number }}](${{ steps.cpr.outputs.pull-request-url }})" >> $GITHUB_STEP_SUMMARY
           elif [ "${{ steps.cpr.outputs.pull-request-operation }}" == "updated" ]; then
@@ -61,6 +77,6 @@ jobs:
 
       - name: Auto-merge
         if: steps.cpr.outputs.pull-request-operation == 'created'
-        run: gh pr merge "${{ steps.cpr.outputs.pull-request-number }}" --merge
+        run: gh pr merge "${{ steps.cpr.outputs.pull-request-number }}" --merge --auto
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

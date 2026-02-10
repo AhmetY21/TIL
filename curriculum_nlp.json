@@ -1,4 +1,10 @@
 {
+    "meta": {
+        "subject": "Natural Language Processing",
+        "slug": "nlp",
+        "subtitle": "A curriculum-based journey into Natural Language Processing",
+        "prompt_domain": "Natural Language Processing"
+    },
     "resources": {
         "slp3": {
             "title": "Speech and Language Processing (3rd ed. draft) — Jurafsky & Martin",

@@ -1,19 +1,19 @@
 """
-NLP Daily Lesson Generator (Gemini) -> Markdown + HTML + Index
+Generic Daily Lesson Generator (Gemini) -> Markdown + HTML + Index
 
-Fixes vs your original:
-- Preserves internal code fences (no more replacing all ``` which breaks code blocks)
-- Only unwraps an OUTER ```markdown ... ``` wrapper if the entire response is wrapped
-- Adds YAML front matter to each Markdown (title/date/week/lesson/slug)
-- Better Markdown->HTML conversion (tables, toc, fenced_code, codehilite, admonition)
-- Index sorting is correct (week/day/lesson parsed as numbers + date)
-- Topic selection is deterministic using a state file (optional) + supports slug-scan fallback
+Fully curriculum-driven: reads a `meta` block from the curriculum JSON
+to determine subject, output paths, prompts, and index pages.
+
+Usage:
+    python generate_lesson.py --curriculum curriculum_nlp.json
+    python generate_lesson.py --curriculum curriculum_causal.json
 """
 
 import os
 import re
 import glob
 import json
+import argparse
 import datetime
 from dataclasses import dataclass
 from typing import Optional, Tuple, List, Dict, Any
@@ -30,12 +30,6 @@ load_dotenv()
 # -----------------------------
 API_KEY = os.environ.get("GEMINI_API_KEY")
 
-TOPIC_BASE_DIR = "topic/nlp"
-CURRICULUM_FILE = "curriculum.json"
-
-# Optional: use a state file to remember the next topic index (more robust than scanning slugs)
-STATE_FILE = os.path.join(TOPIC_BASE_DIR, "state.json")
-
 # Gemini model
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
@@ -50,6 +44,57 @@ MD_EXTENSIONS = [
     "codehilite",
     "admonition",
 ]
+
+
+@dataclass(frozen=True)
+class CurriculumMeta:
+    """Metadata extracted from the curriculum JSON's 'meta' block."""
+    subject: str
+    slug: str
+    subtitle: str
+    prompt_domain: str
+    curriculum_file: str
+
+    @property
+    def topic_base_dir(self) -> str:
+        return f"topic/{self.slug}"
+
+    @property
+    def state_file(self) -> str:
+        return os.path.join(self.topic_base_dir, "state.json")
+
+    @property
+    def index_file(self) -> str:
+        return f"{self.slug}-index.html"
+
+
+def load_curriculum_meta(curriculum_file: str) -> CurriculumMeta:
+    """Load and validate the meta block from a curriculum JSON file."""
+    if not os.path.exists(curriculum_file):
+        raise FileNotFoundError(f"Curriculum file not found: {curriculum_file}")
+
+    with open(curriculum_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    meta = data.get("meta")
+    if not meta:
+        raise ValueError(
+            f"Curriculum file '{curriculum_file}' is missing a 'meta' block. "
+            f"Expected: {{ \"meta\": {{ \"subject\": ..., \"slug\": ..., \"subtitle\": ..., \"prompt_domain\": ... }} }}"
+        )
+
+    required_fields = ["subject", "slug", "subtitle", "prompt_domain"]
+    for field in required_fields:
+        if field not in meta:
+            raise ValueError(f"meta block in '{curriculum_file}' is missing required field: '{field}'")
+
+    return CurriculumMeta(
+        subject=meta["subject"],
+        slug=meta["slug"],
+        subtitle=meta["subtitle"],
+        prompt_domain=meta["prompt_domain"],
+        curriculum_file=curriculum_file,
+    )
 
 
 # -----------------------------
@@ -103,24 +148,24 @@ def get_lesson_info(now: Optional[datetime.datetime] = None) -> LessonInfo:
     return LessonInfo(week_num=week_num, date_str=date_str, lesson_num=lesson_num, now=now)
 
 
-def get_existing_topic_slugs() -> set:
-    """Scans TOPIC_BASE_DIR for existing .md files and returns filename slugs."""
+def get_existing_topic_slugs(meta: CurriculumMeta) -> set:
+    """Scans topic_base_dir for existing .md files and returns filename slugs."""
     slugs = set()
-    files = glob.glob(os.path.join(TOPIC_BASE_DIR, "**/*.md"), recursive=True)
+    files = glob.glob(os.path.join(meta.topic_base_dir, "**/*.md"), recursive=True)
     for f in files:
         slug = os.path.basename(f).replace(".md", "")
         slugs.add(slug)
     return slugs
 
 
-def read_curriculum_topics() -> List[str]:
-    if not os.path.exists(CURRICULUM_FILE):
-        raise FileNotFoundError(f"{CURRICULUM_FILE} not found.")
-    data = safe_read_json(CURRICULUM_FILE)
+def read_curriculum_topics(meta: CurriculumMeta) -> List[str]:
+    if not os.path.exists(meta.curriculum_file):
+        raise FileNotFoundError(f"{meta.curriculum_file} not found.")
+    data = safe_read_json(meta.curriculum_file)
     raw_topics = data.get("topics", [])
 
     if not isinstance(raw_topics, list):
-        raise ValueError("curriculum.json must contain: { 'topics': [...] }")
+        raise ValueError(f"{meta.curriculum_file} must contain: {{ 'topics': [...] }}")
 
     # Extract names if they are dicts, or use strings directly
     topics = []
@@ -131,76 +176,73 @@ def read_curriculum_topics() -> List[str]:
             topics.append(t["name"])
 
     if not topics:
-        raise ValueError("No valid topics found in curriculum.json (topics must be strings or objects with a 'name' field)")
+        raise ValueError(f"No valid topics found in {meta.curriculum_file}")
 
     return topics
 
 
-def load_state() -> Dict[str, Any]:
-    if os.path.exists(STATE_FILE):
+def load_state(meta: CurriculumMeta) -> Dict[str, Any]:
+    if os.path.exists(meta.state_file):
         try:
-            return safe_read_json(STATE_FILE)
+            return safe_read_json(meta.state_file)
         except Exception:
-            # If state is corrupted, ignore and rebuild from filesystem scan
             return {}
     return {}
 
 
-def save_state(state: Dict[str, Any]) -> None:
-    safe_write_json(STATE_FILE, state)
+def save_state(meta: CurriculumMeta, state: Dict[str, Any]) -> None:
+    safe_write_json(meta.state_file, state)
 
 
-def get_next_topic() -> Optional[str]:
+def get_next_topic(meta: CurriculumMeta) -> Optional[str]:
     """
     Chooses the next topic. Priority:
-    1) STATE_FILE next_index (deterministic)
-    2) filesystem slug scan fallback (your original method)
+    1) state file next_index (deterministic)
+    2) filesystem slug scan fallback
     """
-    topics = read_curriculum_topics()
+    topics = read_curriculum_topics(meta)
 
-    # 1) State-driven progression (recommended)
-    state = load_state()
+    # 1) State-driven progression
+    state = load_state(meta)
     next_index = state.get("next_index")
     if isinstance(next_index, int) and 0 <= next_index < len(topics):
         topic = topics[next_index]
-        print(f"Next topic (state): [{next_index}] {topic}")
+        print(f"[{meta.slug}] Next topic (state): [{next_index}] {topic}")
         return topic
 
     # 2) Fallback: slug-scan
-    existing_slugs = get_existing_topic_slugs()
+    existing_slugs = get_existing_topic_slugs(meta)
     for idx, topic in enumerate(topics):
         slug = slugify(topic)
         if slug not in existing_slugs:
-            save_state({"next_index": idx, "total_topics": len(topics)})
-            print(f"Next topic (scan->state): [{idx}] {topic}")
+            save_state(meta, {"next_index": idx, "total_topics": len(topics)})
+            print(f"[{meta.slug}] Next topic (scan->state): [{idx}] {topic}")
             return topic
 
-    print("All topics in the curriculum have been covered!")
+    print(f"[{meta.slug}] All topics in the curriculum have been covered!")
     return None
 
 
-def advance_state_after_success(topic_name: str) -> None:
+def advance_state_after_success(meta: CurriculumMeta, topic_name: str) -> None:
     """Increment next_index if state exists; otherwise create it from the topic match."""
-    topics = read_curriculum_topics()
-    state = load_state()
+    topics = read_curriculum_topics(meta)
+    state = load_state(meta)
 
     if "next_index" in state and isinstance(state["next_index"], int):
         state["next_index"] = min(state["next_index"] + 1, len(topics))
         state["last_topic"] = topic_name
-        save_state(state)
+        save_state(meta, state)
         return
 
-    # If state not present, find index of topic and set next_index=index+1
     try:
         idx = topics.index(topic_name)
-        save_state({"next_index": min(idx + 1, len(topics)), "last_topic": topic_name, "total_topics": len(topics)})
+        save_state(meta, {"next_index": min(idx + 1, len(topics)), "last_topic": topic_name, "total_topics": len(topics)})
     except ValueError:
         pass
 
 
-def build_prompt(topic_name: str) -> str:
-    # Structured headings => consistent HTML
-    return f"""Teach me about the following topic in Natural Language Processing: "{topic_name}".
+def build_prompt(meta: CurriculumMeta, topic_name: str) -> str:
+    return f"""Teach me about the following topic in {meta.prompt_domain}: "{topic_name}".
 
 Please strictly follow this format and headings:
 
@@ -216,12 +258,12 @@ Ensure the response is formatted in valid Markdown.
 """
 
 
-def generate_content() -> Tuple[Optional[str], Optional[str]]:
-    topic_name = get_next_topic()
+def generate_content(meta: CurriculumMeta) -> Tuple[Optional[str], Optional[str]]:
+    topic_name = get_next_topic(meta)
     if not topic_name:
         return None, None
 
-    prompt = build_prompt(topic_name)
+    prompt = build_prompt(meta, topic_name)
 
     if not API_KEY:
         print("WARNING: GEMINI_API_KEY not found. Using MOCK response for testing.")
@@ -233,10 +275,10 @@ def generate_content() -> Tuple[Optional[str], Optional[str]]:
             "Mock scenario...\n\n"
             "## 3) Python method (if possible)\n"
             "```python\n"
-            'print("Hello NLP")\n'
+            f'print("Hello {meta.prompt_domain}")\n'
             "```\n\n"
             "## 4) Follow-up question\n"
-            f"What is one limitation of {topic_name} in real-world NLP pipelines?\n"
+            f"What is one limitation of {topic_name} in real-world {meta.prompt_domain} pipelines?\n"
         )
         return mock, topic_name
 
@@ -307,10 +349,6 @@ def convert_md_to_html(md_text: str, title: str) -> str:
 
 
 def extract_topic_title_fallback(md: str) -> Optional[str]:
-    """
-    Fallback parser if topic_name isn't passed.
-    Looks for '# Topic: ...' or 'Topic: ...'
-    """
     lines = [ln.strip() for ln in md.splitlines() if ln.strip()]
     for ln in lines[:30]:
         m1 = re.match(r"^#\s*Topic:\s*(.+)$", ln, re.IGNORECASE)
@@ -322,13 +360,13 @@ def extract_topic_title_fallback(md: str) -> Optional[str]:
     return None
 
 
-def save_content(content: str, topic_name: Optional[str], info: LessonInfo) -> Optional[str]:
+def save_content(meta: CurriculumMeta, content: str, topic_name: Optional[str], info: LessonInfo) -> Optional[str]:
     if not content:
         return None
 
     raw_md = unwrap_outer_markdown_fence(content)
 
-    title = (topic_name or extract_topic_title_fallback(raw_md) or "Unknown NLP Topic").strip()
+    title = (topic_name or extract_topic_title_fallback(raw_md) or f"Unknown {meta.subject} Topic").strip()
     title = title.replace("(Mock)", "").strip()
 
     slug = slugify(title)
@@ -336,7 +374,7 @@ def save_content(content: str, topic_name: Optional[str], info: LessonInfo) -> O
     week_dir = f"week_{info.week_num}"
     day_dir = f"day_{info.date_str}"
     lesson_dir = f"lesson_{info.lesson_num}"
-    output_dir = os.path.join(TOPIC_BASE_DIR, week_dir, day_dir, lesson_dir)
+    output_dir = os.path.join(meta.topic_base_dir, week_dir, day_dir, lesson_dir)
     os.makedirs(output_dir, exist_ok=True)
 
     final_md = add_front_matter(
@@ -354,23 +392,22 @@ def save_content(content: str, topic_name: Optional[str], info: LessonInfo) -> O
 
     filename_html = f"{slug}.html"
     filepath_html = os.path.join(output_dir, filename_html)
-    # Pass raw_md instead of final_md so front matter doesn't show in HTML body
     html_content = convert_md_to_html(raw_md, title)
     safe_write(filepath_html, html_content)
 
-    print(f"Generated Markdown: {filepath_md}")
-    print(f"Generated HTML: {filepath_html}")
+    print(f"[{meta.slug}] Generated Markdown: {filepath_md}")
+    print(f"[{meta.slug}] Generated HTML: {filepath_html}")
     return filepath_md
 
 
-def parse_lesson_path(rel_path: str) -> Optional[Dict[str, Any]]:
+def parse_lesson_path(rel_path: str, meta: CurriculumMeta) -> Optional[Dict[str, Any]]:
     """
-    Expected: topic/nlp/week_6/day_2026-02-02/lesson_3/some-topic.html
+    Expected: topic/{slug}/week_6/day_2026-02-02/lesson_3/some-topic.html
     """
     parts = rel_path.split(os.sep)
     if len(parts) < 6:
         return None
-    if parts[0] != "topic" or parts[1] != "nlp":
+    if parts[0] != "topic" or parts[1] != meta.slug:
         return None
 
     m_week = re.match(r"^week_(\d+)$", parts[2])
@@ -393,22 +430,22 @@ def parse_lesson_path(rel_path: str) -> Optional[Dict[str, Any]]:
     }
 
 
-def update_index_page() -> None:
+def update_index_page(meta: CurriculumMeta) -> None:
     lessons: List[Dict[str, Any]] = []
-    files = glob.glob(os.path.join(TOPIC_BASE_DIR, "**/*.html"), recursive=True)
+    files = glob.glob(os.path.join(meta.topic_base_dir, "**/*.html"), recursive=True)
 
     for abs_path in files:
         if os.path.basename(abs_path) == "index.html":
             continue
 
         rel_path = os.path.relpath(abs_path, ".")
-        meta = parse_lesson_path(rel_path)
-        if not meta:
+        lesson_meta = parse_lesson_path(rel_path, meta)
+        if not lesson_meta:
             continue
 
         lessons.append(
             {
-                **meta,
+                **lesson_meta,
                 "html_path": rel_path,
                 "md_path": rel_path.replace(".html", ".md"),
             }
@@ -446,7 +483,7 @@ def update_index_page() -> None:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NLP Learning Hub</title>
+  <title>{meta.subject} Learning Hub</title>
   <style>
     :root {{
       --primary: #2563eb;
@@ -467,6 +504,8 @@ def update_index_page() -> None:
     header {{ text-align: center; margin-bottom: 50px; }}
     h1 {{ font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }}
     .subtitle {{ color: var(--secondary); font-size: 1.1rem; }}
+    .back-link {{ display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-weight: 600; }}
+    .back-link:hover {{ text-decoration: underline; }}
 
     .week-title {{
       margin-top: 40px;
@@ -509,15 +548,14 @@ def update_index_page() -> None:
     }}
     .btn-primary {{ background: var(--primary); color: white; }}
     .btn-primary:hover {{ background: var(--primary-hover); }}
-    .btn-secondary {{ background: #f1f5f9; color: var(--secondary); }}
-    .btn-secondary:hover {{ background: #e2e8f0; }}
   </style>
 </head>
 <body>
   <div class="container">
+    <a href="index.html" class="back-link">← All Learning Hubs</a>
     <header>
-      <h1>NLP Learning Hub</h1>
-      <p class="subtitle">A curriculum-based journey into Natural Language Processing</p>
+      <h1>{meta.subject} Learning Hub</h1>
+      <p class="subtitle">{meta.subtitle}</p>
     </header>
 
     {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
@@ -525,27 +563,40 @@ def update_index_page() -> None:
 </body>
 </html>
 """
-    safe_write("index.html", index_content)
-    print("Updated index.html")
+    safe_write(meta.index_file, index_content)
+    print(f"[{meta.slug}] Updated {meta.index_file}")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generic curriculum-based lesson generator")
+    parser.add_argument(
+        "--curriculum",
+        required=True,
+        help="Path to the curriculum JSON file (e.g. curriculum_nlp.json)",
+    )
+    return parser.parse_args()
 
 
 def main() -> int:
     try:
-        print("Starting content generation...")
-        content, topic = generate_content()
+        args = parse_args()
+        meta = load_curriculum_meta(args.curriculum)
+
+        print(f"=== [{meta.subject}] Starting content generation ===")
+        content, topic = generate_content(meta)
 
         if content:
             info = get_lesson_info()
-            filepath = save_content(content, topic, info)
+            filepath = save_content(meta, content, topic, info)
             if filepath:
-                advance_state_after_success(topic_name=topic or "")
-            print("Generating/Updating Index Hub...")
-            update_index_page()
-            print("Done.")
+                advance_state_after_success(meta, topic_name=topic or "")
+            print(f"[{meta.slug}] Generating/Updating Index Hub...")
+            update_index_page(meta)
+            print(f"[{meta.slug}] Done.")
         else:
-            print("No new content, checking index updates...")
-            update_index_page()
-            print("Done.")
+            print(f"[{meta.slug}] No new content, checking index updates...")
+            update_index_page(meta)
+            print(f"[{meta.slug}] Done.")
         return 0
 
     except Exception as e:

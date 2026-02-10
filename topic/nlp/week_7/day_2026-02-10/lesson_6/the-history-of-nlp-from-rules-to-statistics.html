@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The History of NLP: From Rules to Statistics</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-the-history-of-nlp-from-rules-to-statistics">Topic: The History of NLP: From Rules to Statistics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>"The History of NLP: From Rules to Statistics" refers to the evolution of Natural Language Processing (NLP) techniques from primarily relying on hand-crafted rules and knowledge engineering to leveraging statistical models and machine learning. This shift encompasses changes in methodology, data usage, and problem-solving approaches within the field.</p>
+<p><strong>Early NLP (Rules-Based):</strong> In the initial decades, NLP systems were built upon explicit linguistic rules defined by human experts. These rules were based on grammar, syntax, morphology, and semantics. Systems analyzed text by parsing it according to these rules, identifying patterns, and applying transformations. Examples include chatbots using predefined patterns or early machine translation systems relying on bilingual dictionaries and grammatical rules.</p>
+<p><strong>Transition to Statistical NLP:</strong> This era saw the rise of statistical models trained on large datasets. These models learn patterns from data without requiring explicit rule definition. Techniques like Hidden Markov Models (HMMs) and Naive Bayes were used for tasks such as part-of-speech tagging, named entity recognition, and sentiment analysis.</p>
+<p><strong>Modern NLP (Machine Learning/Deep Learning):</strong> The most recent phase involves the dominance of machine learning and, especially, deep learning. Neural networks, particularly recurrent neural networks (RNNs), long short-term memory networks (LSTMs), and transformers, have achieved state-of-the-art performance across many NLP tasks.  These models learn complex representations of language and can handle ambiguity and context more effectively than previous approaches.</p>
+<p><strong>How can we use it?</strong> Understanding this history is crucial because:</p>
+<ul>
+<li><strong>Choosing the Right Approach:</strong> It helps in selecting the appropriate technique for a given NLP task. Rule-based systems might still be suitable for specific, well-defined problems with limited data. Statistical or deep learning approaches are generally favored for more complex tasks with large datasets.</li>
+<li><strong>Understanding Limitations:</strong> Knowing the limitations of previous approaches highlights the advantages of current methods. It prevents reinventing the wheel and allows for building upon existing knowledge.</li>
+<li><strong>Appreciating the Evolution of the Field:</strong> It provides context for current research and development, highlighting the challenges that have been overcome and those that remain.</li>
+<li><strong>Debugging and Troubleshooting:</strong> In some cases, understanding the limitations of different approaches can assist in debugging current models.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider the task of <strong>sentiment analysis</strong> for customer reviews.</p>
+<ul>
+<li>
+<p><strong>Rules-Based Approach:</strong> An early system might use a dictionary of positive and negative words (e.g., "good," "excellent," "bad," "terrible"). It would count the occurrences of these words in a review and classify the overall sentiment based on the count. Additional rules could handle negations (e.g., "not good" becomes negative).  Limitations include a small vocabulary, inability to handle sarcasm, and overlooking context.</p>
+</li>
+<li>
+<p><strong>Statistical Approach:</strong> A Naive Bayes classifier could be trained on a large dataset of labeled reviews (positive, negative, neutral). The model learns the probability of each word appearing in each sentiment class. When a new review is encountered, it calculates the probability of each sentiment class and assigns the most likely one.  This approach handles a larger vocabulary and learns patterns from data, but still struggles with complex linguistic structures.</p>
+</li>
+<li>
+<p><strong>Deep Learning Approach:</strong> A transformer-based model (e.g., BERT, RoBERTa) could be fine-tuned on a sentiment analysis dataset. The model learns contextualized word embeddings, allowing it to understand the meaning of words in relation to their surrounding context. This approach can handle sarcasm, complex sentence structures, and nuanced sentiment, leading to significantly improved accuracy.</p>
+</li>
+</ul>
+<p>The application scenario demonstrates the progressive improvement in sentiment analysis accuracy as we move from rules-based systems to statistical and, finally, deep learning approaches. Each approach offers trade-offs in complexity, data requirements, and performance.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While it's not feasible to demonstrate the entire historical progression with code in a limited space, we can show a simplified example of sentiment analysis using the <code>nltk</code> library, showcasing both a rule-based approach and a simple statistical approach. Note that modern deep learning sentiment analysis requires more powerful libraries like <code>transformers</code> and is beyond the scope of this simple demonstration.</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+from nltk.corpus import movie_reviews
+import random
+
+# Download required resources (run only once)
+# nltk.download('vader_lexicon')
+# nltk.download('movie_reviews')
+
+# Rule-based approach using VADER (Valence Aware Dictionary and sEntiment Reasoner)
+def rule_based_sentiment(text):
+    sia = SentimentIntensityAnalyzer()
+    scores = sia.polarity_scores(text)
+    if scores['compound'] &gt; 0.05:
+        return &quot;Positive&quot;
+    elif scores['compound'] &lt; -0.05:
+        return &quot;Negative&quot;
+    else:
+        return &quot;Neutral&quot;
+
+# Example usage of rule-based approach:
+text = &quot;This movie was absolutely amazing! I loved every minute of it.&quot;
+sentiment = rule_based_sentiment(text)
+print(f&quot;Rule-based sentiment: {sentiment}&quot;)
+
+# Statistical approach using Naive Bayes (simplified)
+def document_features(document):
+    words = set(document)
+    features = {}
+    for word in word_features:
+        features['contains({})'.format(word)] = (word in words)
+    return features
+
+# Prepare the movie review data
+documents = [(list(movie_reviews.words(fileid)), category)
+             for category in movie_reviews.categories()
+             for fileid in movie_reviews.fileids(category)]
+
+random.shuffle(documents)
+
+# Create a list of all words and get the most frequent
+all_words = nltk.FreqDist(w.lower() for w in movie_reviews.words())
+word_features = list(all_words.keys())[:2000] # Use top 2000 words
+
+# Create feature sets
+featuresets = [(document_features(d), c) for (d, c) in documents]
+
+# Train the Naive Bayes classifier
+train_set, test_set = featuresets[:1000], featuresets[1000:]
+classifier = nltk.NaiveBayesClassifier.train(train_set)
+
+# Example usage of Naive Bayes:
+review = &quot;The plot was predictable, but the acting was superb.&quot;
+features = document_features(review.split())
+sentiment = classifier.classify(features)
+print(f&quot;Naive Bayes sentiment: {sentiment}&quot;)
+
+# Show classifier accuracy
+print(&quot;Naive Bayes accuracy:&quot;, nltk.classify.accuracy(classifier, test_set))
+</code></pre>
+
+<p>This code demonstrates a very rudimentary rule-based sentiment analysis using <code>VADER</code> and a basic Naive Bayes classifier for sentiment analysis trained on the <code>movie_reviews</code> corpus.  The Naive Bayes implementation is highly simplified, and its performance would pale in comparison to modern deep learning models.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do the ethical considerations (bias, fairness, accountability) differ across these different NLP eras (rules-based, statistical, deep learning)? For example, how do biases arise in each paradigm, and how can they be mitigated?</p>
+</body>
+</html>
