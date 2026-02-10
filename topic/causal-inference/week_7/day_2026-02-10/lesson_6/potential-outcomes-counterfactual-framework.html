@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Potential Outcomes (Counterfactual) Framework</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-potential-outcomes-counterfactual-framework">Topic: Potential Outcomes (Counterfactual) Framework</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Potential Outcomes (also known as the Counterfactual) framework is a powerful tool for defining and estimating causal effects. It provides a rigorous way to think about what <em>would</em> have happened to a subject if they had received a different treatment than they actually did.</p>
+<p>Here's the formal definition:</p>
+<ul>
+<li>
+<p>For each unit (e.g., person, experiment) <em>i</em> in a population, and for each possible treatment level <em>t</em> in a set of treatments <em>T</em>, there exists a <em>potential outcome</em>  Y<sub>i</sub>(t).  Y<sub>i</sub>(t) represents the outcome we <em>would</em> observe for unit <em>i</em> if it received treatment <em>t</em>.</p>
+</li>
+<li>
+<p>The <em>Fundamental Problem of Causal Inference</em>: We can only observe one potential outcome for each unit. A unit either receives the treatment or doesn't.  We can never observe both Y<sub>i</sub>(t) and Y<sub>i</sub>(t') for t != t' for the same unit at the same time. This is why we need to make assumptions and use estimation strategies.</p>
+</li>
+<li>
+<p><strong>Treatment effect:</strong>  For a unit <em>i</em>, the individual treatment effect comparing treatment <em>t</em> to treatment <em>t'</em> is defined as Y<sub>i</sub>(t) - Y<sub>i</sub>(t').</p>
+</li>
+<li>
+<p><strong>Average Treatment Effect (ATE):</strong> The average treatment effect is the average of the individual treatment effects over the population: E[Y(t) - Y(t')].</p>
+</li>
+<li>
+<p><strong>Average Treatment Effect on the Treated (ATT):</strong> The average treatment effect on the treated is the average treatment effect for those who actually received the treatment <em>t</em>: E[Y(t) - Y(t') | T=t].</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>The potential outcomes framework helps us:</p>
+<ul>
+<li>
+<p><strong>Clearly define causal effects:</strong>  By focusing on what <em>would</em> have happened under different scenarios, it clarifies the causal question we are trying to answer.</p>
+</li>
+<li>
+<p><strong>Identify assumptions needed for causal inference:</strong>  Because we can't observe all potential outcomes, we need to make assumptions to estimate causal effects.  Common assumptions include:</p>
+<ul>
+<li><strong>Stable Unit Treatment Value Assumption (SUTVA):</strong>  This assumption has two parts:<ul>
+<li>No interference:  A unit's treatment does not affect the potential outcomes of other units.</li>
+<li>No multiple versions of treatment:  The treatment is the same for all units.</li>
+</ul>
+</li>
+<li><strong>Ignorability (or Conditional Independence):</strong> This assumption states that treatment assignment is independent of the potential outcomes, conditional on observed covariates.  Formally, (Y(0), Y(1)) ⊥ T | X, where T is the treatment indicator and X is a set of covariates.  This is often achieved through randomization in experiments or through careful covariate adjustment in observational studies.</li>
+<li><strong>Positivity (or Overlap):</strong>  For every value of the covariates X, there is a non-zero probability of receiving each treatment level.  This ensures that there is overlap in the covariate distributions of the treated and control groups.</li>
+</ul>
+</li>
+<li>
+<p><strong>Evaluate the plausibility of different causal identification strategies:</strong> It provides a framework for evaluating whether different approaches (e.g., regression adjustment, propensity score matching, instrumental variables) can credibly estimate the desired causal effect given the data and assumptions.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong>  We want to evaluate the effect of a new online advertising campaign on sales.</p>
+<ul>
+<li><strong>Units:</strong> Individual customers</li>
+<li><strong>Treatment (T):</strong> 1 = Customer saw the ad, 0 = Customer did not see the ad</li>
+<li><strong>Outcome (Y):</strong> Number of purchases made in a month</li>
+</ul>
+<p>Using the Potential Outcomes framework:</p>
+<ul>
+<li>Y<sub>i</sub>(1): The number of purchases customer <em>i</em> <em>would</em> have made if they <em>had</em> seen the ad.</li>
+<li>Y<sub>i</sub>(0): The number of purchases customer <em>i</em> <em>would</em> have made if they <em>had not</em> seen the ad.</li>
+</ul>
+<p>The individual treatment effect for customer <em>i</em> is Y<sub>i</sub>(1) - Y<sub>i</sub>(0).  The ATE is E[Y(1) - Y(0)], the average difference in purchases if everyone saw the ad versus if no one saw the ad.</p>
+<p><strong>Challenges:</strong></p>
+<p>We can only observe one of Y<sub>i</sub>(1) or Y<sub>i</sub>(0) for each customer.  We can't see what would have happened to a customer <em>if</em> they saw the ad if they actually <em>didn't</em>, and vice versa.</p>
+<p><strong>Addressing the Challenges:</strong></p>
+<ul>
+<li>
+<p><strong>Randomized Experiment:</strong>  If we randomly assign customers to see the ad or not, we can ensure (under SUTVA) that the ad assignment is independent of their potential outcomes. In this case, the observed difference in means between the treated and control groups is an unbiased estimate of the ATE.</p>
+</li>
+<li>
+<p><strong>Observational Study:</strong> If the ad exposure is not randomized, we need to account for confounding variables.  For example, customers who are more active online may be more likely to see the ad and more likely to make purchases regardless of the ad.  We would need to collect data on these confounders (e.g., website activity, demographics) and use methods like propensity score matching or regression adjustment to estimate the ATE, conditional on these observed covariates.  This relies on the ignorability assumption.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While the Potential Outcomes framework is primarily conceptual, Python libraries like <code>CausalML</code>, <code>DoWhy</code>, <code>EconML</code>, and <code>Statsmodels</code> provide tools to estimate causal effects under this framework.  Here's an example using <code>DoWhy</code> to illustrate how propensity scores are used to adjust for confounders:</p>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, roc_auc_score
+
+import dowhy
+from dowhy import CausalModel
+from dowhy.utils import plot
+
+# Generate some synthetic data
+np.random.seed(42)
+n_samples = 1000
+age = np.random.randint(20, 60, n_samples)
+income = np.random.normal(50000 + 1000 * age, 10000, n_samples)
+treatment_probability = 1 / (1 + np.exp(-(age - 40) / 5 + (income - 50000) / 20000))
+treatment = np.random.binomial(1, treatment_probability, n_samples)
+outcome = 0.1 * treatment + 0.001 * income + 0.05 * age + np.random.normal(0, 1, n_samples)
+
+data = pd.DataFrame({'age': age, 'income': income, 'treatment': treatment, 'outcome': outcome})
+
+
+# Create a causal model
+model = CausalModel(
+    data=data,
+    treatment='treatment',
+    outcome='outcome',
+    common_causes=['age', 'income']  # Specify confounders
+)
+
+# Identify the causal effect
+identified_estimand = model.identify_effect(proceed_when_unidentifiable=True)
+
+# Estimate the causal effect using propensity score weighting
+estimate = model.estimate_effect(
+    identified_estimand,
+    method_name=&quot;backdoor.propensity_score_weighting&quot;,  # Specify the method
+    method_params={'weighting_func': &quot;propensity&quot;} # specify the weighting function
+)
+
+print(estimate)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Generation:</strong>  We create a synthetic dataset where age and income are confounders affecting both the treatment and the outcome. The treatment variable is generated using a logistic function dependent on age and income, creating a relationship of influence.</li>
+<li><strong>Causal Model:</strong> We create a <code>CausalModel</code> object, specifying the treatment, outcome, and common causes (confounders).</li>
+<li><strong>Identify Effect:</strong> <code>model.identify_effect()</code> attempts to find a valid causal estimand, given the causal graph. The <code>proceed_when_unidentifiable=True</code> allows it to proceed even if full identification isn't possible.</li>
+<li><strong>Estimate Effect:</strong> <code>model.estimate_effect()</code> estimates the causal effect using the specified method, which in this case is propensity score weighting.  Propensity score weighting aims to balance the observed covariates across treatment groups by weighting each unit by the inverse probability of receiving the treatment they actually received.</li>
+</ol>
+<p>This example demonstrates how <code>DoWhy</code> leverages the potential outcomes framework by allowing you to explicitly define your causal model, identify the causal effect, and then estimate it using various methods that address confounding.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the Potential Outcomes framework relate to the concept of causal graphs (e.g., Directed Acyclic Graphs or DAGs), and how can causal graphs help in identifying and estimating causal effects within the Potential Outcomes framework?</p>
+</body>
+</html>
