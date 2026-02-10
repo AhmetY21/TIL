@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Potential Outcomes (Counterfactual) Framework</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-potential-outcomes-counterfactual-framework">Topic: Potential Outcomes (Counterfactual) Framework</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The potential outcomes framework, also known as the counterfactual framework or Rubin causal model, is a formal approach to defining and estimating causal effects.  It explicitly defines what it <em>means</em> to say that a treatment (or intervention) has a causal effect on an outcome.</p>
+<p>The core idea is that for each individual unit (e.g., a person, a city, a product), there exist <em>potential outcomes</em> corresponding to different treatment states.  Specifically:</p>
+<ul>
+<li>Let <code>i</code> index the unit.</li>
+<li>Let <code>T</code> be the treatment variable. <code>T_i = 1</code> indicates that unit <code>i</code> received the treatment, and <code>T_i = 0</code> indicates that unit <code>i</code> did not receive the treatment (control group).</li>
+<li>Let <code>Y</code> be the outcome variable.</li>
+<li><code>Y_i(1)</code> represents the potential outcome for unit <code>i</code> <em>if</em> they received the treatment.</li>
+<li><code>Y_i(0)</code> represents the potential outcome for unit <code>i</code> <em>if</em> they did not receive the treatment.</li>
+</ul>
+<p>The <em>individual causal effect</em> for unit <code>i</code> is then defined as:</p>
+<p><code>τ_i = Y_i(1) - Y_i(0)</code></p>
+<p>In other words, the individual causal effect is the difference between what would have happened if the unit received the treatment and what would have happened if the unit did not receive the treatment.</p>
+<p>The fundamental problem of causal inference is that we can only observe <em>one</em> of these potential outcomes for each unit. We either observe <code>Y_i(1)</code> if <code>T_i = 1</code>, or we observe <code>Y_i(0)</code> if <code>T_i = 0</code>. We can never observe both for the same unit. The other potential outcome is <em>counterfactual</em> because it describes what <em>would have</em> happened under a different treatment assignment.</p>
+<p>We typically focus on estimating <em>average</em> causal effects. The most common is the Average Treatment Effect (ATE):</p>
+<p><code>ATE = E[Y(1) - Y(0)] = E[Y(1)] - E[Y(0)]</code></p>
+<p>Where E[] denotes the expected value.  The ATE is the average difference in outcomes if everyone received the treatment versus if no one received the treatment.</p>
+<p><strong>How we use it:</strong></p>
+<ol>
+<li><strong>Clearly Define Treatment &amp; Outcome:</strong>  Precisely specify the treatment (intervention) and the outcome variable.</li>
+<li><strong>Articulate Assumptions:</strong> The potential outcomes framework forces you to make explicit assumptions about the relationship between treatment assignment and potential outcomes. The key assumption is often <em>ignorability</em> (or exchangeability), which states that treatment assignment is independent of the potential outcomes.  This means that treatment assignment is effectively random, conditional on observed covariates. Formally: <code>(Y(0), Y(1)) ⊥ T | X</code>, where <code>X</code> are observed covariates. Other assumptions include <em>stable unit treatment value assumption (SUTVA)</em>, which means no interference between units (one person's treatment doesn't affect another's outcome) and there are no multiple versions of treatment.</li>
+<li><strong>Estimate Average Treatment Effects:</strong> Using statistical methods (e.g., regression, matching, inverse probability weighting) that adjust for confounders to estimate ATE or other treatment effects of interest (e.g., Average Treatment Effect on the Treated - ATT).</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong>  A company wants to evaluate the effectiveness of a new marketing campaign (the treatment) on increasing sales (the outcome).</p>
+<ul>
+<li><strong>Units:</strong> Individual customers.</li>
+<li><strong>Treatment (T):</strong> Whether or not a customer received the marketing campaign (<code>T_i = 1</code> if the customer received the campaign, <code>T_i = 0</code> otherwise).</li>
+<li><strong>Outcome (Y):</strong> The amount of money a customer spent on the company's products in a specific period.</li>
+<li><strong>Y(1):</strong> The amount the customer <em>would have</em> spent if they received the marketing campaign.</li>
+<li><strong>Y(0):</strong> The amount the customer <em>would have</em> spent if they did not receive the marketing campaign.</li>
+</ul>
+<p>The company wants to estimate the ATE: <code>E[Y(1) - Y(0)]</code>. This represents the average increase in sales they would expect if they rolled out the marketing campaign to all their customers compared to if they did not roll it out at all.</p>
+<p>To estimate this, they might use a randomized controlled trial (RCT). If the campaign assignment is truly random, then the treated and control groups should be similar on average, and the difference in average sales between the two groups will be an unbiased estimate of the ATE.</p>
+<p>However, often assignment isn't random. Suppose the company targeted the campaign at customers who were already high spenders. In this case, a simple comparison of sales between those who received the campaign and those who did not would likely overestimate the effectiveness of the campaign.  The potential outcomes framework forces us to recognize that we need to adjust for these pre-existing differences (confounders) to get a valid estimate of the ATE. This could be done through regression adjustment, matching, or other causal inference methods.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import statsmodels.formula.api as smf
+
+# Sample data (replace with your actual data)
+data = {
+    'customer_id': range(1, 101),
+    'treatment': [0] * 50 + [1] * 50,  # 50 in control, 50 in treatment
+    'sales': [10 + i for i in range(50)] + [15 + i + 5 for i in range(50)],  # sales for control, sales for treatment (with a boost)
+    'past_spending': [5 + i*0.5 for i in range(50)] + [10 + i*0.5 for i in range(50)] # pre-treatment spending, higher for treatment group
+}
+df = pd.DataFrame(data)
+
+# Simple difference in means (naive estimate - biased)
+ate_naive = df[df['treatment'] == 1]['sales'].mean() - df[df['treatment'] == 0]['sales'].mean()
+print(f&quot;Naive ATE (difference in means): {ate_naive}&quot;)
+
+# Regression adjustment to control for 'past_spending' (confounder)
+# Assumes a linear relationship between past_spending, treatment, and sales
+model = smf.ols(&quot;sales ~ treatment + past_spending&quot;, data=df)
+results = model.fit()
+print(results.summary())
+
+# The coefficient for 'treatment' in the regression model is the adjusted ATE.
+ate_adjusted = results.params['treatment']
+print(f&quot;Adjusted ATE (regression): {ate_adjusted}&quot;)
+
+# Example using propensity score weighting (IPW).  First estimate propensity scores
+from sklearn.linear_model import LogisticRegression
+from statsmodels.api import add_constant
+X = df[['past_spending']]
+X = add_constant(X)
+y = df['treatment']
+
+propensity_model = LogisticRegression(random_state=0).fit(X, y)
+propensity_scores = propensity_model.predict_proba(X)[:, 1] #probability of treatment
+
+# Calculate IPW weights
+df['ipw_weight'] = df['treatment']/propensity_scores + (1-df['treatment'])/(1-propensity_scores)
+
+# Weighted ATE estimation
+ate_ipw = (df[df['treatment'] == 1]['sales'] * df[df['treatment'] == 1]['ipw_weight']).mean() - (df[df['treatment'] == 0]['sales'] * df[df['treatment'] == 0]['ipw_weight']).mean()
+print(f&quot;Adjusted ATE (IPW): {ate_ipw}&quot;)
+</code></pre>
+
+<p>This code demonstrates a simple scenario and uses regression adjustment and IPW to estimate the ATE. It highlights how controlling for confounders (e.g., <code>past_spending</code>) can lead to a different (and hopefully less biased) estimate of the treatment effect.  Libraries like <code>CausalML</code>, <code>DoWhy</code>, and <code>EconML</code> offer more advanced methods and tools for causal inference in Python.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the potential outcomes framework relate to other causal inference techniques, such as instrumental variables or front-door adjustment?  Specifically, how can we use the language of potential outcomes to understand the assumptions that underlie these other methods, and what are the advantages and disadvantages of each approach?</p>
+</body>
+</html>
