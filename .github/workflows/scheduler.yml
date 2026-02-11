@@ -10,13 +10,27 @@ permissions:
   pull-requests: write
 
 jobs:
+  list-curricula:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Find curriculum files
+        id: set-matrix
+        run: |
+          # Find all files matching curriculum_*.json and format as a JSON array
+          FILES=$(ls curriculum_*.json | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix=$FILES" >> $GITHUB_OUTPUT
+
   generate-lesson:
+    needs: list-curricula
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        curriculum:
-          - curriculum_nlp.json
-          - curriculum_causal.json
+        curriculum: ${{ fromJson(needs:list-curricula.outputs.matrix) }}
       fail-fast: false
 
     steps:
