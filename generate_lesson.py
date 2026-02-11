@@ -45,6 +45,14 @@ MD_EXTENSIONS = [
     "admonition",
 ]
 
+# Pre-compiled Regexes
+RE_MARKDOWN_FENCE = re.compile(r"^```(?:markdown)?\s*\n([\s\S]*?)\n```$")
+RE_TOPIC_HASH = re.compile(r"^#\s*Topic:\s*(.+)$", re.IGNORECASE)
+RE_TOPIC_PLAIN = re.compile(r"^Topic:\s*(.+)$", re.IGNORECASE)
+RE_WEEK = re.compile(r"^week_(\d+)$")
+RE_DAY = re.compile(r"^day_(\d{4}-\d{2}-\d{2})$")
+RE_LESSON = re.compile(r"^lesson_(\d+)$")
+
 
 @dataclass(frozen=True)
 class CurriculumMeta:
@@ -109,7 +117,7 @@ def unwrap_outer_markdown_fence(text: str) -> str:
     unwrap it. Preserve internal code fences.
     """
     t = text.strip()
-    m = re.match(r"^```(?:markdown)?\s*\n([\s\S]*?)\n```$", t)
+    m = RE_MARKDOWN_FENCE.match(t)
     return m.group(1).strip() if m else t
 
 
@@ -351,10 +359,10 @@ def convert_md_to_html(md_text: str, title: str) -> str:
 def extract_topic_title_fallback(md: str) -> Optional[str]:
     lines = [ln.strip() for ln in md.splitlines() if ln.strip()]
     for ln in lines[:30]:
-        m1 = re.match(r"^#\s*Topic:\s*(.+)$", ln, re.IGNORECASE)
+        m1 = RE_TOPIC_HASH.match(ln)
         if m1:
             return m1.group(1).replace("(Mock)", "").strip()
-        m2 = re.match(r"^Topic:\s*(.+)$", ln, re.IGNORECASE)
+        m2 = RE_TOPIC_PLAIN.match(ln)
         if m2:
             return m2.group(1).replace("(Mock)", "").strip()
     return None
@@ -410,9 +418,9 @@ def parse_lesson_path(rel_path: str, meta: CurriculumMeta) -> Optional[Dict[str,
     if parts[0] != "topic" or parts[1] != meta.slug:
         return None
 
-    m_week = re.match(r"^week_(\d+)$", parts[2])
-    m_day = re.match(r"^day_(\d{4}-\d{2}-\d{2})$", parts[3])
-    m_lsn = re.match(r"^lesson_(\d+)$", parts[4])
+    m_week = RE_WEEK.match(parts[2])
+    m_day = RE_DAY.match(parts[3])
+    m_lsn = RE_LESSON.match(parts[4])
     if not (m_week and m_day and m_lsn):
         return None
 
