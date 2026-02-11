@@ -58,7 +58,9 @@ jobs:
       - name: Generate Content
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python generate_lesson.py --curriculum ${{ matrix.curriculum }}
+        run: |
+          python generate_lesson.py --curriculum ${{ matrix.curriculum }}
+          python scripts/migrate_html_dark_mode.py
 
       - name: Create Pull Request
         id: cpr
