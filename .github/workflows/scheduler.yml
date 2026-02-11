@@ -2,7 +2,7 @@ name: Lesson Scheduler
 
 on:
   schedule:
-    - cron: '0 */8 * * *'
+    - cron: '0 */4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -26,7 +26,6 @@ jobs:
 
   generate-lesson:
     needs: list-curricula
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
