@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>d-Separation and Backdoor Paths</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-d-separation-and-backdoor-paths">Topic: d-Separation and Backdoor Paths</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>d-Separation:</strong> d-separation (d stands for "directional") is a criterion for determining whether two sets of nodes (variables) in a causal graph are conditionally independent given a third set of nodes.  In other words, it allows us to read conditional independencies directly from the graph's structure, without needing any numerical data.</p>
+<p>Formally, sets of nodes <em>A</em> and <em>B</em> are d-separated by set <em>C</em> in a directed acyclic graph (DAG) if all paths between any node in <em>A</em> and any node in <em>B</em> are <em>blocked</em> by <em>C</em>. A path is considered blocked if it contains any of the following structures with a node in <em>C</em>:</p>
+<ul>
+<li><strong>Chain:</strong> A → C → B  (C is a mediator)</li>
+<li><strong>Fork:</strong> A ← C → B  (C is a common cause or confounder)</li>
+<li><strong>Collider:</strong> A → C ← B  (C is a collider). Importantly, a collider is <em>unblocked</em> if C <em>or any of its descendants</em> are in C.</li>
+</ul>
+<p>If <em>A</em> and <em>B</em> are d-separated by <em>C</em>, we can infer that <em>A</em> and <em>B</em> are conditionally independent given <em>C</em>, denoted as <em>A ⫫ B | C</em>.  This means knowing the value of <em>C</em> makes learning the value of <em>B</em> not provide any more information about the value of <em>A</em> and vice versa.</p>
+<p><strong>Backdoor Paths:</strong> A backdoor path from a variable <em>X</em> to a variable <em>Y</em> is a path that starts at <em>X</em>, ends at <em>Y</em>, and contains an arrow <em>into</em> <em>X</em>. Backdoor paths are problematic for causal inference because they create spurious associations between <em>X</em> and <em>Y</em> that are not due to a causal effect of <em>X</em> on <em>Y</em>.  They represent alternative explanations for why <em>X</em> and <em>Y</em> might be associated. These alternative explanations are often due to confounders.</p>
+<p><strong>How to use it:</strong></p>
+<ul>
+<li><strong>Identifying Causal Effects:</strong> d-separation helps us identify variables that, when conditioned on, can block backdoor paths.  By blocking all backdoor paths from <em>X</em> to <em>Y</em>, we can isolate the causal effect of <em>X</em> on <em>Y</em>. This is a key step in causal identification and allows us to use adjustment methods (like regression) to estimate the causal effect of <em>X</em> on <em>Y</em>.</li>
+<li><strong>Testing Causal Assumptions:</strong>  d-separation provides a way to test whether our causal graph is consistent with observed data. If the graph implies that two variables <em>A</em> and <em>B</em> are conditionally independent given <em>C</em>, and this conditional independence does <em>not</em> hold in the observed data, then our causal graph may be misspecified.</li>
+<li><strong>Selecting Variables for Adjustment:</strong> d-separation allows us to identify a <em>sufficient adjustment set</em> of variables to block backdoor paths. Often we can find a minimal sufficient adjustment set, allowing for simpler causal effect estimation.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Suppose we want to estimate the causal effect of a new drug <em>Drug</em> on patient <em>Recovery</em>. We observe the following causal relationships (represented by a DAG):</p>
+<ul>
+<li><em>Age</em> influences both <em>Drug</em> prescription and <em>Recovery</em>.</li>
+<li><em>Drug</em> influences <em>Recovery</em>.</li>
+<li><em>HealthCondition</em> also influences <em>Recovery</em>.</li>
+<li><em>Diet</em> influences <em>HealthCondition</em>.</li>
+</ul>
+<p>The corresponding DAG would look like this:</p>
+<pre class="codehilite"><code>Age --&gt; Drug --&gt; Recovery
+Age --&gt; Recovery
+Diet --&gt; HealthCondition --&gt; Recovery
+</code></pre>
+
+<p>In this scenario, we have a backdoor path from <em>Drug</em> to <em>Recovery</em> through <em>Age</em> (Drug &lt;-- Age --&gt; Recovery). This means that simply comparing the recovery rates of patients who took the drug versus those who didn't could be misleading, because <em>Age</em> is a confounder.  Older patients might be more likely to be prescribed the drug <em>and</em> less likely to recover, regardless of the drug's effectiveness.</p>
+<p>To estimate the causal effect of <em>Drug</em> on <em>Recovery</em>, we need to block this backdoor path.  According to d-separation, conditioning on <em>Age</em> (i.e., adjusting for <em>Age</em>) will block the backdoor path. In this case, <em>Age</em> is the minimum adjustment set. Conditioning on other variables that are not on a backdoor path is not harmful, but can reduce statistical efficiency. For example, conditioning on <em>Diet</em> or <em>HealthCondition</em> is valid but unnecessary.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Several Python packages can be used to perform d-separation tests on causal graphs. <code>pgmpy</code> is a popular choice.</p>
+<pre class="codehilite"><code class="language-python">from pgmpy.base import DAG
+from pgmpy.inference import DSeparation
+
+# Define the causal graph
+model = DAG([('Age', 'Drug'), ('Age', 'Recovery'),
+             ('Drug', 'Recovery'), ('Diet', 'HealthCondition'),
+             ('HealthCondition', 'Recovery')])
+
+# Create a DSeparation object
+dsep = DSeparation(model)
+
+# Check if Drug and Recovery are d-separated given Age
+is_dseparated = dsep.is_dseparated('Drug', 'Recovery', observed=['Age'])
+print(f&quot;Drug and Recovery are d-separated given Age: {is_dseparated}&quot;)
+
+# Check if Drug and Recovery are d-separated without conditioning
+is_dseparated_no_conditioning = dsep.is_dseparated('Drug', 'Recovery', observed=[])
+print(f&quot;Drug and Recovery are d-separated without conditioning: {is_dseparated_no_conditioning}&quot;)
+
+# Find all d-separations in the graph
+all_dseparations = dsep.get_all_d_separations()
+print(&quot;All d-separations:&quot;, all_dseparations)
+</code></pre>
+
+<p>This code defines the causal graph, creates a <code>DSeparation</code> object, and then uses it to check whether <em>Drug</em> and <em>Recovery</em> are d-separated given <em>Age</em>. The output will confirm that they are d-separated when conditioning on <em>Age</em>, implying that <em>Age</em> blocks the backdoor path. Conversely, it shows that <em>Drug</em> and <em>Recovery</em> are <em>not</em> d-separated when we don't condition on anything.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Suppose we add another variable, <em>GeneticPredisposition</em>, to our drug example. <em>GeneticPredisposition</em> influences both <em>HealthCondition</em> and <em>Drug</em> prescription. The DAG now looks like this:</p>
+<pre class="codehilite"><code>Age --&gt; Drug --&gt; Recovery
+Age --&gt; Recovery
+Diet --&gt; HealthCondition --&gt; Recovery
+GeneticPredisposition --&gt; Drug
+GeneticPredisposition --&gt; HealthCondition
+</code></pre>
+
+<p>In this updated scenario, what is the <em>minimal</em> adjustment set needed to estimate the causal effect of <em>Drug</em> on <em>Recovery</em>? Explain why the adjustment set is sufficient and why it is minimal. Specifically, discuss why adjusting for <em>HealthCondition</em> alone is insufficient.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
