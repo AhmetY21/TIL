@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Normalization Techniques</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-text-normalization-techniques">Topic: Text Normalization Techniques</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text normalization is the process of transforming text into a more uniform and consistent format. It's a crucial preprocessing step in Natural Language Processing (NLP) that aims to reduce variability in the text data without changing its core meaning. This uniformity makes it easier for NLP models to accurately process and analyze the text.</p>
+<p>Essentially, text normalization boils down to applying a series of transformations to convert text into a standard form. These transformations handle issues like:</p>
+<ul>
+<li><strong>Case variations:</strong> Converting all text to lowercase or uppercase to ensure that "Hello" and "hello" are treated the same.</li>
+<li><strong>Punctuation removal:</strong> Eliminating punctuation marks that don't contribute significantly to the meaning of the text.</li>
+<li><strong>Stop word removal:</strong> Removing common words (e.g., "the," "a," "is") that often have little semantic value.</li>
+<li><strong>Stemming:</strong> Reducing words to their root or stem form (e.g., "running" -&gt; "run").</li>
+<li><strong>Lemmatization:</strong> Reducing words to their dictionary form or lemma (e.g., "better" -&gt; "good").</li>
+<li><strong>Spelling correction:</strong> Correcting typographical errors and spelling mistakes.</li>
+<li><strong>Tokenization:</strong> Breaking down text into individual words or tokens.</li>
+<li><strong>Handling contractions:</strong> Expanding contractions (e.g., "can't" -&gt; "cannot").</li>
+<li><strong>Removing special characters:</strong> Removing characters beyond standard alphanumeric ones.</li>
+<li><strong>Number and date formatting:</strong> Converting numbers and dates to consistent formats.</li>
+</ul>
+<p>We use text normalization to:</p>
+<ul>
+<li><strong>Improve the accuracy of NLP models:</strong> Consistent input data leads to better model performance.</li>
+<li><strong>Reduce computational cost:</strong> By reducing the vocabulary size, we can speed up processing and reduce memory usage.</li>
+<li><strong>Simplify analysis:</strong> Standardized text is easier to analyze and interpret.</li>
+<li><strong>Increase efficiency:</strong> Standardized text enhances processing speed.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis task where we want to classify movie reviews as either positive or negative. The reviews may contain a wide variety of text variations. For example:</p>
+<ul>
+<li>"This movie was AMAZING!!!"</li>
+<li>"The acting was awful :("</li>
+<li>"It was good, I guess."</li>
+<li>"aWful movie!! bad bad bad"</li>
+</ul>
+<p>Without text normalization, the model might treat "AMAZING," "amazing," and "Amazing" as different words, potentially diluting the model's ability to identify the strong positive sentiment associated with the term. Similarly, the model might not recognize that "awful" and "aWful" are the same word, or it might be distracted by the punctuation.  Stop words like "was" or "the" add no value to sentiment.</p>
+<p>By applying text normalization techniques like lowercasing, punctuation removal, stop word removal, and potentially stemming/lemmatization, we can transform these reviews into a more consistent format, allowing the sentiment analysis model to focus on the core sentiment-bearing words and achieve better accuracy.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+import re
+
+# Download necessary NLTK resources (only needed once)
+# nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('omw-1.4')
+
+
+def normalize_text(text):
+    &quot;&quot;&quot;
+    Normalizes text by lowercasing, removing punctuation,
+    removing stop words, stemming, and lemmatizing.
+    &quot;&quot;&quot;
+
+    # Lowercasing
+    text = text.lower()
+
+    # Removing punctuation
+    text = re.sub(r'[^\w\s]', '', text)
+
+    # Tokenization
+    tokens = nltk.word_tokenize(text)
+
+    # Removing stop words
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token not in stop_words]
+
+    # Stemming
+    stemmer = PorterStemmer()
+    stemmed_tokens = [stemmer.stem(token) for token in tokens]
+
+    # Lemmatization
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_tokens = [lemmatizer.lemmatize(token) for token in stemmed_tokens] #lemmatizing after stemming often works best
+
+
+    # Rejoin tokens into a single string
+    normalized_text = ' '.join(lemmatized_tokens)
+
+    return normalized_text
+
+# Example usage
+text = &quot;This movie was AMAZING!!! The acting was awful :(&quot;
+normalized_text = normalize_text(text)
+print(f&quot;Original text: {text}&quot;)
+print(f&quot;Normalized text: {normalized_text}&quot;)
+
+
+# More advanced normalization (using more regular expressions)
+def normalize_text_advanced(text):
+    &quot;&quot;&quot;Normalizes text with more aggressive techniques&quot;&quot;&quot;
+    text = text.lower()  # Lowercase
+    text = re.sub(r&quot;http\S+|www\S+|@\S+&quot;, &quot;&quot;, text)  # Remove URLs and mentions
+    text = re.sub(r&quot;&lt;.*?&gt;&quot;, &quot;&quot;, text)  # Remove HTML tags
+    text = re.sub(r&quot;[^a-zA-Z\s]&quot;, &quot;&quot;, text)  # Remove punctuation and special characters, keeping only letters and spaces
+    tokens = nltk.word_tokenize(text)
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token not in stop_words]
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_tokens = [lemmatizer.lemmatize(token) for token in tokens]
+    normalized_text = ' '.join(lemmatized_tokens)
+
+    return normalized_text
+
+text2 = &quot;This movie was AMAZING!!! Check out the website at https://www.example.com.  The acting was awful :(  Visit our site at &lt;a href='...'&gt;link&lt;/a&gt;. @john, what did you think?&quot;
+normalized_text2 = normalize_text_advanced(text2)
+print(f&quot;\nOriginal text: {text2}&quot;)
+print(f&quot;Advanced Normalized text: {normalized_text2}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you determine the optimal combination of text normalization techniques for a specific NLP task? Are there any established metrics or guidelines to help guide this process, and how do those decisions differ between different types of NLP problems (e.g., text classification vs. machine translation)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
