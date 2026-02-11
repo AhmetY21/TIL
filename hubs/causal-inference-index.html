@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Causal Inference Learning Hub</title>
-  
   <script>
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
@@ -12,7 +11,6 @@
       document.documentElement.classList.remove('dark');
     }
   </script>
-
   <style>
     :root {
       --primary: #2563eb;
@@ -77,7 +75,7 @@
     }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
-  
+
     .theme-toggle {
       position: absolute;
       top: 20px;
@@ -114,7 +112,6 @@
     .dark .week-title {
       border-bottom-color: #334155;
     }
-
   </style>
 </head>
 <body>
@@ -127,6 +124,14 @@
     </header>
 
     <h2 class='week-title'>Week 7</h2><div class='week-container'>
+        <div class="lesson-card">
+            <div class="lesson-date">2026-02-11 · Lesson 4</div>
+            <div class="lesson-name">D Separation And Backdoor Paths</div>
+            <div class="lesson-links">
+                <a href="../topic/causal-inference/week_7/day_2026-02-11/lesson_4/d-separation-and-backdoor-paths.html" class="btn btn-primary">View Lesson (HTML)</a>
+            </div>
+        </div>
+        
         <div class="lesson-card">
             <div class="lesson-date">2026-02-11 · Lesson 3</div>
             <div class="lesson-name">Causal Graphs Dags Basics</div>
@@ -176,7 +181,6 @@
         </div>
         </div>
   </div>
-
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
@@ -199,6 +203,5 @@
       updateIcon();
     });
   </script>
-
 </body>
 </html>
