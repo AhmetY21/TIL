@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deterministic vs Stochastic Models: recourse, adaptivity, and information</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-deterministic-vs-stochastic-models-recourse-adaptivity-and-information">Topic: Deterministic vs Stochastic Models: recourse, adaptivity, and information</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>This topic concerns the fundamental distinction between deterministic and stochastic optimization models, focusing on how they handle uncertainty, and specifically addressing the concepts of recourse, adaptivity, and the role of information.</p>
+<p><strong>Deterministic Models:</strong> These models assume all parameters are known and fixed at the time of optimization. The solution is a single, pre-determined plan executed regardless of what actually happens. They ignore uncertainty. The optimization problem is typically of the form:</p>
+<p><code>minimize f(x)</code>
+<code>subject to g(x) &lt;= 0</code>
+<code>x ∈ X</code></p>
+<p>where <code>x</code> is the decision variable, <code>f</code> is the objective function, <code>g</code> represents constraints, and <code>X</code> is the feasible set.  All coefficients in <code>f</code> and <code>g</code> are known constants.</p>
+<p><strong>Stochastic Models:</strong> These models explicitly account for uncertainty in some parameters, which are represented as random variables. The goal is to find a solution that is robust (i.e., performs well) across a range of possible outcomes. Stochastic Programming (SP) offers a framework to model and solve these problems.</p>
+<p><strong>Recourse:</strong>  This refers to the ability to take corrective actions after the uncertainty is revealed. In a <em>two-stage</em> stochastic program, for instance, we make an initial (here-and-now) decision <code>x</code> before observing the realization of the random variable <code>ξ</code>.  After observing <code>ξ</code>, we can take a second-stage decision (recourse action) <code>y(x, ξ)</code> to mitigate the effects of the uncertainty. The recourse decision <code>y</code> depends on both the initial decision <code>x</code> and the realized value of the random variable <code>ξ</code>.</p>
+<p><strong>Adaptivity:</strong> Adaptivity is directly related to recourse. It is the capability of the model to adjust its decisions based on the observed values of the uncertain parameters. The recourse decisions <code>y(x, ξ)</code> represent the adaptive component of the solution.  Without recourse, there is no adaptivity; the initial decision <code>x</code> has to be good for all realizations of <code>ξ</code>.  Multi-stage stochastic programs extend this concept to multiple periods, allowing decisions to adapt sequentially as information unfolds.</p>
+<p><strong>Information:</strong> The information structure dictates how and when we learn about the uncertain parameters.  In two-stage problems, all uncertainty is revealed between the first and second stages.  In multi-stage problems, information is revealed gradually over time. The "non-anticipativity" constraints in multi-stage stochastic programming are crucial; they ensure that decisions made at a given stage can only depend on the information available up to that stage, not on future information. The quality of the solution crucially depends on the accurate representation of the probability distribution that drives the realization of uncertain parameters.</p>
+<p><strong>How can we use this?</strong> Understanding these concepts allows us to choose the appropriate modeling approach. If the impact of uncertainty is negligible or if quick solutions are paramount, a deterministic model might suffice. If uncertainty is significant and corrective actions are possible, a stochastic model with recourse is more appropriate. The ability to model adaptivity based on revealed information allows for creating more robust and realistic plans. Different information structures can be modeled in multistage problems allowing for modelling complex scenarios.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario: Supply Chain Planning under Demand Uncertainty</strong></p>
+<p>Consider a company that needs to decide how much inventory to order (<code>x</code>, first-stage decision) before knowing the actual demand for its product (<code>ξ</code>, a random variable). If the company orders too little, it will lose sales due to stockouts. If it orders too much, it will incur holding costs.  After observing the actual demand, the company can take recourse actions (<code>y(x, ξ)</code>):</p>
+<ul>
+<li><strong>If demand is higher than expected:</strong>  The company might expedite production, ship from another warehouse, or backorder.</li>
+<li><strong>If demand is lower than expected:</strong> The company might offer discounts, store excess inventory, or return goods to suppliers.</li>
+</ul>
+<p>A deterministic model would simply use an average demand value, leading to potentially poor decisions if the actual demand deviates significantly from the average. A stochastic model with recourse allows the company to optimize its inventory levels while considering the different scenarios of demand and the corresponding recourse actions to minimize the overall cost (ordering cost + holding cost + stockout cost + recourse cost).</p>
+<p>In this scenario, <em>recourse</em> is the actions the company takes after demand is known. <em>Adaptivity</em> is the company's ability to change its response based on actual demand. <em>Information</em> is the realization of the demand, which is revealed after the initial inventory decision is made.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While specific libraries for large-scale stochastic programming vary, we can illustrate the concept with a simplified example using <code>pyomo</code> and a simple scenario approach for representing the uncertainty.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+# Define the model
+model = ConcreteModel()
+
+# Parameters
+holding_cost = 1
+stockout_cost = 5
+
+# Scenarios for demand
+scenarios = [50, 80, 120]
+probabilities = [0.3, 0.4, 0.3]
+
+# First-stage decision variable (order quantity)
+model.order_quantity = Var(domain=NonNegativeReals)
+
+# Second-stage decision variables (recourse actions)
+model.inventory = Var(scenarios, domain=NonNegativeReals)  # Inventory left
+model.shortage = Var(scenarios, domain=NonNegativeReals) # Shortage
+
+# Objective function (expected cost)
+def objective_rule(model):
+    return (model.order_quantity * 2 + # ordering cost
+            sum(probabilities[i] * (holding_cost * model.inventory[scenarios[i]] +
+                                  stockout_cost * model.shortage[scenarios[i]])
+                for i in range(len(scenarios))))
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+
+# Constraints (balance constraints for each scenario)
+def demand_balance_rule(model, scenario):
+    return model.order_quantity == model.inventory[scenario] + model.shortage[scenario] + scenario
+model.demand_balance = Constraint(scenarios, rule=demand_balance_rule)
+
+
+# Solve the model
+solver = SolverFactory('glpk') # Or any other suitable solver
+solver.solve(model)
+
+# Print the results
+print(f&quot;Optimal order quantity: {model.order_quantity.value}&quot;)
+for scenario in scenarios:
+    print(f&quot;Scenario {scenario}: Inventory={model.inventory[scenario].value}, Shortage={model.shortage[scenario].value}&quot;)
+</code></pre>
+
+<p>This example defines a two-stage stochastic program.  The <code>model.order_quantity</code> is the first-stage decision.  <code>model.inventory</code> and <code>model.shortage</code> are the recourse variables, which are scenario-dependent. The <code>demand_balance_rule</code> demonstrates adaptivity: the amount of inventory and shortage adjusts depending on the realized demand in each scenario.</p>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>This is a simplified scenario-based approach.  For continuous distributions, sampling techniques (like Monte Carlo) are used.</li>
+<li>More advanced libraries like <code>pysp</code> (part of Pyomo) and dedicated stochastic programming solvers (e.g., Gurobi with its scenario features) are needed for larger and more complex problems.</li>
+<li>The choice of solver is crucial; <code>glpk</code> is used here for simplicity, but commercial solvers like Gurobi or CPLEX are often necessary for real-world applications.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the probability distribution used to model the uncertainty influence the solution of a stochastic program, and what are the potential pitfalls of using an inaccurate or poorly estimated distribution?</p>
+</body>
+</html>
