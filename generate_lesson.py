@@ -13,6 +13,7 @@ import os
 import re
 import glob
 import json
+import html
 import argparse
 import datetime
 from dataclasses import dataclass
@@ -22,6 +23,7 @@ import google.generativeai as genai
 from slugify import slugify
 from dotenv import load_dotenv
 import markdown
+import bleach
 
 load_dotenv()
 
@@ -52,6 +54,20 @@ RE_TOPIC_PLAIN = re.compile(r"^Topic:\s*(.+)$", re.IGNORECASE)
 RE_WEEK = re.compile(r"^week_(\d+)$")
 RE_DAY = re.compile(r"^day_(\d{4}-\d{2}-\d{2})$")
 RE_LESSON = re.compile(r"^lesson_(\d+)$")
+# Bleach configuration for HTML sanitization
+BLEACH_ALLOWED_TAGS = [
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "p", "br", "hr", "em", "strong", "code", "pre", "blockquote",
+    "ul", "ol", "li", "dd", "dt",
+    "table", "thead", "tbody", "tr", "th", "td",
+    "a", "img", "span", "div",
+]
+
+BLEACH_ALLOWED_ATTRIBUTES = {
+    "a": ["href", "title", "rel"],
+    "img": ["src", "alt", "title"],
+    "*": ["class", "id"],
+}
 
 
 @dataclass(frozen=True)
@@ -318,14 +334,19 @@ def add_front_matter(md: str, *, title: str, date_str: str, week_num: int, lesso
 
 
 def convert_md_to_html(md_text: str, title: str) -> str:
-    html_body = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
+    raw_html = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
+    html_body = bleach.clean(
+        raw_html,
+        tags=BLEACH_ALLOWED_TAGS,
+        attributes=BLEACH_ALLOWED_ATTRIBUTES,
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title}</title>
+  <title>{html.escape(title)}</title>
   <style>
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -347,6 +368,26 @@ def convert_md_to_html(md_text: str, title: str) -> str:
     th, td {{ border: 1px solid #e5e7eb; padding: 8px; text-align: left; }}
     th {{ background: #f9fafb; }}
     hr {{ border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }}
+
+    @media (prefers-color-scheme: dark) {{
+      body {{
+        background: #0f172a;
+        color: #e2e8f0;
+      }}
+      h1, h2, h3 {{ color: #f1f5f9; }}
+      a {{ color: #60a5fa; }}
+      code {{ background-color: #1e293b; color: #e2e8f0; }}
+      pre {{
+        border: 1px solid #334155;
+      }}
+      blockquote {{
+        border-left-color: #334155;
+        color: #94a3b8;
+      }}
+      th, td {{ border-color: #334155; }}
+      th {{ background: #1e293b; }}
+      hr {{ border-top-color: #334155; }}
+    }}
   </style>
 </head>
 <body>
@@ -471,14 +512,21 @@ def update_index_page(meta: CurriculumMeta) -> None:
             if current_week_label is not None:
                 lessons_html += "</div>"
             current_week_label = week_label
+            # week_label is safe as it's "Week " + int
             lessons_html += f"<h2 class='week-title'>{week_label}</h2><div class='week-container'>"
+
+        # Escape metadata before inserting into HTML
+        safe_date = html.escape(str(lesson["day_str"]))
+        safe_lesson_num = html.escape(str(lesson["lesson_num"]))
+        safe_name = html.escape(lesson["name"])
+        safe_path = html.escape(lesson["html_path"])
 
         lessons_html += f"""
         <div class="lesson-card">
-            <div class="lesson-date">{lesson["day_str"]} · Lesson {lesson["lesson_num"]}</div>
-            <div class="lesson-name">{lesson["name"]}</div>
+            <div class="lesson-date">{safe_date} · Lesson {safe_lesson_num}</div>
+            <div class="lesson-name">{safe_name}</div>
             <div class="lesson-links">
-                <a href="{lesson["html_path"]}" class="btn btn-primary">View Lesson (HTML)</a>
+                <a href="{safe_path}" class="btn btn-primary">View Lesson (HTML)</a>
             </div>
         </div>
         """
@@ -486,12 +534,15 @@ def update_index_page(meta: CurriculumMeta) -> None:
     if current_week_label is not None:
         lessons_html += "</div>"
 
+    safe_subject = html.escape(meta.subject)
+    safe_subtitle = html.escape(meta.subtitle)
+
     index_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{meta.subject} Learning Hub</title>
+  <title>{safe_subject} Learning Hub</title>
   <style>
     :root {{
       --primary: #2563eb;
@@ -556,14 +607,34 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .btn-primary {{ background: var(--primary); color: white; }}
     .btn-primary:hover {{ background: var(--primary-hover); }}
+
+    @media (prefers-color-scheme: dark) {{
+      :root {{
+        --primary: #60a5fa;
+        --primary-hover: #93c5fd;
+        --bg: #0f172a;
+        --text: #e2e8f0;
+        --secondary: #94a3b8;
+      }}
+      .lesson-card {{
+        background: #1e293b;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }}
+      h1, .week-title, .lesson-name {{
+        color: #f1f5f9;
+      }}
+      .week-title {{
+        border-bottom-color: #334155;
+      }}
+    }}
   </style>
 </head>
 <body>
   <div class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
     <header>
-      <h1>{meta.subject} Learning Hub</h1>
-      <p class="subtitle">{meta.subtitle}</p>
+      <h1>{safe_subject} Learning Hub</h1>
+      <p class="subtitle">{safe_subtitle}</p>
     </header>
 
     {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
