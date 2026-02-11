@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to Stochastic Programming (Why uncertainty changes optimization)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-introduction-to-stochastic-programming-why-uncertainty-changes-optimization">Topic: Introduction to Stochastic Programming (Why uncertainty changes optimization)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Stochastic Programming (SP) is a framework for modeling optimization problems that involve uncertainty. Unlike deterministic optimization, where all parameters are known with certainty, SP explicitly incorporates random variables representing uncertain parameters. This is crucial when decisions must be made before the actual values of these parameters are revealed.</p>
+<p><strong>What is it?</strong></p>
+<p>Formally, an SP problem can be represented as follows:</p>
+<p><code>min f(x, ξ)</code>
+subject to
+<code>g(x, ξ) ≤ 0</code>
+<code>x ∈ X</code></p>
+<p>where:</p>
+<ul>
+<li><code>x</code> is the vector of decision variables (the variables we can control).</li>
+<li><code>ξ</code> is a random vector (representing uncertain parameters) with a known probability distribution. This distribution can be discrete (e.g., a set of scenarios with associated probabilities) or continuous.</li>
+<li><code>f(x, ξ)</code> is the objective function, which depends on both the decision variables and the random parameters.</li>
+<li><code>g(x, ξ) ≤ 0</code> represents the constraints, which may also depend on both the decision variables and the random parameters.</li>
+<li><code>X</code> is the feasible region for the decision variables.</li>
+</ul>
+<p>The key difference from deterministic optimization lies in the presence of <code>ξ</code>.  Because <code>ξ</code> is uncertain, we can't directly minimize <code>f(x, ξ)</code> or ensure <code>g(x, ξ) ≤ 0</code> for all possible values of <code>ξ</code>. Instead, we optimize with respect to the <em>expected</em> value or some other measure of the objective function and ensure constraints are satisfied in a probabilistic sense.</p>
+<p>Common approaches within Stochastic Programming include:</p>
+<ul>
+<li><strong>Two-Stage Stochastic Programming:</strong> Decisions are made in two stages. In the first stage, <em>here-and-now</em> decisions <code>x</code> are made before the realization of the uncertainty <code>ξ</code>. In the second stage, after <code>ξ</code> is observed, <em>recourse</em> actions <code>y(x, ξ)</code> are taken to mitigate the impact of the uncertainty.  The goal is to minimize the expected cost over all possible realizations of <code>ξ</code>, considering both the first-stage cost and the expected second-stage (recourse) cost.</li>
+<li><strong>Chance-Constrained Programming:</strong> Some constraints must hold only with a specified probability (e.g., <code>P(g(x, ξ) ≤ 0) ≥ α</code>, where α is a probability level, such as 0.95). This is useful when strict constraint satisfaction is not always necessary or feasible.</li>
+<li><strong>Multi-Stage Stochastic Programming:</strong> Decisions are made sequentially over multiple time periods, with uncertainty revealed at each stage. This leads to a more complex, dynamic decision-making process.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>SP is used to make robust decisions in the face of uncertainty. It helps to:</p>
+<ul>
+<li>Quantify the impact of uncertainty on the optimal solution.</li>
+<li>Find solutions that are less sensitive to variations in uncertain parameters.</li>
+<li>Balance the trade-off between expected performance and risk.</li>
+<li>Make decisions that are feasible under a range of possible scenarios.</li>
+<li>Find optimal recourse actions to react to realized uncertainty.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Example: Supply Chain Optimization with Uncertain Demand</strong></p>
+<p>A company needs to determine the optimal inventory levels for its products. The demand for these products is uncertain and can vary significantly depending on market conditions.</p>
+<p><strong>Deterministic Approach:</strong> The company might use historical data to estimate the average demand and then use this average value in a deterministic optimization model to determine the optimal inventory levels. However, this approach ignores the variability in demand.  If the actual demand is much higher than the average, the company will experience stockouts and lost sales. If the actual demand is much lower, the company will incur excessive inventory holding costs.</p>
+<p><strong>Stochastic Programming Approach:</strong></p>
+<p>The company can use stochastic programming to explicitly model the uncertainty in demand. Let:</p>
+<ul>
+<li><code>x</code> be the vector of inventory levels for each product (decision variables).</li>
+<li><code>ξ</code> be a random vector representing the demand for each product.  We might represent <code>ξ</code> as a set of scenarios, each with a different demand level and an associated probability. For example:<ul>
+<li>Scenario 1: Demand is high (probability 0.3)</li>
+<li>Scenario 2: Demand is medium (probability 0.5)</li>
+<li>Scenario 3: Demand is low (probability 0.2)</li>
+</ul>
+</li>
+<li><code>f(x, ξ)</code> be the cost function, including inventory holding costs, shortage costs, and ordering costs.</li>
+<li><code>g(x, ξ)</code> be constraints, such as warehouse capacity constraints or minimum service level constraints.</li>
+</ul>
+<p>The stochastic programming problem could be formulated as a two-stage problem. The first stage decision <code>x</code> determines the inventory levels <em>before</em> knowing the actual demand <code>ξ</code>. The second stage recourse decision involves ordering additional units or offering discounts to clear excess inventory <em>after</em> the demand <code>ξ</code> is realized. The objective is to minimize the expected total cost (first-stage inventory cost plus expected second-stage recourse cost).</p>
+<p>By solving this stochastic programming problem, the company can find inventory levels that are robust to the uncertainty in demand and that minimize the expected total cost, balancing the risks of stockouts and excessive inventory.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a complete implementation of a stochastic program depends on the problem structure and the chosen solver, we can illustrate a simple two-stage stochastic program using the <code>pyomo</code> library.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+# Define the model
+model = ConcreteModel()
+
+# Define scenarios (for simplicity, just 2 scenarios)
+scenarios = ['high', 'low']
+probabilities = {'high': 0.6, 'low': 0.4}
+
+# First-stage decision variable (e.g., quantity to order)
+model.x = Var(domain=NonNegativeReals, name=&quot;OrderQuantity&quot;)
+
+# Second-stage decision variables (recourse actions)
+model.y_high = Var(domain=NonNegativeReals, name=&quot;SalesHigh&quot;) # Sales in high demand scenario
+model.y_low = Var(domain=NonNegativeReals, name=&quot;SalesLow&quot;) # Sales in low demand scenario
+model.z_high = Var(domain=NonNegativeReals, name=&quot;ShortageHigh&quot;) # Shortage in high demand scenario
+model.z_low = Var(domain=NonNegativeReals, name=&quot;ShortageLow&quot;) # Shortage in low demand scenario
+
+# Scenario-dependent parameters (demands)
+demand = {'high': 100, 'low': 50}
+
+# Objective function (minimize cost)
+ordering_cost = 1.0  # Cost per unit ordered
+shortage_cost = 5.0 # Cost per unit short
+excess_cost = 0.5   # Cost per excess unit
+
+def objective_rule(model):
+    first_stage_cost = ordering_cost * model.x
+    expected_second_stage_cost = (
+        probabilities['high'] * (shortage_cost * model.z_high + excess_cost * (model.x - model.y_high)) +
+        probabilities['low'] * (shortage_cost * model.z_low + excess_cost * (model.x - model.y_low))
+    )
+    return first_stage_cost + expected_second_stage_cost
+
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+# Constraints for high demand scenario
+def sales_high_constraint_rule(model):
+    return model.y_high + model.z_high == demand['high']
+model.sales_high_constraint = Constraint(rule=sales_high_constraint_rule)
+
+def sales_high_limit_rule(model):
+    return model.y_high &lt;= model.x
+model.sales_high_limit = Constraint(rule=sales_high_limit_rule)
+
+# Constraints for low demand scenario
+def sales_low_constraint_rule(model):
+    return model.y_low + model.z_low == demand['low']
+model.sales_low_constraint = Constraint(rule=sales_low_constraint_rule)
+
+def sales_low_limit_rule(model):
+    return model.y_low &lt;= model.x
+model.sales_low_limit = Constraint(rule=sales_low_limit_rule)
+
+
+# Solve the model
+solver = SolverFactory('glpk')  # Or another solver like 'ipopt'
+solver.solve(model)
+
+# Print the results
+print(&quot;Optimal Order Quantity:&quot;, value(model.x))
+print(&quot;Expected Cost:&quot;, value(model.objective))
+print(&quot;High Demand Sales:&quot;, value(model.y_high))
+print(&quot;Low Demand Sales:&quot;, value(model.y_low))
+print(&quot;High Demand Shortage:&quot;, value(model.z_high))
+print(&quot;Low Demand Shortage:&quot;, value(model.z_low))
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>We define a simple two-stage problem with two scenarios ("high" and "low" demand).</li>
+<li><code>model.x</code> is the first-stage decision variable (the quantity to order before observing the demand).</li>
+<li><code>model.y_high</code>, <code>model.y_low</code>, <code>model.z_high</code>, <code>model.z_low</code> are second-stage variables.  <code>y</code> represents the number of sales and <code>z</code> represents the number of shortages.</li>
+<li>The objective function minimizes the expected cost, including ordering cost, shortage cost, and excess inventory cost, weighted by the scenario probabilities.</li>
+<li>The constraints ensure that the total demand is met (sales + shortage = demand) and that sales do not exceed the ordered quantity.</li>
+<li>The code then solves the model using a solver (<code>glpk</code> is a simple open-source solver), and prints the optimal solution.</li>
+</ul>
+<p>This is a simplified example; real-world stochastic programs often involve many more scenarios, variables, and constraints. Libraries like <code>pyomo</code> and <code>gurobipy</code> (for Gurobi users) provide powerful tools for modeling and solving these complex problems.  The <em>scenariogen</em> extension for pyomo is also useful for generating scenarios.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do the computational complexity and scalability challenges of stochastic programming affect the choice of solution methods and approximation techniques, especially when dealing with a large number of scenarios or continuous random variables?  Specifically, what are some commonly used decomposition or sampling techniques for solving large-scale stochastic programs?</p>
+</body>
+</html>
