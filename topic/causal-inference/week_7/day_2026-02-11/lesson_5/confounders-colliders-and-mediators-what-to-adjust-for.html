@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confounders, Colliders, and Mediators (What to Adjust For?)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-confounders-colliders-and-mediators-what-to-adjust-for">Topic: Confounders, Colliders, and Mediators (What to Adjust For?)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In causal inference, understanding the roles of confounders, colliders, and mediators is crucial for accurate causal effect estimation. Identifying and appropriately handling these variables can significantly affect the validity of your conclusions.</p>
+<ul>
+<li>
+<p><strong>Confounder:</strong> A confounder is a variable that is associated with <em>both</em> the treatment (or exposure) and the outcome. It distorts the apparent relationship between the treatment and the outcome by creating a spurious association.</p>
+<ul>
+<li>Formally, <code>Z</code> is a confounder if:<ul>
+<li><code>Z -&gt; X</code> (Z causes X, where X is the treatment)</li>
+<li><code>Z -&gt; Y</code> (Z causes Y, where Y is the outcome)</li>
+</ul>
+</li>
+<li><em>How to use it:</em> To obtain an unbiased estimate of the causal effect of X on Y, you need to <em>adjust for</em> or <em>control for</em> confounders. This can be done using techniques like regression, matching, stratification, or inverse probability weighting.  Adjusting for a confounder breaks the backdoor path, allowing you to isolate the causal effect of X on Y. Failing to adjust for confounders leads to <em>confounding bias</em>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Collider:</strong> A collider is a variable that is caused by <em>both</em> the treatment and the outcome. Conditioning on (i.e., adjusting for) a collider can create a spurious association between the treatment and the outcome, even if no real association exists. This is known as <em>collider bias</em> or <em>Berkson's paradox</em>.</p>
+<ul>
+<li>Formally, <code>Z</code> is a collider if:<ul>
+<li><code>X -&gt; Z</code> (X causes Z)</li>
+<li><code>Y -&gt; Z</code> (Y causes Y)</li>
+</ul>
+</li>
+<li><em>How to use it:</em>  You should <em>avoid</em> adjusting for colliders. Conditioning on a collider opens a non-causal path between the treatment and the outcome, distorting the true causal effect.</li>
+</ul>
+</li>
+<li>
+<p><strong>Mediator:</strong> A mediator is a variable that lies on the causal pathway between the treatment and the outcome. The treatment affects the mediator, which in turn affects the outcome.</p>
+<ul>
+<li>Formally, <code>Z</code> is a mediator if:<ul>
+<li><code>X -&gt; Z</code> (X causes Z)</li>
+<li><code>Z -&gt; Y</code> (Z causes Y)</li>
+</ul>
+</li>
+<li><em>How to use it:</em> Whether to adjust for a mediator depends on the specific causal question you are trying to answer.<ul>
+<li>If you want to estimate the <em>total effect</em> of the treatment on the outcome, you should <em>not</em> adjust for the mediator.  The total effect includes the effect mediated through Z.</li>
+<li>If you want to estimate the <em>direct effect</em> of the treatment on the outcome (i.e., the effect of the treatment on the outcome <em>not</em> through the mediator), you should adjust for the mediator. This isolates the effect of X on Y that is independent of Z. Mediation analysis can be used to quantify both the direct and indirect effects.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>In summary:</p>
+<ul>
+<li>Adjust for <strong>confounders</strong>.</li>
+<li>Don't adjust for <strong>colliders</strong>.</li>
+<li>Adjust for <strong>mediators</strong> only if you are interested in the direct effect, not the total effect.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine studying the effect of a new drug (X) on recovery time (Y) from an illness.</p>
+<ul>
+<li>
+<p><strong>Confounder:</strong>  A patient's overall health (Z) before taking the drug might be a confounder.  Healthier patients are more likely to be prescribed the drug <em>and</em> more likely to recover faster regardless of the drug.  Failing to account for pre-existing health would lead to a biased estimate of the drug's effectiveness.  We would need to adjust for pre-existing health.</p>
+</li>
+<li>
+<p><strong>Collider:</strong> Suppose both the drug (X) and the severity of the illness (Y, measured inversely as recovery time) independently influence whether a patient participates in a follow-up study (Z). Participating in the study is then a collider. Adjusting for study participation would create a spurious association between the drug and recovery time.  For example, it might appear that the drug is more effective than it actually is because patients who both took the drug <em>and</em> recovered quickly are more likely to participate. Conversely, patients who did not take the drug <em>and</em> had a slow recovery might also be selected for the follow up study due to specific case investigations.</p>
+</li>
+<li>
+<p><strong>Mediator:</strong>  The drug (X) might lower inflammation (Z), which then leads to faster recovery (Y).  Inflammation is a mediator. If we want to know the total effect of the drug on recovery, we shouldn't adjust for inflammation. If we want to know the direct effect of the drug on recovery (i.e., the effect <em>not</em> mediated through reduced inflammation), we <em>should</em> adjust for inflammation.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>causalml</code> library can be used for mediation analysis and causal effect estimation.  This example focuses on simulating data and using <code>causalml</code> to analyze the effects, but emphasizes the roles of confounders, colliders and mediators.</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+from causalml.mediation import MediationAnalysis
+from sklearn.linear_model import LinearRegression
+
+# Simulate data
+np.random.seed(42)
+n = 1000
+
+# Confounder
+confounder = np.random.normal(0, 1, n)
+
+# Treatment
+treatment = 0.5 * confounder + np.random.normal(0, 1, n)
+
+# Mediator
+mediator = 0.7 * treatment + 0.3 * confounder + np.random.normal(0, 1, n)
+
+# Outcome
+outcome = 0.4 * treatment + 0.6 * mediator + 0.2 * confounder + np.random.normal(0, 1, n)
+
+# Collider
+collider = 0.6 * treatment + 0.4 * outcome + np.random.normal(0, 1, n)
+
+df = pd.DataFrame({'treatment': treatment,
+                   'outcome': outcome,
+                   'confounder': confounder,
+                   'mediator': mediator,
+                   'collider': collider})
+
+# Perform mediation analysis using causalml
+
+# Instantiate mediation analysis object
+med = MediationAnalysis(
+    outcome_model=LinearRegression(),
+    treatment_model=LinearRegression(),
+    mediator_model=LinearRegression()
+)
+
+# Fit the model
+med.fit(
+    X=df[['treatment']],  # treatment
+    M=df[['mediator']],  # mediator
+    Y=df['outcome'],      # outcome
+    C=df[['confounder']] # confounder
+)
+
+
+# Get results
+summary = med.summary()
+print(summary)
+
+
+# Example of using regression to adjust for a confounder
+from statsmodels.formula.api import ols
+# Adjusting for the confounder
+model_adjusted = ols(&quot;outcome ~ treatment + confounder&quot;, data=df).fit()
+print(model_adjusted.summary())
+
+#  Regression without adjusting for confounder (biased result)
+model_unadjusted = ols(&quot;outcome ~ treatment&quot;, data=df).fit()
+print(model_unadjusted.summary())
+</code></pre>
+
+<p>This code simulates a scenario with a treatment, outcome, confounder, mediator, and collider. It then performs mediation analysis using <code>causalml</code> to estimate direct and indirect effects. Additionally, it shows how adjusting for the confounder in a regression model yields different results than without adjustment. The results highlight the importance of correctly identifying and addressing these variables.  The direct effect will differ depending on whether you include the mediator and confounder in your model.</p>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Simulation:</strong>  We create synthetic data representing the relationships between the variables as described in the application scenario.  Note the relationships specified in the variable definitions.</li>
+<li><strong>Mediation Analysis with <code>causalml</code>:</strong> <code>causalml</code> estimates the Average Causal Mediation Effect (ACME), Average Direct Effect (ADE), and Total Effect. The code specifies the models for each part of the causal chain (treatment, mediator, outcome) and includes the confounder as a control variable (<code>C</code>).  The <code>summary()</code> method provides insights into these effects.</li>
+<li><strong>Regression for Confounder Adjustment:</strong> The <code>statsmodels</code> library is used to demonstrate how adjusting for a confounder can change the estimated effect of the treatment. The <code>ols</code> function fits an ordinary least squares regression model. Comparing the coefficients for "treatment" in the adjusted and unadjusted models demonstrates the impact of confounding.  The model without adjustment will be biased.</li>
+<li><strong>Collider demonstration.</strong> If you include the collider in your model, the impact of the treatment on the outcome may diminish because some of the apparent correlation between treatment and outcome may be due to the collider.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can I determine the correct causal relationships between variables in a real-world dataset to accurately identify confounders, colliders, and mediators, especially when I lack extensive domain knowledge?  What tools or methods exist to help visualize and infer these causal structures?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
