@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        curriculum: ${{ fromJson(needs:list-curricula.outputs.matrix) }}
+        curriculum: ${{ fromJson(needs.list-curricula.outputs.matrix) }}
       fail-fast: false
 
     steps:
