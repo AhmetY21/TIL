@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Causal Estimands: ATE, ATT, ATC, CATE</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-causal-estimands-ate-att-atc-cate">Topic: Causal Estimands: ATE, ATT, ATC, CATE</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>These estimands are different ways of quantifying the causal effect of a treatment on an outcome. The core idea revolves around comparing potential outcomes – what would have happened if an individual <em>had</em> received the treatment versus what would have happened if they <em>had not</em> received the treatment. We observe only one of these potential outcomes for each individual in the real world (fundamental problem of causal inference). Estimands are the population-level quantities we aim to estimate from observed data.</p>
+<ul>
+<li>
+<p><strong>ATE (Average Treatment Effect):</strong> The average difference in the outcome if everyone in the population received the treatment versus if no one received the treatment. Mathematically:  <code>ATE = E[Y(1) - Y(0)]</code>, where Y(1) is the potential outcome under treatment and Y(0) is the potential outcome under no treatment, and E[] denotes the expected value.  It tells us the overall effect of the treatment on the entire population.</p>
+</li>
+<li>
+<p><strong>ATT (Average Treatment Effect on the Treated):</strong> The average difference in the outcome for <em>those who actually received the treatment</em>, comparing their outcome to what would have happened had they not received the treatment. Mathematically: <code>ATT = E[Y(1) - Y(0) | T=1]</code>, where T=1 indicates that the individual received treatment. It's useful when you want to know the effect of the treatment <em>specifically</em> on the group that received it.</p>
+</li>
+<li>
+<p><strong>ATC (Average Treatment Effect on the Control/Untreated):</strong> The average difference in the outcome for <em>those who did not receive the treatment</em>, comparing what would have happened had they received the treatment to their actual outcome. Mathematically: <code>ATC = E[Y(1) - Y(0) | T=0]</code>, where T=0 indicates that the individual did not receive treatment.  It's useful when you want to know what would have happened if the control group <em>had</em> received the treatment.</p>
+</li>
+<li>
+<p><strong>CATE (Conditional Average Treatment Effect):</strong> The average treatment effect conditional on a specific set of covariates (features). Mathematically: <code>CATE(x) = E[Y(1) - Y(0) | X=x]</code>, where X=x represents a specific set of covariate values.  CATE helps identify heterogeneous treatment effects - who benefits the <em>most</em> (or the <em>least</em>) from the treatment based on their characteristics.  It is not a single value but a function of the covariates.</p>
+</li>
+</ul>
+<p>These estimands are essential for:</p>
+<ul>
+<li><strong>Decision-making:</strong>  Informing policies and interventions based on their expected impact.</li>
+<li><strong>Understanding causal mechanisms:</strong>  Identifying which subgroups benefit most from a treatment.</li>
+<li><strong>Evaluating the effectiveness of interventions:</strong> Determining if a treatment is having the desired effect.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<ul>
+<li>
+<p><strong>ATE:</strong> A public health organization wants to evaluate the impact of a new vaccination campaign on the overall rate of infection in a population. The ATE will tell them the average reduction in infection rate across the <em>entire</em> population, regardless of whether individuals actually received the vaccine or not.</p>
+</li>
+<li>
+<p><strong>ATT:</strong> A company implements a new training program for its employees. The ATT will tell them how much the training program improved the performance <em>specifically</em> of the employees who participated in the training, compared to what their performance would have been had they not participated.</p>
+</li>
+<li>
+<p><strong>ATC:</strong>  An online retailer experiments with a new personalized recommendation algorithm.  The ATC tells the retailer what would have happened if the users who <em>didn't</em> receive the personalized recommendations <em>had</em> received them.  This helps understand the missed opportunity on the control group.</p>
+</li>
+<li>
+<p><strong>CATE:</strong> A marketing team wants to understand how a new advertising campaign affects different customer segments based on their demographics (age, income, location). The CATE will tell them the treatment effect (increase in sales) for each segment of customers, allowing them to target the campaign more effectively.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While directly calculating potential outcomes is impossible (due to the fundamental problem of causal inference), various methods in Python libraries help <em>estimate</em> these estimands, often relying on assumptions like ignorability (no unobserved confounders). Some examples include propensity score matching/weighting, inverse probability of treatment weighting (IPTW), and causal forests.</p>
+<p>Here's an example using the <code>causalml</code> library to estimate CATE using a causal forest:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from causalml.inference.tree import UpliftTreeClassifier, UpliftRandomForestClassifier
+from causalml.evaluation import plot_gain
+
+# Generate synthetic data (replace with your actual data)
+np.random.seed(42)
+n_samples = 1000
+X = np.random.rand(n_samples, 5)  # 5 features
+T = np.random.randint(0, 2, n_samples)  # Treatment (0 or 1)
+Y = 2 * X[:, 0] + T + np.random.randn(n_samples) * 0.5  # Outcome
+
+df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(X.shape[1])])
+df['treatment'] = T
+df['outcome'] = Y
+
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test, treat_train, treat_test = train_test_split(
+    df.drop(columns=['outcome', 'treatment']),
+    df['outcome'],
+    df['treatment'],
+    test_size=0.2,
+    random_state=42
+)
+
+# Train a UpliftRandomForestClassifier to estimate CATE
+uplift_model = UpliftRandomForestClassifier(n_estimators=100, min_samples_leaf=10, random_state=42)
+uplift_model.fit(X_train.values, y_train.values, treat_train.values)
+
+# Predict the CATE on the test set (this gives you the individual treatment effects)
+cate_predictions = uplift_model.predict(X_test.values)
+
+# Evaluate the model
+plot_gain(y_test, treat_test, cate_predictions)
+
+
+# Calculate the ATE, ATT, and ATC using the predictions (APPROXIMATIONS!)
+treated_indices = treat_test == 1
+untreated_indices = treat_test == 0
+
+ate_estimate = np.mean(cate_predictions)
+att_estimate = np.mean(cate_predictions[treated_indices])
+atc_estimate = np.mean(cate_predictions[untreated_indices])
+
+
+print(f&quot;Estimated ATE: {ate_estimate}&quot;)
+print(f&quot;Estimated ATT: {att_estimate}&quot;)
+print(f&quot;Estimated ATC: {atc_estimate}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Synthetic Data:</strong>  We create synthetic data with features (X), treatment (T), and outcome (Y).  The outcome is designed to have a causal relationship with the treatment and feature 0.</li>
+<li><strong>Data Splitting:</strong>  Split the data into training and test sets to evaluate the model's performance on unseen data.</li>
+<li><strong><code>UpliftRandomForestClassifier</code>:</strong> This is a causal forest implementation from the <code>causalml</code> library designed to estimate CATE.</li>
+<li><strong><code>fit</code>:</strong> The model is trained on the training data (features, outcome, and treatment).</li>
+<li><strong><code>predict</code>:</strong> The trained model predicts the CATE for each individual in the test set. This <code>cate_predictions</code> array contains an <em>estimate</em> of <code>E[Y(1) - Y(0) | X=x]</code> for each individual in the test set.</li>
+<li><strong>Evaluation:</strong>  The <code>plot_gain</code> function provides a visualization of the model's performance in terms of uplift.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li>The ATE, ATT, and ATC calculations in the example are <em>approximations</em> based on the CATE predictions.  They're not the same as estimating these quantities directly using methods like propensity score weighting.</li>
+<li><strong>Assumptions are crucial!</strong> The validity of these estimates relies heavily on the assumptions made by the chosen causal inference method (e.g., ignorability, positivity/overlap).</li>
+<li>This example uses a causal forest, but other methods (e.g., propensity score matching) can be used depending on the context and assumptions you're willing to make.</li>
+<li>The <code>causalml</code> library has other functionalities to help estimate ATE, ATT and ATC through different methods as well.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do the assumptions required for valid estimation of each of these estimands (ATE, ATT, ATC, and CATE) differ, and how do these differences influence the choice of estimation method in practice?</p>
+</body>
+</html>
