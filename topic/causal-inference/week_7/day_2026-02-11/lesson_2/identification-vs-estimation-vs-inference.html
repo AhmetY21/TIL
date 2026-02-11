@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Identification vs Estimation vs Inference</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-identification-vs-estimation-vs-inference">Topic: Identification vs Estimation vs Inference</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In causal inference, identification, estimation, and inference are distinct but related stages in determining a causal effect. They can be thought of as answering the following questions, in order:</p>
+<ul>
+<li>
+<p><strong>Identification:</strong> <em>Can</em> we even <em>theoretically</em> learn the causal effect from the available data, even with infinite data? This stage focuses on establishing a causal estimand – a mathematical expression representing the causal effect of interest – that can be expressed in terms of the observed data distribution. This often involves making assumptions about the causal structure, such as no unobserved confounders, which are encoded in causal diagrams (DAGs). Without identification, no amount of data or sophisticated estimation techniques can recover the true causal effect. We use causal diagrams and causal calculus (do-calculus) to determine identifiability. A causal effect is <em>identified</em> if it can be written as a functional of the observed data distribution.</p>
+</li>
+<li>
+<p><strong>Estimation:</strong> <em>How</em> do we <em>estimate</em> the identified causal estimand from a <em>finite</em> sample of data? This stage deals with selecting an appropriate statistical estimator and applying it to the data to obtain an estimate of the causal effect. There are many possible estimators, such as regression adjustment, propensity score matching, inverse probability weighting (IPW), and targeted maximum likelihood estimation (TMLE). The choice of estimator depends on factors such as the size and distribution of the data, the complexity of the causal model, and computational constraints.</p>
+</li>
+<li>
+<p><strong>Inference:</strong> <em>How confident</em> are we in our <em>estimated</em> causal effect? This stage focuses on quantifying the uncertainty associated with the causal effect estimate. We use statistical techniques, such as calculating standard errors, confidence intervals, and p-values, to assess the precision and reliability of the estimate. Inference helps us determine whether the observed effect is statistically significant and how likely it is to generalize to other populations or settings.  Essentially, we are performing hypothesis testing concerning our estimate.</p>
+</li>
+</ul>
+<p>In summary:</p>
+<ul>
+<li><strong>Identification:</strong> Establishes the <em>theoretical possibility</em> of learning the causal effect.</li>
+<li><strong>Estimation:</strong> Provides a <em>numerical estimate</em> of the causal effect from the data.</li>
+<li><strong>Inference:</strong> Quantifies the <em>uncertainty</em> surrounding the estimated causal effect.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine we want to understand the causal effect of a new drug (treatment <em>T</em>) on patient recovery (<em>Y</em>). However, patients who are sicker might be more likely to receive the drug, and their underlying health condition (<em>X</em>) also affects their recovery. This is a confounding scenario.</p>
+<ol>
+<li>
+<p><strong>Identification:</strong> We draw a causal diagram showing that <em>X</em> influences both <em>T</em> and <em>Y</em>. This represents confounding. To identify the causal effect of <em>T</em> on <em>Y</em>, we might assume that <em>X</em> is the only confounder (no unobserved confounding). Then, using do-calculus or other identification techniques, we can express the causal effect as P(Y | do(T)) =  ∑ₓ P(Y | T, X)P(X). This indicates that we can adjust for <em>X</em> to remove the confounding bias.</p>
+</li>
+<li>
+<p><strong>Estimation:</strong> We have patient data with information on <em>T</em>, <em>Y</em>, and <em>X</em>. We choose an estimator to estimate ∑ₓ P(Y | T, X)P(X). One option is regression adjustment. We build a regression model that predicts <em>Y</em> from <em>T</em> and <em>X</em>. Then, we use this model to predict <em>Y</em> for different values of <em>T</em> while holding <em>X</em> at its observed distribution to implement the formula. We then average the predicted values of Y given each possible intervention on T. Another option is inverse probability of treatment weighting (IPTW) and fit a model P(T|X) and then weight each observation by 1/P(T|X).</p>
+</li>
+<li>
+<p><strong>Inference:</strong> After obtaining the estimated causal effect from the chosen estimator (e.g., regression adjustment), we want to understand how reliable it is. We calculate the standard error of the estimate. If the confidence interval is small and does not include zero, we have evidence that the drug has a statistically significant causal effect on recovery.</p>
+</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>dowhy</code> library provides tools for causal inference, enabling identification, estimation, and inference.</p>
+<pre class="codehilite"><code class="language-python">import dowhy
+from dowhy import CausalModel
+import pandas as pd
+import numpy as np
+
+# Generate synthetic data
+np.random.seed(42)
+n_samples = 1000
+X = np.random.normal(size=n_samples)
+T = np.random.binomial(1, 0.5 + 0.2 * X)  # T is affected by X
+Y = 2*T + X + np.random.normal(size=n_samples) # Y is affected by T and X
+data = pd.DataFrame({'X': X, 'T': T, 'Y': Y})
+
+# 1. Create a causal model
+model = CausalModel(
+    data=data,
+    treatment='T',
+    outcome='Y',
+    common_causes=['X'] # X is the observed confounder
+)
+
+# 2. Identify the causal effect
+identified_estimand = model.identify_effect(proceed_when_unidentifiable=True) #proceed_when_unidentifiable is useful when demonstrating identification without requiring perfect conditions in this example
+
+print(identified_estimand)
+
+# 3. Estimate the causal effect
+estimate = model.estimate_effect(
+    identified_estimand,
+    method_name=&quot;backdoor.linear_regression&quot;, # Backdoor adjustment with linear regression
+)
+
+print(estimate)
+
+# 4. Perform inference
+refute_results = model.refute_estimate(estimate, method_name=&quot;random_common_cause&quot;) #Use common refutation methods like adding random common cause
+
+print(refute_results)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong>Causal Model:</strong> We define the causal model, specifying the treatment, outcome, and common causes (confounders).  The DAG structure is implicitly specified using common_causes, instrumental_variables, etc.</p>
+</li>
+<li>
+<p><strong>Identification:</strong> The <code>identify_effect()</code> function uses the causal graph and do-calculus (or other identification strategies) to determine a suitable causal estimand.  <code>proceed_when_unidentifiable</code> forces the library to proceed even if the causal effect can't be perfectly identified. In real applications, it's crucial to ensure identification is correct using background knowledge and causal diagrams.</p>
+</li>
+<li>
+<p><strong>Estimation:</strong> The <code>estimate_effect()</code> function estimates the causal effect using a specified method (e.g., backdoor adjustment with linear regression). <code>method_name</code> specifies the estimator.</p>
+</li>
+<li>
+<p><strong>Refutation/Inference:</strong> The <code>refute_estimate()</code> function provides sensitivity analysis to address unobserved confounding.</p>
+</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different causal identification assumptions impact the choice of estimation methods and the validity of causal inference? For example, how would using a different causal structure (e.g., including instrumental variables or mediators) change the estimation strategy?</p>
+</body>
+</html>
