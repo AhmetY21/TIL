@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ambiguity in Natural Language: Lexical, Syntactic, Semantic</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-ambiguity-in-natural-language-lexical-syntactic-semantic">Topic: Ambiguity in Natural Language: Lexical, Syntactic, Semantic</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Ambiguity in Natural Language Processing (NLP) refers to the uncertainty in the meaning of a linguistic unit (word, phrase, sentence, etc.). A single linguistic unit can have multiple interpretations, making it challenging for machines (and sometimes even humans!) to understand the intended meaning. Recognizing and resolving ambiguity is crucial for NLP tasks like machine translation, information retrieval, and text summarization.  We can use an understanding of ambiguity types to design algorithms that employ techniques such as context analysis, part-of-speech tagging, and semantic role labeling to disambiguate text. Specifically, let's define the three types:</p>
+<ul>
+<li>
+<p><strong>Lexical Ambiguity:</strong> A word has multiple meanings. This occurs when a single word form (spelling and pronunciation) represents different concepts or senses. For example, the word "bank" can refer to a financial institution or the edge of a river.</p>
+</li>
+<li>
+<p><strong>Syntactic Ambiguity:</strong> The structure of a sentence is ambiguous, leading to multiple possible interpretations. This occurs when a sentence can be parsed in different ways, each yielding a different meaning.  For example, "I saw the man on the hill with a telescope" could mean I used a telescope to see the man, or the man on the hill had a telescope.</p>
+</li>
+<li>
+<p><strong>Semantic Ambiguity:</strong> The meaning of the sentence as a whole is ambiguous even when the individual words and the grammatical structure are clear. This often arises from the interaction of words and their relationships. A common example includes quantifier scope ambiguities (e.g., "Every student read a book" – did each student read a potentially different book, or did they all read the same book?).</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a machine translation scenario. Suppose we want to translate the English sentence "I saw her duck" into French.</p>
+<ul>
+<li><strong>Lexical Ambiguity:</strong> The word "duck" can be a noun (the bird) or a verb (to lower the head or body quickly to avoid being hit).</li>
+<li><strong>Syntactic Ambiguity:</strong> "Her duck" could mean I saw her pet duck (noun phrase), or I saw her lower her head (verb phrase).</li>
+</ul>
+<p>If the machine translation system doesn't resolve these ambiguities, it might incorrectly translate "duck" as <em>canard</em> (the bird) when it should be translated as <em>se baisser</em> (to duck). The system needs to consider the context of the sentence to determine the correct meaning and produce an accurate translation. For example, if a previous sentence mentioned "the pond", it would be more likely that "duck" refers to the bird. If the previous sentence mentioned "a flying object", it would be more likely that "duck" means to lower the body. Therefore, a real world application might use surrounding sentences or paragraphs to provide the needed context and avoid incorrect interpretation of an ambiguous word or sentence.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While directly "solving" ambiguity in a single, simple Python function isn't possible (it usually requires comprehensive NLP pipelines), we can demonstrate how to identify potential lexical ambiguities using the WordNet lexical database through the <code>nltk</code> library. This shows one basic component used in resolving ambiguity.</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.corpus import wordnet
+
+try:
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    nltk.download('wordnet')
+
+
+def show_synsets(word):
+    &quot;&quot;&quot;
+    Demonstrates potential lexical ambiguity by showing the synsets (sets of synonyms)
+    associated with a word.
+    &quot;&quot;&quot;
+    synsets = wordnet.synsets(word)
+    if synsets:
+        print(f&quot;Synsets for '{word}':&quot;)
+        for synset in synsets:
+            print(f&quot;- {synset.name()}: {synset.definition()}&quot;)
+    else:
+        print(f&quot;No synsets found for '{word}'.&quot;)
+
+
+# Example usage
+show_synsets(&quot;bank&quot;)
+show_synsets(&quot;rock&quot;)
+</code></pre>
+
+<p>This code snippet downloads the WordNet database if you don't have it already, then defines a function <code>show_synsets</code> that takes a word as input and prints its synsets, along with their definitions, from WordNet. This illustrates the multiple meanings associated with potentially ambiguous words.</p>
+<p>Note: This is a simplified example. Actual ambiguity resolution requires more sophisticated techniques such as part-of-speech tagging, dependency parsing, and semantic analysis.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do more advanced techniques like transformer models (e.g., BERT, RoBERTa) handle ambiguity compared to traditional NLP methods (like the one shown in the Python example)? How can they be fine-tuned specifically to improve ambiguity resolution in a particular domain or application?</p>
+</body>
+</html>
