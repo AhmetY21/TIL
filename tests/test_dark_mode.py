@@ -24,10 +24,13 @@ from generate_lesson import convert_md_to_html, update_index_page, CurriculumMet
 class TestDarkMode(unittest.TestCase):
     def test_convert_md_to_html_has_dark_mode(self):
         html = convert_md_to_html("# Title", "Title")
-        # Check for media query start
-        self.assertIn("@media (prefers-color-scheme: dark)", html)
-        # Check for dark background color
+        # Check for dark mode class styles
+        self.assertIn(".dark body {", html)
         self.assertIn("#0f172a", html)
+        # Check for toggle button
+        self.assertIn('id="theme-toggle"', html)
+        # Check for init script
+        self.assertIn("localStorage.theme", html)
 
     @patch('generate_lesson.safe_write')
     @patch('glob.glob')
@@ -49,8 +52,10 @@ class TestDarkMode(unittest.TestCase):
         args, _ = mock_write.call_args
         content = args[1]
 
-        self.assertIn("@media (prefers-color-scheme: dark)", content)
+        self.assertIn(".dark {", content)
         self.assertIn("#0f172a", content)
+        self.assertIn('id="theme-toggle"', content)
+        self.assertIn("localStorage.theme", content)
 
 if __name__ == '__main__':
     unittest.main()
