@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estimating Effects by Covariate Adjustment (Regression as Adjustment)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-estimating-effects-by-covariate-adjustment-regression-as-adjustment">Topic: Estimating Effects by Covariate Adjustment (Regression as Adjustment)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Covariate adjustment, also known as regression as adjustment, is a method used in causal inference to estimate the causal effect of a treatment (or exposure) on an outcome while controlling for confounding variables (also called covariates or confounders).  The fundamental idea is to use regression analysis to statistically remove the association between the confounders and both the treatment and the outcome.  By adjusting for these confounders, we aim to isolate the true causal effect of the treatment.</p>
+<p>More formally, suppose we have a treatment variable <em>T</em>, an outcome variable <em>Y</em>, and a set of covariates <em>C</em>. The goal is to estimate the average treatment effect (ATE):</p>
+<p><em>ATE = E[Y(T=1) - Y(T=0)]</em></p>
+<p>where Y(T=1) and Y(T=0) represent the potential outcomes if everyone in the population received treatment (T=1) and if no one received treatment (T=0), respectively. We use potential outcomes to clearly define the average treatment effect and what we are aiming to estimate.</p>
+<p>Regression as adjustment proceeds by fitting a regression model of the form:</p>
+<p><em>E[Y | T, C] =  β<sub>0</sub> + β<sub>1</sub>T + β<sup>T</sup>C</em></p>
+<p>where:</p>
+<ul>
+<li><em>E[Y | T, C]</em> is the expected value of the outcome <em>Y</em> given the treatment <em>T</em> and covariates <em>C</em>.</li>
+<li><em>β<sub>0</sub></em> is the intercept.</li>
+<li><em>β<sub>1</sub></em> is the coefficient for the treatment <em>T</em>, representing the estimated average treatment effect <em>after</em> adjusting for the covariates <em>C</em>. This is the key quantity of interest.</li>
+<li><em>β</em> is a vector of coefficients for the covariates <em>C</em>.</li>
+<li><em>C</em> is a vector of observed confounders.</li>
+</ul>
+<p>The core assumption is that <em>C</em> blocks all backdoor paths between <em>T</em> and <em>Y</em> (i.e., satisfies the backdoor criterion).  This means that, conditional on <em>C</em>, the treatment <em>T</em> is independent of the potential outcomes <em>Y(T=1)</em> and <em>Y(T=0)</em>.  If this assumption holds, <em>β<sub>1</sub></em> provides an unbiased estimate of the ATE.</p>
+<p>We can use this method to estimate the causal effect of a variety of treatments on outcomes.  For instance, the effect of a new drug on patient recovery, the effect of a job training program on future income, or the effect of a new policy on air quality.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine we want to study the effect of a new online tutoring program (T) on student exam scores (Y). We observe that students who choose to enroll in the tutoring program tend to be higher-achieving students to begin with.  Therefore, simply comparing the exam scores of students who enrolled in the program versus those who didn't would be misleading due to <em>selection bias</em>.  Prior academic performance (C), measured by their GPA before enrolling in the program, is a confounding variable. Students with higher GPAs are more likely to enroll in the program and tend to score higher on exams regardless of the program's effectiveness.</p>
+<p>To address this confounding, we can use regression as adjustment.  We would fit a regression model with exam score (Y) as the dependent variable and the tutoring program (T) and GPA (C) as independent variables:</p>
+<p><em>E[Y | T, C] =  β<sub>0</sub> + β<sub>1</sub>T + β<sub>2</sub>C</em></p>
+<p>The coefficient <em>β<sub>1</sub></em> would then estimate the effect of the tutoring program on exam scores <em>after</em> adjusting for the student's prior GPA. If β<sub>1</sub> is positive and statistically significant, we can conclude that the tutoring program has a positive effect on exam scores, even after accounting for differences in pre-existing academic ability. This gives us a more accurate estimate of the program's causal impact.  We are essentially comparing students with similar GPAs, where one student is in the tutoring program and one is not.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import statsmodels.api as sm
+import pandas as pd
+
+# Simulate some data
+import numpy as np
+np.random.seed(42)  # for reproducibility
+
+n = 1000  # Number of observations
+gpa = np.random.normal(3.0, 0.5, n)  # GPA (confounder)
+treatment = np.random.binomial(1, (gpa - 2.0) / 3.0, n)  # Treatment assignment (influenced by GPA)
+outcome = 50 + 10 * treatment + 15 * gpa + np.random.normal(0, 10, n)  # Outcome (influenced by treatment and GPA)
+
+data = pd.DataFrame({'outcome': outcome, 'treatment': treatment, 'gpa': gpa})
+
+# Fit the regression model
+X = data[['treatment', 'gpa']]  # Independent variables (treatment and confounder)
+X = sm.add_constant(X)  # Add a constant (intercept)
+y = data['outcome']  # Dependent variable (exam score)
+
+model = sm.OLS(y, X)
+results = model.fit()
+
+# Print the results
+print(results.summary())
+
+# Extract the estimated treatment effect (coefficient of 'treatment')
+treatment_effect = results.params['treatment']
+print(f&quot;\nEstimated Treatment Effect: {treatment_effect:.2f}&quot;)
+</code></pre>
+
+<p>This Python code uses the <code>statsmodels</code> library to fit an ordinary least squares (OLS) regression model.  It simulates data reflecting the described scenario, creates a DataFrame, and then fits the model. The <code>results.summary()</code> output provides a detailed overview of the regression results, including the estimated coefficients, standard errors, p-values, and R-squared. The <code>treatment_effect</code> variable then extracts the crucial coefficient for the 'treatment' variable, representing the estimated causal effect of the online tutoring program on exam scores after adjusting for GPA.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some limitations of using regression as adjustment for causal inference, and what alternative methods might be more appropriate when those limitations are present?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
