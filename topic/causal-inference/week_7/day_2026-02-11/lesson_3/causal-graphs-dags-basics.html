@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Causal Graphs (DAGs) Basics</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-causal-graphs-dags-basics">Topic: Causal Graphs (DAGs) Basics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A <strong>Causal Graph</strong>, specifically a <strong>Directed Acyclic Graph (DAG)</strong>, is a visual representation of causal relationships between variables.</p>
+<ul>
+<li>
+<p><strong>Directed:</strong> The edges (arrows) between variables indicate the direction of the causal influence. An arrow from A to B (A → B) means that A <em>directly</em> causes B. A is often called the <em>parent</em> of B, and B is the <em>child</em> of A.</p>
+</li>
+<li>
+<p><strong>Acyclic:</strong> The graph contains no directed cycles. That is, you cannot start at a variable and follow the arrows to return to that same variable. This condition is crucial for representing causal relationships because cycles imply a variable causing itself, which is typically nonsensical in most real-world applications.</p>
+</li>
+<li>
+<p><strong>Nodes:</strong> The nodes in the graph represent variables. These variables can be observed or unobserved (latent).</p>
+</li>
+</ul>
+<p><strong>Uses:</strong></p>
+<ul>
+<li>
+<p><strong>Representing Causal Assumptions:</strong>  DAGs explicitly encode our beliefs about how variables influence each other.  These assumptions are crucial for causal inference.  Without these assumptions, we cannot draw any causal conclusions from observational data.</p>
+</li>
+<li>
+<p><strong>Identifying Causal Effects:</strong> DAGs, along with causal identification techniques like the backdoor criterion, allow us to determine if we can estimate the causal effect of one variable on another from observational data, and if so, which variables need to be controlled for (conditioned on).</p>
+</li>
+<li>
+<p><strong>Avoiding Collider Bias:</strong> DAGs help us identify collider variables. A collider is a variable that is causally influenced by two or more other variables. Conditioning on a collider can induce spurious correlations between its parents, creating bias in causal effect estimation.</p>
+</li>
+<li>
+<p><strong>Understanding Confounding:</strong> DAGs illustrate confounding bias by showing common causes of both the treatment and the outcome.</p>
+</li>
+</ul>
+<p>In short, DAGs are powerful tools for thinking about causality and planning appropriate statistical analyses to estimate causal effects. They are essential for translating domain knowledge into a formal framework for causal inference.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine we want to understand the effect of a new drug (D) on patient recovery (R).  We collect data on patients, including whether they received the drug (D), their age (A), and their overall health condition before treatment (H). We also observe their recovery status (R).</p>
+<p>We suspect the following causal relationships:</p>
+<ul>
+<li>Age (A) can influence both the likelihood of receiving the drug (D) and the recovery rate (R).</li>
+<li>Overall health condition (H) also influences both the likelihood of receiving the drug (D) and the recovery rate (R).</li>
+<li>The drug (D) directly affects recovery (R).</li>
+</ul>
+<p>A DAG representing these relationships would look like this:</p>
+<pre class="codehilite"><code>A --&gt; D --&gt; R
+|         ^
+v         |
+H --------
+</code></pre>
+
+<p>In this scenario, <code>A</code> and <code>H</code> are confounders because they are common causes of both the treatment (D) and the outcome (R).  If we simply compare the recovery rates of patients who received the drug to those who didn't, we might be misled by the fact that older, sicker patients are less likely to recover <em>regardless</em> of the drug. Using the DAG and the backdoor criterion (or other identification techniques), we know we need to control for <code>A</code> and <code>H</code> to estimate the <em>causal</em> effect of <code>D</code> on <code>R</code>.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While Python doesn't have a built-in library solely for creating and visualizing DAGs, several libraries are commonly used for this purpose in causal inference.  <code>networkx</code> is used to create the graph structure, and <code>matplotlib</code> or <code>graphviz</code> are used for visualization. <code>pgmpy</code> is a more specialized library providing functionality to handle probabilistic graphical models and DAGs, including causal inference methods.</p>
+<p>Here's an example using <code>networkx</code> and <code>matplotlib</code>:</p>
+<pre class="codehilite"><code class="language-python">import networkx as nx
+import matplotlib.pyplot as plt
+
+# Create a directed graph
+G = nx.DiGraph()
+
+# Add nodes (variables)
+G.add_nodes_from(['A', 'D', 'H', 'R'])
+
+# Add directed edges (causal relationships)
+G.add_edges_from([('A', 'D'), ('A', 'R'), ('H', 'D'), ('H', 'R'), ('D', 'R')])
+
+# Draw the graph
+pos = nx.spring_layout(G, seed=42)  # Position nodes for better visualization
+nx.draw(G, pos, with_labels=True, node_size=1500, node_color=&quot;skyblue&quot;, font_size=15, font_weight=&quot;bold&quot;, arrowsize=20)
+plt.title(&quot;Causal DAG&quot;)
+plt.show()
+
+
+# Example using pgmpy for a more direct DAG creation
+from pgmpy.models import BayesianNetwork
+
+# Define edges representing causal relationships
+edges = [('A', 'D'), ('A', 'R'), ('H', 'D'), ('H', 'R'), ('D', 'R')]
+
+# Create a BayesianNetwork (which is a type of DAG)
+model = BayesianNetwork(edges)
+
+# The networkx object is accessible via model.to_graph()
+# Visualizing with networkx:
+nx.draw(model.to_graph(), pos=nx.spring_layout(model.to_graph(), seed=42), with_labels=True, node_size=1500, node_color=&quot;lightgreen&quot;, font_size=15, font_weight=&quot;bold&quot;, arrowsize=20)
+plt.title(&quot;Causal DAG using pgmpy&quot;)
+plt.show()
+</code></pre>
+
+<p>This code snippet creates the DAG we described in the application scenario and displays it. While <code>networkx</code> creates the graph and <code>matplotlib</code> draws it, <code>pgmpy</code> handles the logic of identifying nodes, edges and potential downstream tasks.  <code>pgmpy</code> is more useful for performing causal inference tasks after creating the DAG. <code>graphviz</code> is another powerful option for visualization, especially for more complex DAGs, but it typically requires a separate installation.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you deal with unobserved confounders in a DAG and what are the implications for causal inference? For example, consider the previous example, but suppose that the <em>true</em> health status is unobserved and only some proxies were observed. What effect might this have?</p>
+</body>
+</html>
