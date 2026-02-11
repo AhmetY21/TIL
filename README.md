@@ -2,7 +2,7 @@
 
 > Curriculum-based micro-lessons generated automatically using AI
 
-An automated learning system that generates structured, curriculum-driven lessons on advanced topics, including Natural Language Processing, Causal Inference, and Stochastic Programming... Lessons are created every 4 hours using Google's Gemini AI and published in both Markdown and HTML formats.
+An automated learning system that generates structured, curriculum-driven lessons which are created every 4 hours using Google's Gemini AI and published in both Markdown and HTML formats.
 
 ## 🌟 Features
 
@@ -18,9 +18,10 @@ An automated learning system that generates structured, curriculum-driven lesson
 ```
 TIL/
 ├── curriculums/                    # Curriculum definitions
-│   ├── curriculum_nlp.json
-│   ├── curriculum_causal.json
-│   └── curriculum_stochastic-programming.json
+│   ├── curriculum_topic_1.json
+│   ├── curriculum_topic_2.json
+│   ├── ........
+│   └── curriculum_topic_n.json
 ├── topic/                          # Generated lessons organized by subject
 │   ├── topic_1/
 │   │   └── week_N/
@@ -29,11 +30,13 @@ TIL/
 │   │               ├── topic-name.md
 │   │               └── topic-name.html
 │   ├── topic_2/
-│   └── topic_3/
+│   ├── ........
+│   └── topic_n/
 ├── hubs/                           # Subject-specific index pages
 │   ├── topic_1-index.html
 │   ├── topic_2-index.html
-│   └── topic_3-index.html
+│   ├── ........
+│   └── topic_n-index.html
 ├── index.html                      # Main landing page
 ├── generate_lesson.py              # Core lesson generator script
 ├── requirements.txt                # Python dependencies
@@ -47,7 +50,7 @@ TIL/
 ### Prerequisites
 
 - Python 3.10+
-- Google Gemini API key (get one from [Google AI Studio](https://makersuite.google.com/app/apikey))
+- Google Gemini API key
 
 ### Installation
 
