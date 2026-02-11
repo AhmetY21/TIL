@@ -1,0 +1,438 @@
+{
+  "meta": {
+    "subject": "Stochastic Programming",
+    "slug": "stochastic-programming",
+    "subtitle": "A curriculum-based journey into stochastic programming: modeling uncertainty, scenario trees, and decomposition methods",
+    "prompt_domain": "Stochastic Programming"
+  },
+  "resources": {
+    "birge_louveaux": {
+      "title": "Introduction to Stochastic Programming (2nd ed.) — Birge & Louveaux",
+      "short": "Birge-Louveaux"
+    },
+    "shapiro_book": {
+      "title": "Lectures on Stochastic Programming: Modeling and Theory (2nd ed.) — Shapiro, Dentcheva, Ruszczyński",
+      "short": "Shapiro (Lectures)"
+    },
+    "ruszczynski": {
+      "title": "Nonlinear Optimization — Andrzej Ruszczyński (selected chapters on risk, duality, decomposition)",
+      "short": "Ruszczyński"
+    },
+    "pyomo_sp": {
+      "title": "Pyomo Documentation + Pyomo Stochastic Programming (PySP) Resources",
+      "short": "Pyomo/PySP"
+    },
+    "pyomo_book": {
+      "title": "Pyomo — Online Book / Tutorials (modeling patterns, decomposition-friendly modeling)",
+      "short": "Pyomo Book"
+    },
+    "jump": {
+      "title": "JuMP Documentation (Julia) — modeling + solver interfaces",
+      "short": "JuMP"
+    },
+    "sddp": {
+      "title": "SDDP.jl Documentation — stochastic dual dynamic programming for multistage problems",
+      "short": "SDDP.jl"
+    },
+    "ortools": {
+      "title": "Google OR-Tools Documentation — linear/integer programming modeling (useful baseline for deterministic equivalents)",
+      "short": "OR-Tools"
+    }
+  },
+  "topics": [
+    {
+      "name": "Introduction to Stochastic Programming (Why uncertainty changes optimization)",
+      "prerequisites": [],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "intro / motivation / basic examples" },
+        { "resource": "shapiro_book", "anchor": "Chapter 1 / modeling under uncertainty overview" }
+      ]
+    },
+    {
+      "name": "Deterministic vs Stochastic Models: recourse, adaptivity, and information",
+      "prerequisites": ["Introduction to Stochastic Programming (Why uncertainty changes optimization)"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "model classification / recourse decisions" },
+        { "resource": "shapiro_book", "anchor": "two-stage vs multistage / nonanticipativity intuition" }
+      ]
+    },
+    {
+      "name": "Probability Basics for Optimization: random variables, distributions, expectations",
+      "prerequisites": ["Introduction to Stochastic Programming (Why uncertainty changes optimization)"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "probability preliminaries used in SP" },
+        { "resource": "birge_louveaux", "anchor": "expectation and scenario-based approximation motivation" }
+      ]
+    },
+    {
+      "name": "Core Two-Stage Model (Linear Recourse) — canonical formulation",
+      "prerequisites": ["Deterministic vs Stochastic Models: recourse, adaptivity, and information"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "two-stage stochastic linear programs / recourse function" },
+        { "resource": "shapiro_book", "anchor": "two-stage stochastic programs / basic properties" }
+      ]
+    },
+    {
+      "name": "First-stage vs Second-stage Decisions (Here-and-now vs Wait-and-see)",
+      "prerequisites": ["Core Two-Stage Model (Linear Recourse) — canonical formulation"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "here-and-now vs wait-and-see / value of information" },
+        { "resource": "shapiro_book", "anchor": "recourse interpretation / measurability" }
+      ]
+    },
+    {
+      "name": "Scenario Representation: sample space, scenarios, and probabilities",
+      "prerequisites": ["Probability Basics for Optimization: random variables, distributions, expectations"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "scenarios / discretization viewpoint" },
+        { "resource": "shapiro_book", "anchor": "finite support approximations / scenarios" }
+      ]
+    },
+    {
+      "name": "Scenario Trees for Multistage Problems (information over time)",
+      "prerequisites": ["Scenario Representation: sample space, scenarios, and probabilities"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "multistage models / scenario tree structure" },
+        { "resource": "shapiro_book", "anchor": "multistage formulation / filtrations and decisions" }
+      ]
+    },
+    {
+      "name": "Nonanticipativity Constraints (NAC): meaning and modeling",
+      "prerequisites": ["Scenario Trees for Multistage Problems (information over time)"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "nonanticipativity / deterministic equivalents" },
+        { "resource": "shapiro_book", "anchor": "nonanticipativity and policy constraints" }
+      ]
+    },
+    {
+      "name": "Deterministic Equivalent Formulation (DEF) for two-stage SP",
+      "prerequisites": ["Core Two-Stage Model (Linear Recourse) — canonical formulation", "Scenario Representation: sample space, scenarios, and probabilities"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "deterministic equivalent for finite scenarios" },
+        { "resource": "pyomo_sp", "anchor": "scenario-based modeling patterns / extensive form" }
+      ]
+    },
+    {
+      "name": "Deterministic Equivalent for multistage SP (scenario tree + NAC)",
+      "prerequisites": ["Deterministic Equivalent Formulation (DEF) for two-stage SP", "Nonanticipativity Constraints (NAC): meaning and modeling"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "multistage extensive form and NAC structure" },
+        { "resource": "shapiro_book", "anchor": "multistage DEF and complexity" }
+      ]
+    },
+    {
+      "name": "Computational Challenge: size blow-up and why decomposition is needed",
+      "prerequisites": ["Deterministic Equivalent Formulation (DEF) for two-stage SP"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "computational considerations / scenario growth" },
+        { "resource": "shapiro_book", "anchor": "complexity drivers / approximation motivation" }
+      ]
+    },
+    {
+      "name": "Recourse Function Properties: convexity, piecewise linearity (linear recourse)",
+      "prerequisites": ["Core Two-Stage Model (Linear Recourse) — canonical formulation"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "value function properties / convexity" },
+        { "resource": "shapiro_book", "anchor": "recourse functions and dual representations" }
+      ]
+    },
+    {
+      "name": "Complete vs Relatively Complete Recourse",
+      "prerequisites": ["Recourse Function Properties: convexity, piecewise linearity (linear recourse)"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "recourse feasibility conditions" },
+        { "resource": "shapiro_book", "anchor": "recourse assumptions and implications" }
+      ]
+    },
+    {
+      "name": "Feasibility and Penalty Modeling (slack, feasibility recourse)",
+      "prerequisites": ["Complete vs Relatively Complete Recourse"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "feasibility issues / feasibility cuts idea" },
+        { "resource": "pyomo_sp", "anchor": "practical modeling: penalties and slack for infeasibility" }
+      ]
+    },
+    {
+      "name": "Solution Concepts: EV, RP, WS, and Value of Stochastic Solution (VSS)",
+      "prerequisites": ["First-stage vs Second-stage Decisions (Here-and-now vs Wait-and-see)"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "EV/WS/RP definitions and VSS" },
+        { "resource": "shapiro_book", "anchor": "evaluation metrics for stochastic models" }
+      ]
+    },
+    {
+      "name": "Sample Average Approximation (SAA): replacing expectation with sample mean",
+      "prerequisites": ["Scenario Representation: sample space, scenarios, and probabilities"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "SAA theory / convergence intuition" },
+        { "resource": "birge_louveaux", "anchor": "Monte Carlo sampling and approximations" }
+      ]
+    },
+    {
+      "name": "SAA Practice: replication, confidence intervals, and solution validation",
+      "prerequisites": ["Sample Average Approximation (SAA): replacing expectation with sample mean"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "statistical validation of SAA solutions" },
+        { "resource": "birge_louveaux", "anchor": "estimating optimality gaps / variance reduction ideas" }
+      ]
+    },
+    {
+      "name": "Scenario Generation: Monte Carlo vs historical vs parametric sampling",
+      "prerequisites": ["Scenario Representation: sample space, scenarios, and probabilities"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "scenario generation principles" },
+        { "resource": "shapiro_book", "anchor": "sampling schemes and their effects" }
+      ]
+    },
+    {
+      "name": "Scenario Reduction: forward/backward selection and clustering intuition",
+      "prerequisites": ["Scenario Generation: Monte Carlo vs historical vs parametric sampling"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "scenario reduction methods (overview)" },
+        { "resource": "shapiro_book", "anchor": "discrete approximations and stability" }
+      ]
+    },
+    {
+      "name": "Risk-Neutral Objective vs Risk-Averse Objective",
+      "prerequisites": ["Core Two-Stage Model (Linear Recourse) — canonical formulation"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "risk-neutral baseline and extensions" },
+        { "resource": "shapiro_book", "anchor": "risk measures introduction in SP" }
+      ]
+    },
+    {
+      "name": "Risk Measures: VaR and CVaR (coherent risk basics)",
+      "prerequisites": ["Risk-Neutral Objective vs Risk-Averse Objective"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "coherent risk measures / CVaR formulation" },
+        { "resource": "birge_louveaux", "anchor": "risk aversion modeling (overview)" }
+      ]
+    },
+    {
+      "name": "Mean-CVaR Stochastic Programming (two-stage)",
+      "prerequisites": ["Risk Measures: VaR and CVaR (coherent risk basics)", "Deterministic Equivalent Formulation (DEF) for two-stage SP"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "CVaR in stochastic optimization / linearization" },
+        { "resource": "pyomo_sp", "anchor": "modeling CVaR / risk terms in scenario models" }
+      ]
+    },
+    {
+      "name": "Chance Constraints: concept and interpretation",
+      "prerequisites": ["Probability Basics for Optimization: random variables, distributions, expectations"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "chance constraints overview" },
+        { "resource": "shapiro_book", "anchor": "chance-constrained programming introduction" }
+      ]
+    },
+    {
+      "name": "Approximating Chance Constraints (scenario approximation / conservative bounds)",
+      "prerequisites": ["Chance Constraints: concept and interpretation", "Sample Average Approximation (SAA): replacing expectation with sample mean"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "scenario approximations for chance constraints" },
+        { "resource": "birge_louveaux", "anchor": "practical treatment and modeling cautions" }
+      ]
+    },
+    {
+      "name": "Two-Stage Decomposition: Benders (L-shaped) method — idea",
+      "prerequisites": ["Deterministic Equivalent Formulation (DEF) for two-stage SP", "Recourse Function Properties: convexity, piecewise linearity (linear recourse)"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "L-shaped method / Benders decomposition in SP" },
+        { "resource": "shapiro_book", "anchor": "decomposition for two-stage problems" }
+      ]
+    },
+    {
+      "name": "L-shaped Method Mechanics: optimality cuts and feasibility cuts",
+      "prerequisites": ["Two-Stage Decomposition: Benders (L-shaped) method — idea", "Feasibility and Penalty Modeling (slack, feasibility recourse)"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "cut generation / feasibility vs optimality cuts" },
+        { "resource": "shapiro_book", "anchor": "dual-based cuts and convergence intuition" }
+      ]
+    },
+    {
+      "name": "Multi-Cut vs Single-Cut L-shaped Variants",
+      "prerequisites": ["L-shaped Method Mechanics: optimality cuts and feasibility cuts"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "multi-cut enhancements / computational trade-offs" },
+        { "resource": "shapiro_book", "anchor": "algorithmic variants and practical performance" }
+      ]
+    },
+    {
+      "name": "Progressive Hedging Algorithm (PHA): scenario decomposition for NAC",
+      "prerequisites": ["Nonanticipativity Constraints (NAC): meaning and modeling", "Deterministic Equivalent for multistage SP (scenario tree + NAC)"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "progressive hedging overview" },
+        { "resource": "shapiro_book", "anchor": "scenario decomposition / augmented Lagrangian view" }
+      ]
+    },
+    {
+      "name": "Stochastic Dual Dynamic Programming (SDDP): multistage convex problems",
+      "prerequisites": ["Scenario Trees for Multistage Problems (information over time)", "Recourse Function Properties: convexity, piecewise linearity (linear recourse)"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "sddp", "anchor": "introduction / what SDDP solves / Bellman cuts" },
+        { "resource": "birge_louveaux", "anchor": "multistage decomposition ideas (background)" }
+      ]
+    },
+    {
+      "name": "SDDP.jl in Practice: stages, state variables, and policy graphs",
+      "prerequisites": ["Stochastic Dual Dynamic Programming (SDDP): multistage convex problems"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "sddp", "anchor": "tutorials / modeling multistage policies" },
+        { "resource": "jump", "anchor": "modeling patterns / solver setup for linear programs" }
+      ]
+    },
+    {
+      "name": "Stochastic Integer Programming: two-stage stochastic MILP",
+      "prerequisites": ["Deterministic Equivalent Formulation (DEF) for two-stage SP"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "stochastic integer programming overview" },
+        { "resource": "shapiro_book", "anchor": "integer recourse / modeling and complexity notes" }
+      ]
+    },
+    {
+      "name": "Integer Recourse Challenges: nonconvexity, cut strengthening, and heuristics",
+      "prerequisites": ["Stochastic Integer Programming: two-stage stochastic MILP", "Two-Stage Decomposition: Benders (L-shaped) method — idea"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "integer recourse and algorithmic issues" },
+        { "resource": "ruszczynski", "anchor": "duality and decomposition background (selected sections)" }
+      ]
+    },
+    {
+      "name": "Robust Optimization vs Stochastic Programming (when to use which)",
+      "prerequisites": ["Deterministic vs Stochastic Models: recourse, adaptivity, and information"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "comparison viewpoints / distributional assumptions vs ambiguity" },
+        { "resource": "birge_louveaux", "anchor": "discussion: stochastic vs robust modeling" }
+      ]
+    },
+    {
+      "name": "Distributionally Robust Stochastic Programming (DRO-SP) — high level view",
+      "prerequisites": ["Robust Optimization vs Stochastic Programming (when to use which)"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "risk/ambiguity extensions (where covered)" },
+        { "resource": "ruszczynski", "anchor": "risk and ambiguity connections (selected sections)" }
+      ]
+    },
+    {
+      "name": "Modeling Stochastic Programs in Pyomo: extensive form (two-stage)",
+      "prerequisites": ["Deterministic Equivalent Formulation (DEF) for two-stage SP"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "pyomo_book", "anchor": "linear/MIP modeling patterns / sets and indexing" },
+        { "resource": "pyomo_sp", "anchor": "extensive form / scenario-based modeling templates" }
+      ]
+    },
+    {
+      "name": "Modeling Stochastic Programs in Pyomo/PySP: scenarios + nonanticipativity",
+      "prerequisites": ["Modeling Stochastic Programs in Pyomo: extensive form (two-stage)", "Nonanticipativity Constraints (NAC): meaning and modeling"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "pyomo_sp", "anchor": "scenario trees / nonanticipativity constructs" },
+        { "resource": "pyomo_book", "anchor": "advanced indexing / structured modeling" }
+      ]
+    },
+    {
+      "name": "Baseline Solving: LP/MIP solvers, warm starts, and scaling",
+      "prerequisites": ["Computational Challenge: size blow-up and why decomposition is needed"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "pyomo_book", "anchor": "solver interfaces / performance tips" },
+        { "resource": "ortools", "anchor": "LP/MIP modeling and solver basics (for benchmarking)" }
+      ]
+    },
+    {
+      "name": "Evaluation Under Uncertainty: out-of-sample testing and policy evaluation",
+      "prerequisites": ["SAA Practice: replication, confidence intervals, and solution validation", "Solution Concepts: EV, RP, WS, and Value of Stochastic Solution (VSS)"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "statistical evaluation / stability and validation" },
+        { "resource": "birge_louveaux", "anchor": "solution quality metrics and interpretation" }
+      ]
+    },
+    {
+      "name": "Application Pattern: Stochastic Inventory (newsvendor, multi-period)",
+      "prerequisites": ["Core Two-Stage Model (Linear Recourse) — canonical formulation"],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "inventory examples / newsvendor and extensions" },
+        { "resource": "shapiro_book", "anchor": "illustrative examples (inventory-style)" }
+      ]
+    },
+    {
+      "name": "Application Pattern: Stochastic Unit Commitment / Energy Planning (high level)",
+      "prerequisites": ["Scenario Trees for Multistage Problems (information over time)", "Stochastic Integer Programming: two-stage stochastic MILP"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "birge_louveaux", "anchor": "energy/planning application discussions (where present)" },
+        { "resource": "sddp", "anchor": "motivation examples: energy and hydro-style problems" }
+      ]
+    },
+    {
+      "name": "Application Pattern: Stochastic Portfolio Optimization (mean-risk with scenarios)",
+      "prerequisites": ["Risk Measures: VaR and CVaR (coherent risk basics)", "Scenario Representation: sample space, scenarios, and probabilities"],
+      "difficulty": "intermediate",
+      "readings": [
+        { "resource": "shapiro_book", "anchor": "risk measures in portfolio-style SP" },
+        { "resource": "birge_louveaux", "anchor": "financial planning examples (where covered)" }
+      ]
+    },
+    {
+      "name": "Capstone: Build a Two-Stage Stochastic Program End-to-End (data → scenarios → solve → validate)",
+      "prerequisites": [
+        "Modeling Stochastic Programs in Pyomo: extensive form (two-stage)",
+        "Scenario Generation: Monte Carlo vs historical vs parametric sampling",
+        "Evaluation Under Uncertainty: out-of-sample testing and policy evaluation"
+      ],
+      "difficulty": "beginner",
+      "readings": [
+        { "resource": "pyomo_sp", "anchor": "end-to-end example workflow (model → scenarios → solve)" },
+        { "resource": "shapiro_book", "anchor": "SAA evaluation and reporting best practices" }
+      ]
+    },
+    {
+      "name": "Capstone (Advanced): Multistage Policy with SDDP (state, noise, and cuts)",
+      "prerequisites": ["SDDP.jl in Practice: stages, state variables, and policy graphs", "Evaluation Under Uncertainty: out-of-sample testing and policy evaluation"],
+      "difficulty": "advanced",
+      "readings": [
+        { "resource": "sddp", "anchor": "policy evaluation / simulations / convergence diagnostics" },
+        { "resource": "jump", "anchor": "advanced modeling patterns (callbacks not required; solver tuning basics)" }
+      ]
+    }
+  ],
+  "notes": {
+    "how_to_extend": "To expand this syllabus: (1) split each major algorithm topic into (a) assumptions, (b) mathematical derivation, (c) implementation details, (d) diagnostics/convergence, (e) performance tricks; (2) add a dedicated track for stochastic MILP (integer recourse, branch-and-cut, scenario decomposition heuristics); (3) add a dedicated track for risk and ambiguity (CVaR, nested risk measures, distributionally robust SP); (4) attach 2–3 anchors per topic: one theory (Birge-Louveaux/Shapiro) + one implementation (Pyomo/PySP or SDDP.jl/JuMP)."
+  }
+}
