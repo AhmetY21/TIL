@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +16,13 @@
       --text: #1e293b;
       --secondary: #64748b;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
@@ -26,22 +33,26 @@
       align-items: center;
       padding: 60px 20px;
     }
+
     header {
       text-align: center;
       margin-bottom: 60px;
     }
+
     h1 {
       font-size: 2.8rem;
       font-weight: 800;
       color: #0f172a;
       margin-bottom: 12px;
     }
+
     .subtitle {
       color: var(--secondary);
       font-size: 1.15rem;
       max-width: 500px;
       margin: 0 auto;
     }
+
     .hub-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -49,11 +60,12 @@
       max-width: 900px;
       width: 100%;
     }
+
     .hub-card {
       background: white;
       border-radius: 18px;
       padding: 32px 28px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       transition: transform 0.2s, box-shadow 0.2s;
       text-decoration: none;
       color: inherit;
@@ -61,23 +73,28 @@
       flex-direction: column;
       gap: 14px;
     }
+
     .hub-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15);
+      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
     }
+
     .hub-icon {
       font-size: 2.2rem;
     }
+
     .hub-title {
       font-size: 1.4rem;
       font-weight: 800;
       color: #0f172a;
     }
+
     .hub-desc {
       color: var(--secondary);
       font-size: 0.95rem;
       line-height: 1.5;
     }
+
     .hub-badge {
       display: inline-block;
       background: #eff6ff;
@@ -88,6 +105,7 @@
       border-radius: 20px;
       align-self: flex-start;
     }
+
     footer {
       margin-top: 60px;
       color: var(--secondary);
@@ -95,6 +113,7 @@
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1>📚 Daily Learning Hub</h1>
@@ -102,18 +121,27 @@
   </header>
 
   <div class="hub-grid">
-    <a href="nlp-index.html" class="hub-card">
+    <a href="hubs/nlp-index.html" class="hub-card">
       <div class="hub-icon">🗣️</div>
       <div class="hub-title">Natural Language Processing</div>
-      <div class="hub-desc">Tokenization, embeddings, transformers, BERT, GPT, and the full NLP pipeline — from basics to advanced.</div>
+      <div class="hub-desc">Tokenization, embeddings, transformers, BERT, GPT, and the full NLP pipeline — from basics
+        to advanced.</div>
       <span class="hub-badge">100+ topics</span>
     </a>
 
-    <a href="causal-inference-index.html" class="hub-card">
+    <a href="hubs/causal-inference-index.html" class="hub-card">
       <div class="hub-icon">🔬</div>
       <div class="hub-title">Causal Inference</div>
-      <div class="hub-desc">DAGs, potential outcomes, propensity scores, DiD, IV, and modern ML-based causal methods.</div>
-      <span class="hub-badge">40+ topics</span>
+      <div class="hub-desc">DAGs, potential outcomes, propensity scores, DiD, IV, and modern ML-based causal methods.
+      </div>
+      <span class="hub-badge">44 topics</span>
+    </a>
+
+    <a href="hubs/stochastic-programming-index.html" class="hub-card">
+      <div class="hub-icon">🎲</div>
+      <div class="hub-title">Stochastic Programming</div>
+      <div class="hub-desc">Modeling uncertainty, scenario trees, and decomposition methods (Benders, PHA, SDDP).</div>
+      <span class="hub-badge">43 topics</span>
     </a>
   </div>
 
@@ -121,4 +149,5 @@
     <p>Lessons are generated every 8 hours</p>
   </footer>
 </body>
+
 </html>

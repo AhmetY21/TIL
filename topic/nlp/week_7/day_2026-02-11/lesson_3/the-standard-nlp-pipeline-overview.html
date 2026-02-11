@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Standard NLP Pipeline Overview</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-the-standard-nlp-pipeline-overview">Topic: The Standard NLP Pipeline Overview</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Standard NLP Pipeline is a series of sequential steps used to process and understand human language. It breaks down complex text into smaller, manageable components, transforming raw text data into a structured format suitable for analysis and machine learning tasks.</p>
+<p>The pipeline typically consists of these stages (though specific implementations might vary or include additional steps):</p>
+<ul>
+<li><strong>Text Acquisition:</strong> Obtaining the raw text data. This can be from various sources like files, web pages, APIs, databases, etc.</li>
+<li><strong>Text Cleaning:</strong> Preparing the raw text by removing noise and irrelevant characters. This might include removing HTML tags, special characters, excessive whitespace, or unwanted symbols.</li>
+<li><strong>Tokenization:</strong> Splitting the text into individual units, typically words or sub-words (tokens). This forms the basis for further analysis.</li>
+<li><strong>Lowercasing:</strong> Converting all text to lowercase to ensure consistency and avoid treating words with different casing as distinct entities.</li>
+<li><strong>Stop Word Removal:</strong> Removing common words like "the", "a", "is", "are" which contribute little to the meaning of the text.</li>
+<li><strong>Stemming/Lemmatization:</strong> Reducing words to their root form. Stemming uses heuristics to chop off suffixes, while lemmatization uses vocabulary and morphological analysis to find the base or dictionary form of a word.</li>
+<li><strong>Part-of-Speech (POS) Tagging:</strong> Assigning grammatical tags to each token (e.g., noun, verb, adjective).</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities in the text, such as people, organizations, locations, dates, and quantities.</li>
+<li><strong>Parsing:</strong> Analyzing the grammatical structure of sentences to understand the relationships between words.</li>
+<li><strong>Sentiment Analysis:</strong> Determining the emotional tone or sentiment expressed in the text.</li>
+</ul>
+<p>We can use the NLP pipeline to:</p>
+<ul>
+<li><strong>Extract meaningful information from text:</strong>  Identify key entities, topics, and sentiments.</li>
+<li><strong>Prepare text data for machine learning models:</strong>  Transform unstructured text into numerical features that can be used for training.</li>
+<li><strong>Build NLP applications:</strong>  Create chatbots, text summarizers, machine translation systems, and more.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're building a customer support chatbot for an e-commerce website.  You need to analyze customer messages to understand their intent (e.g., "track my order", "return an item", "report a problem").</p>
+<p>Here's how the NLP pipeline can be used:</p>
+<ol>
+<li><strong>Text Acquisition:</strong> The chatbot receives the customer's message as input.</li>
+<li><strong>Text Cleaning:</strong> Remove any HTML tags or special characters that might be present.</li>
+<li><strong>Tokenization:</strong>  Split the message into individual words.</li>
+<li><strong>Lowercasing:</strong> Convert all words to lowercase.</li>
+<li><strong>Stop Word Removal:</strong> Remove common words like "the", "a", "I", "is" to focus on the core meaning.</li>
+<li><strong>Stemming/Lemmatization:</strong> Reduce words to their root form (e.g., "tracking" becomes "track").</li>
+<li><strong>POS Tagging:</strong> Identify the grammatical role of each word.</li>
+<li><strong>NER:</strong> Identify named entities such as product names or order numbers.</li>
+<li><strong>Intent Classification:</strong> Based on the processed text, classify the customer's intent using a machine learning model trained on similar data. For example, the model could predict the intent as "track order".</li>
+</ol>
+<p>By processing the customer's message through this pipeline, the chatbot can accurately determine the customer's intent and provide a relevant response.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>spaCy</code> library in Python to implement the core steps of an NLP pipeline:</p>
+<pre class="codehilite"><code class="language-python">import spacy
+
+# Load the English language model
+nlp = spacy.load(&quot;en_core_web_sm&quot;)
+
+def process_text(text):
+  &quot;&quot;&quot;Processes text through a simplified NLP pipeline.&quot;&quot;&quot;
+
+  # Create a Doc object
+  doc = nlp(text)
+
+  # Tokenization
+  tokens = [token.text for token in doc]
+
+  # Lowercasing
+  tokens_lower = [token.text.lower() for token in doc]
+
+  # Lemmatization
+  lemmas = [token.lemma_ for token in doc]
+
+  # Stop word removal
+  filtered_tokens = [token.text for token in doc if not token.is_stop]
+
+  # POS Tagging
+  pos_tags = [(token.text, token.pos_) for token in doc]
+
+  # Named Entity Recognition
+  ner_entities = [(ent.text, ent.label_) for ent in doc.ents]
+
+  return {
+      &quot;tokens&quot;: tokens,
+      &quot;tokens_lower&quot;: tokens_lower,
+      &quot;lemmas&quot;: lemmas,
+      &quot;filtered_tokens&quot;: filtered_tokens,
+      &quot;pos_tags&quot;: pos_tags,
+      &quot;ner_entities&quot;: ner_entities,
+  }
+
+
+# Example usage
+text = &quot;Apple is looking at buying U.K. startup for $1 billion.&quot;
+results = process_text(text)
+
+print(&quot;Original Text:&quot;, text)
+print(&quot;\nTokens:&quot;, results[&quot;tokens&quot;])
+print(&quot;\nLowercase Tokens:&quot;, results[&quot;tokens_lower&quot;])
+print(&quot;\nLemmas:&quot;, results[&quot;lemmas&quot;])
+print(&quot;\nFiltered Tokens (Stop Words Removed):&quot;, results[&quot;filtered_tokens&quot;])
+print(&quot;\nPOS Tags:&quot;, results[&quot;pos_tags&quot;])
+print(&quot;\nNamed Entities:&quot;, results[&quot;ner_entities&quot;])
+</code></pre>
+
+<p>This code snippet demonstrates tokenization, lowercasing, lemmatization, stop word removal, POS tagging, and NER using spaCy. You can modify and expand upon this to create a more comprehensive pipeline for your specific NLP task.  Different language models might provide better performance for different tasks. The <code>en_core_web_sm</code> model is a small model; larger models such as <code>en_core_web_lg</code> offer higher accuracy, especially for NER and parsing, but require more computational resources.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the order of steps in the NLP pipeline impact the final outcome, and how would you determine the optimal order for a specific task?</p>
+</body>
+</html>

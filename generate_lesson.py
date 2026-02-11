@@ -65,7 +65,7 @@ class CurriculumMeta:
 
     @property
     def index_file(self) -> str:
-        return f"{self.slug}-index.html"
+        return f"hubs/{self.slug}-index.html"
 
 
 def load_curriculum_meta(curriculum_file: str) -> CurriculumMeta:
@@ -446,8 +446,8 @@ def update_index_page(meta: CurriculumMeta) -> None:
         lessons.append(
             {
                 **lesson_meta,
-                "html_path": rel_path,
-                "md_path": rel_path.replace(".html", ".md"),
+                "html_path": f"../{rel_path}",
+                "md_path": f"../{rel_path.replace('.html', '.md')}",
             }
         )
 
@@ -552,7 +552,7 @@ def update_index_page(meta: CurriculumMeta) -> None:
 </head>
 <body>
   <div class="container">
-    <a href="index.html" class="back-link">← All Learning Hubs</a>
+    <a href="../index.html" class="back-link">← All Learning Hubs</a>
     <header>
       <h1>{meta.subject} Learning Hub</h1>
       <p class="subtitle">{meta.subtitle}</p>

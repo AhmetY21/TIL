@@ -20,8 +20,8 @@ jobs:
       - name: Find curriculum files
         id: set-matrix
         run: |
-          # Find all files matching curriculum_*.json and format as a JSON array
-          FILES=$(ls curriculum_*.json | jq -R -s -c 'split("\n")[:-1]')
+          # Find all files matching curriculum_*.json in curriculums/ and format as a JSON array
+          FILES=$(ls curriculums/curriculum_*.json | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$FILES" >> $GITHUB_OUTPUT
 
   generate-lesson:
