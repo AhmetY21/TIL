@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Probability Basics for Optimization: random variables, distributions, expectations</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-probability-basics-for-optimization-random-variables-distributions-expectations">Topic: Probability Basics for Optimization: random variables, distributions, expectations</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In the context of stochastic programming, understanding random variables, distributions, and expectations is crucial for modeling and solving optimization problems where some parameters are uncertain. These concepts provide the foundation for quantifying and managing this uncertainty.</p>
+<ul>
+<li>
+<p><strong>Random Variable:</strong> A random variable is a variable whose value is a numerical outcome of a random phenomenon. It can be either <em>discrete</em> (taking on a finite or countably infinite number of values, e.g., the number of heads in 10 coin flips) or <em>continuous</em> (taking on any value within a given range, e.g., temperature). Mathematically, a random variable is a measurable function from a sample space to the real numbers. In optimization, random variables often represent uncertain input parameters like demand, prices, resource availability, or equipment failure rates.</p>
+</li>
+<li>
+<p><strong>Distribution:</strong> A probability distribution describes the likelihood of different values or outcomes of a random variable. For discrete random variables, this is usually represented by a <em>probability mass function (PMF)</em>, which gives the probability of each specific value. For continuous random variables, it's represented by a <em>probability density function (PDF)</em>, where the area under the curve between two points represents the probability of the random variable falling within that range. The cumulative distribution function (CDF) gives the probability that a random variable takes on a value less than or equal to a given value.  Common distributions used in stochastic programming include normal, uniform, exponential, Poisson, and binomial distributions. The choice of distribution is crucial and depends on the nature of the uncertainty being modeled.</p>
+</li>
+<li>
+<p><strong>Expectation:</strong> The expectation (or expected value) of a random variable is the average value we would expect to observe if we were to repeat the random experiment many times.  It's a weighted average of all possible values of the random variable, where the weights are the probabilities of those values.  For a discrete random variable <em>X</em> with PMF <em>p(x)</em>, the expectation is <em>E[X] = Σ x * p(x)</em>.  For a continuous random variable <em>X</em> with PDF <em>f(x)</em>, the expectation is <em>E[X] = ∫ x * f(x) dx</em>.  In stochastic programming, expectations are often used to define objective functions. For example, we might want to minimize the <em>expected cost</em> or maximize the <em>expected profit</em> under uncertainty.  Furthermore, the concept of expectation extends to functions of random variables. For example, <em>E[g(X)]</em> represents the expected value of the function <em>g</em> applied to the random variable <em>X</em>.</p>
+</li>
+</ul>
+<p><strong>How we use it in Stochastic Programming:</strong>
+These concepts form the basis of stochastic optimization models. We use them to:</p>
+<ol>
+<li><strong>Model Uncertainty:</strong> Represent uncertain parameters in the optimization problem as random variables with specified distributions.</li>
+<li><strong>Formulate Objectives:</strong> Define objective functions based on expected values of cost, profit, or other performance metrics that depend on the random variables.</li>
+<li><strong>Construct Constraints:</strong> Incorporate probabilistic constraints to manage the risk of violating feasibility conditions due to the uncertainty. These constraints might limit the probability of exceeding a certain resource limit or ensure a certain service level with a given probability.</li>
+<li><strong>Evaluate Solutions:</strong> Assess the performance of different solutions under various scenarios generated from the distributions of the random variables. This allows for robust decision-making that considers the impact of uncertainty.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain management problem where a company needs to decide how much inventory to order for a product. The demand for the product is uncertain and can be modeled as a random variable.</p>
+<ul>
+<li><strong>Random Variable:</strong> The demand for the product in a given period, represented by the random variable <em>D</em>.</li>
+<li><strong>Distribution:</strong> Assume <em>D</em> follows a normal distribution with a mean of 1000 units and a standard deviation of 200 units. This means <em>D ~ N(1000, 200^2)</em>.</li>
+<li><strong>Expectation:</strong> The expected demand is <em>E[D] = 1000</em> units.</li>
+</ul>
+<p>The company wants to minimize its total cost, which includes ordering costs, holding costs for excess inventory, and shortage costs for unmet demand. Let:</p>
+<ul>
+<li><em>Q</em> be the order quantity (the decision variable).</li>
+<li><em>c</em> be the cost per unit ordered.</li>
+<li><em>h</em> be the holding cost per unit of excess inventory.</li>
+<li><em>s</em> be the shortage cost per unit of unmet demand.</li>
+</ul>
+<p>The total cost can be expressed as a function of <em>Q</em> and <em>D</em>:</p>
+<pre class="codehilite"><code>Cost(Q, D) = cQ + h * max(Q - D, 0) + s * max(D - Q, 0)
+</code></pre>
+
+<p>The company's objective is to minimize the <em>expected</em> total cost:</p>
+<pre class="codehilite"><code>Minimize E[Cost(Q, D)] = cQ + E[h * max(Q - D, 0) + s * max(D - Q, 0)]
+</code></pre>
+
+<p>The expectation term involves integrating over the probability density function of the demand <em>D</em>. Solving this optimization problem requires knowledge of the distribution of <em>D</em> and techniques for evaluating the expected value. This is a classic example of a stochastic programming problem where the uncertainty in demand is explicitly considered.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use Python libraries like <code>NumPy</code> and <code>SciPy</code> to work with random variables, distributions, and expectations. Specifically, <code>SciPy.stats</code> provides tools for defining and working with various probability distributions. <code>NumPy</code> can be used for numerical integration to calculate expected values.</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from scipy.stats import norm
+from scipy.integrate import quad
+
+# Parameters
+c = 10  # Cost per unit ordered
+h = 2   # Holding cost per unit
+s = 5   # Shortage cost per unit
+mu = 1000  # Mean demand
+sigma = 200 # Standard deviation of demand
+
+# Define the cost function
+def cost(Q, D):
+    return c * Q + h * np.maximum(Q - D, 0) + s * np.maximum(D - Q, 0)
+
+# Define the expected cost function
+def expected_cost(Q):
+    # Define the function to integrate (cost * PDF)
+    def integrand(D):
+        return cost(Q, D) * norm.pdf(D, loc=mu, scale=sigma)
+
+    # Integrate from -infinity to infinity (approximated by a range)
+    #Note: Consider integration bounds carefully.  They can influence accuracy
+    result, _ = quad(integrand, mu - 5*sigma, mu + 5*sigma)  # Integrate from mean-5sigma to mean+5sigma
+
+    return result
+
+# Example: Calculate expected cost for an order quantity of 1000
+Q = 1000
+expected_cost_value = expected_cost(Q)
+print(f&quot;Expected cost for Q = {Q}: {expected_cost_value}&quot;)
+
+
+# Example: Find optimal Q (simple search - more sophisticated optimization needed for real problems)
+Q_values = np.arange(500, 1501, 10)
+expected_costs = [expected_cost(q) for q in Q_values]
+optimal_Q = Q_values[np.argmin(expected_costs)]
+print(f&quot;Approximate Optimal Q: {optimal_Q}&quot;)
+</code></pre>
+
+<p>This code calculates the expected cost for a given order quantity <em>Q</em> and provides an example of a simple search to find an approximate optimal <em>Q</em>. Note that for more complex problems, specialized optimization algorithms are required to efficiently find the optimal solution.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the probability distribution for a random variable impact the optimal solution in a stochastic programming problem? What are some strategies for choosing an appropriate distribution when historical data is limited or unavailable?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
