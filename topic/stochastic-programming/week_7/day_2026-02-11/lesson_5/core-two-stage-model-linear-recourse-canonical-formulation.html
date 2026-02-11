@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Core Two-Stage Model (Linear Recourse) — canonical formulation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-core-two-stage-model-linear-recourse-canonical-formulation">Topic: Core Two-Stage Model (Linear Recourse) — canonical formulation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The <em>core two-stage stochastic programming model with linear recourse</em> is a fundamental model for decision-making under uncertainty. It represents situations where we make a decision in the first stage <em>before</em> the uncertainty is realized, and then in the second stage, we take <em>recourse</em> actions to mitigate the impact of the realized uncertainty. The term "linear recourse" refers to the fact that the second-stage problem is a linear program. The canonical formulation highlights the structure of the model for analysis and optimization.</p>
+<p><strong>Formal Definition:</strong></p>
+<p>The core two-stage stochastic program with linear recourse can be written as:</p>
+<pre class="codehilite"><code>minimize  c'x + E[Q(x, ξ)]
+subject to Ax = b
+            x &gt;= 0
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><strong>x</strong> is the first-stage decision vector.  This represents the decisions we need to make <em>before</em> knowing the outcome of the random event.</li>
+<li><strong>c</strong> is the cost vector associated with the first-stage decisions.  <code>c'x</code> (c transpose x) represents the cost of the first-stage decision.</li>
+<li><strong>ξ</strong> is the random vector (representing the uncertainty) with a known probability distribution.</li>
+<li><strong>E[Q(x, ξ)]</strong> is the expected value of the second-stage cost, often referred to as the recourse function.</li>
+<li><strong>A</strong> and <strong>b</strong> are the coefficient matrix and right-hand side vector, respectively, of the first-stage constraints.  These constraints must be satisfied by the first-stage decisions.</li>
+<li>
+<p><strong>Q(x, ξ)</strong> is the optimal value of the second-stage problem given the first-stage decision <em>x</em> and the realization of the random variable <em>ξ</em>.  The second-stage problem is a linear program:</p>
+<p><code>Q(x, ξ) = minimize  q'y
+         subject to  Ty = h - Wx
+                     y &gt;= 0</code></p>
+<ul>
+<li><strong>y</strong> is the second-stage decision vector (recourse actions).</li>
+<li><strong>q</strong> is the cost vector associated with the second-stage decisions.  <code>q'y</code> represents the cost of the recourse actions.</li>
+<li><strong>T</strong>, <strong>W</strong>, and <strong>h</strong> are matrices and vectors that define the constraints of the second-stage problem.<ul>
+<li><strong>T</strong> is the technology matrix for the second-stage problem.</li>
+<li><strong>W</strong> is the recourse matrix, linking the first-stage decisions <em>x</em> to the second-stage constraints. <code>Wx</code> represents how the first-stage decisions affect the second-stage constraints.</li>
+<li><strong>h</strong> is a vector representing the right-hand side of the second-stage constraints, <em>before</em> considering the impact of the first-stage decision and the random outcome.</li>
+</ul>
+</li>
+<li><code>h - Wx</code> is often referred to as the <em>right-hand side</em> of the second-stage problem, which depends on both the first-stage decision <code>x</code> and the realization of the random variable <code>ξ</code> (since <code>h</code> contains the random component).</li>
+</ul>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>This model can be used to optimize decisions where there are two stages. First, you decide on a course of action (<code>x</code>). Then, based on what actually happens (the realization of <code>ξ</code>), you take corrective actions (<code>y</code>) to minimize costs, considering the initial decision. Crucially, the model allows us to <em>anticipate</em> the need for these corrective actions when making the first-stage decisions, thereby improving overall performance. The expectation <code>E[Q(x, ξ)]</code> integrates over the possible outcomes of the random variable, allowing the first-stage decision to be made "robustly" against uncertainty.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a <strong>supply chain planning problem</strong>.</p>
+<ul>
+<li><strong>First Stage:</strong> A company needs to decide how much product to manufacture at its factory <em>before</em> knowing the exact demand in the upcoming period. <code>x</code> represents the production quantity. <code>c</code> represents the cost of production.</li>
+<li><strong>Uncertainty:</strong> The demand for the product is uncertain. <code>ξ</code> represents the random demand.  We might assume a discrete set of scenarios, each with an associated probability, to represent different demand levels.</li>
+<li><strong>Second Stage (Recourse):</strong>  After the demand is realized, the company can take one of two actions:<ul>
+<li>If production exceeds demand, the company can store the excess product.</li>
+<li>If demand exceeds production, the company can purchase additional product from a more expensive supplier. <code>y</code> represents the amount of product stored (if <code>y</code> &gt; 0) or purchased from the expensive supplier (if <code>y</code> &lt; 0). <code>q</code> represents the cost of storage (if y &gt; 0) or the higher purchase cost (if y &lt; 0).</li>
+</ul>
+</li>
+<li><strong>Constraints:</strong><ul>
+<li>First-stage constraints (<code>Ax = b</code>) might include capacity constraints on the factory.</li>
+<li>Second-stage constraints (<code>Ty = h - Wx</code>) would ensure that demand is met.  <code>h</code> represents the realized demand (the random component) and <code>Wx</code> represents the amount of product available from the factory (the first-stage decision).  <code>Ty = h - Wx</code> ensures that the recourse action <code>y</code> makes up the difference between production and demand.</li>
+</ul>
+</li>
+</ul>
+<p>The objective is to minimize the expected total cost, which includes the cost of production in the first stage and the expected cost of storage or emergency purchases in the second stage. This framework allows the company to make a production decision that balances the cost of overproduction (storage) and underproduction (expensive emergency purchases), taking into account the probability distribution of demand.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using Pyomo and a simple discrete scenario approach.  Note that solving stochastic programs generally involves approximating the distribution of the random variable with a finite number of scenarios.  There are other approaches, but this illustrates the core concepts.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+def create_two_stage_model(scenarios, probabilities, c, A, b, q, T, W, h):
+    &quot;&quot;&quot;
+    Creates a Pyomo model for a two-stage stochastic program with linear recourse.
+
+    Args:
+        scenarios: List of random variable scenarios (e.g., demand levels).
+        probabilities: List of probabilities corresponding to each scenario.
+        c: First-stage cost vector.
+        A: First-stage constraint matrix.
+        b: First-stage constraint right-hand side vector.
+        q: Second-stage cost vector.
+        T: Second-stage technology matrix.
+        W: Second-stage recourse matrix.
+        h: Second-stage right-hand side vectors for each scenario.  This should be a list
+           of vectors, one for each scenario.
+
+    Returns:
+        A Pyomo ConcreteModel object.
+    &quot;&quot;&quot;
+
+    model = ConcreteModel()
+
+    # First-stage variables
+    model.x = Var(range(len(c)), within=NonNegativeReals) # Example: production amount
+    # First-stage constraints
+    model.first_stage_constraints = ConstraintList()
+    for i in range(len(b)):
+        model.first_stage_constraints.add(sum(A[i, j] * model.x[j] for j in range(len(c))) == b[i])
+
+    # Scenarios
+    model.Scenarios = Set(initialize=range(len(scenarios)))
+
+    # Second-stage variables (indexed by scenario)
+    model.y = Var(model.Scenarios, range(len(q)), within=NonNegativeReals) # Example: Amount purchased or stored
+
+    # Second-stage constraints (indexed by scenario)
+    def second_stage_constraint_rule(model, s, i):
+        return sum(T[i, j] * model.y[s, j] for j in range(len(q))) == h[s][i] - sum(W[i, k] * model.x[k] for k in range(len(c)))
+    model.second_stage_constraints = Constraint(model.Scenarios, range(h[0].shape[0]), rule=second_stage_constraint_rule)
+
+    # Objective function
+    def objective_rule(model):
+        first_stage_cost = sum(c[i] * model.x[i] for i in range(len(c)))
+        second_stage_cost = sum(probabilities[s] * sum(q[j] * model.y[s, j] for j in range(len(q))) for s in model.Scenarios)
+        return first_stage_cost + second_stage_cost
+
+    model.objective = Objective(rule=objective_rule, sense=minimize)
+
+    return model
+
+# Example usage (replace with your actual data)
+if __name__ == '__main__':
+    # Problem parameters (example)
+    scenarios = [10, 15, 20]  # Possible demand levels
+    probabilities = [0.3, 0.4, 0.3] # Probabilities of each demand level
+
+    c = np.array([1.0])  # Cost per unit of production
+    A = np.array([[1.0]])  # Capacity constraint example (x &lt;= 25)
+    b = np.array([25.0])
+
+    q = np.array([2.0])  # Cost per unit purchased (if demand exceeds production)
+    T = np.array([[1.0]])  # Second-stage technology matrix
+    W = np.array([[1.0]])  # Recourse matrix - production offsets demand
+    h = [np.array([s]) for s in scenarios] # RHS for each scenario (demand level)
+
+    # Create the model
+    model = create_two_stage_model(scenarios, probabilities, c, A, b, q, T, W, h)
+
+    # Solve the model
+    solver = SolverFactory('glpk')  # or 'ipopt', etc.  Install first if needed!
+    solver.solve(model)
+
+    # Print the results
+    print(&quot;First-stage decision (production):&quot;, value(model.x[0]))
+    for s in model.Scenarios:
+        print(f&quot;Scenario {s}: Demand = {scenarios[s]}, Recourse action (purchase) = {value(model.y[s, 0])}&quot;)
+    print(&quot;Objective function value:&quot;, value(model.objective))
+</code></pre>
+
+<p><strong>Explanation of the code:</strong></p>
+<ol>
+<li><strong><code>create_two_stage_model</code> function:</strong> This function takes the problem parameters (scenarios, probabilities, costs, constraints, etc.) as input and constructs the Pyomo model.</li>
+<li><strong>First-stage variables and constraints:</strong>  The <code>x</code> variables are defined, representing the first-stage decisions, and the first-stage constraints (<code>Ax=b</code>) are implemented using a <code>ConstraintList</code>.</li>
+<li><strong>Scenarios:</strong>  The <code>Scenarios</code> set represents the possible realizations of the random variable.</li>
+<li><strong>Second-stage variables and constraints:</strong>  The <code>y</code> variables are indexed by the scenario and represent the second-stage (recourse) actions.  The second-stage constraints (<code>Ty = h - Wx</code>) are implemented using a <code>Constraint</code>, indexed by the scenario. <code>h[s]</code> is the right hand side vector for scenario <code>s</code>.</li>
+<li><strong>Objective function:</strong> The objective function minimizes the sum of the first-stage cost and the <em>expected</em> second-stage cost (weighted by the probabilities of each scenario).</li>
+<li><strong>Example Usage:</strong> The <code>if __name__ == '__main__':</code> block provides a simple example of how to use the function with some dummy data.  You would replace this with your actual data. It then sets up and solves the Pyomo model using GLPK (or another solver you have installed).  Finally, it prints the results, including the optimal first-stage decision and the optimal recourse actions for each scenario.</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li><strong>Solver:</strong> You'll need a suitable solver installed (e.g., GLPK, IPOPT). Install them using <code>pip install pyomo</code>. Then install the solver using <code>apt-get install glpk</code> or similar depending on your operating system.</li>
+<li><strong>Data:</strong> This code provides a <em>template</em>.  You will need to replace the example data with your specific problem data.</li>
+<li><strong>Scenario Generation:</strong>  The code assumes you have a discrete set of scenarios. Generating realistic scenarios is a critical step in stochastic programming.</li>
+<li><strong>Scaling:</strong> For large-scale problems, the scenario-based approach can become computationally expensive.  Consider alternative solution techniques, such as decomposition methods.</li>
+<li><strong>Error Handling:</strong> The example does not include extensive error handling. In a real application, you should add checks to ensure the input data is valid and the solver finds a solution.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the complexity of solving a core two-stage stochastic program with linear recourse scale with the number of scenarios?  What are some techniques to mitigate this issue for large-scale problems?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
