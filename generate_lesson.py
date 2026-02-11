@@ -339,6 +339,26 @@ def convert_md_to_html(md_text: str, title: str) -> str:
     th, td {{ border: 1px solid #e5e7eb; padding: 8px; text-align: left; }}
     th {{ background: #f9fafb; }}
     hr {{ border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }}
+
+    @media (prefers-color-scheme: dark) {{
+      body {{
+        background: #0f172a;
+        color: #e2e8f0;
+      }}
+      h1, h2, h3 {{ color: #f1f5f9; }}
+      a {{ color: #60a5fa; }}
+      code {{ background-color: #1e293b; color: #e2e8f0; }}
+      pre {{
+        border: 1px solid #334155;
+      }}
+      blockquote {{
+        border-left-color: #334155;
+        color: #94a3b8;
+      }}
+      th, td {{ border-color: #334155; }}
+      th {{ background: #1e293b; }}
+      hr {{ border-top-color: #334155; }}
+    }}
   </style>
 </head>
 <body>
@@ -548,6 +568,26 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .btn-primary {{ background: var(--primary); color: white; }}
     .btn-primary:hover {{ background: var(--primary-hover); }}
+
+    @media (prefers-color-scheme: dark) {{
+      :root {{
+        --primary: #60a5fa;
+        --primary-hover: #93c5fd;
+        --bg: #0f172a;
+        --text: #e2e8f0;
+        --secondary: #94a3b8;
+      }}
+      .lesson-card {{
+        background: #1e293b;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }}
+      h1, .week-title, .lesson-name {{
+        color: #f1f5f9;
+      }}
+      .week-title {{
+        border-bottom-color: #334155;
+      }}
+    }}
   </style>
 </head>
 <body>
