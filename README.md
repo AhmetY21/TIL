@@ -2,34 +2,16 @@
 
 > Curriculum-based micro-lessons generated automatically using AI
 
-An automated learning system that generates structured, curriculum-driven lessons on advanced topics including Natural Language Processing, Causal Inference, and Stochastic Programming. Lessons are created every 4 hours using Google's Gemini AI and published in both Markdown and HTML formats.
-
-[![Lesson Scheduler](https://github.com/AhmetY21/TIL/actions/workflows/scheduler.yml/badge.svg)](https://github.com/AhmetY21/TIL/actions/workflows/scheduler.yml)
+An automated learning system that generates structured, curriculum-driven lessons on advanced topics, including Natural Language Processing, Causal Inference, and Stochastic Programming... Lessons are created every 4 hours using Google's Gemini AI and published in both Markdown and HTML formats.
 
 ## 🌟 Features
 
 - **🤖 Automated Content Generation**: Uses Google Gemini AI to generate high-quality, structured lessons
 - **📖 Multiple Curricula**: Supports multiple subject areas with dedicated curriculum files
 - **⏰ Scheduled Updates**: Automatic lesson generation every 4 hours via GitHub Actions
-- **📱 Dual Formats**: Each lesson available in both Markdown (`.md`) and HTML (`.html`)
 - **🎯 Structured Learning**: Topics follow a curriculum with prerequisites and difficulty levels
-- **🌐 Web Interface**: Beautiful, responsive learning hub with organized lesson listings
 - **📊 Progress Tracking**: State management to track curriculum progress for each subject
 
-## 📋 Current Subjects
-
-### 🗣️ Natural Language Processing
-- **100+ topics** covering tokenization, embeddings, transformers, BERT, GPT, and the full NLP pipeline
-- From basics to advanced concepts
-- [View NLP Hub](hubs/nlp-index.html)
-
-### 🔬 Causal Inference
-- **44 topics** including DAGs, potential outcomes, propensity scores, DiD, IV, and modern ML-based causal methods
-- [View Causal Inference Hub](hubs/causal-inference-index.html)
-
-### 🎲 Stochastic Programming
-- **43 topics** on modeling uncertainty, scenario trees, and decomposition methods (Benders, PHA, SDDP)
-- [View Stochastic Programming Hub](hubs/stochastic-programming-index.html)
 
 ## 🏗️ Repository Structure
 
@@ -40,18 +22,18 @@ TIL/
 │   ├── curriculum_causal.json
 │   └── curriculum_stochastic-programming.json
 ├── topic/                          # Generated lessons organized by subject
-│   ├── nlp/
+│   ├── topic_1/
 │   │   └── week_N/
 │   │       └── day_YYYY-MM-DD/
 │   │           └── lesson_N/
 │   │               ├── topic-name.md
 │   │               └── topic-name.html
-│   ├── causal-inference/
-│   └── stochastic-programming/
+│   ├── topic_2/
+│   └── topic_3/
 ├── hubs/                           # Subject-specific index pages
-│   ├── nlp-index.html
-│   ├── causal-inference-index.html
-│   └── stochastic-programming-index.html
+│   ├── topic_1-index.html
+│   ├── topic_2-index.html
+│   └── topic_3-index.html
 ├── index.html                      # Main landing page
 ├── generate_lesson.py              # Core lesson generator script
 ├── requirements.txt                # Python dependencies
@@ -163,20 +145,6 @@ Each curriculum is defined in a JSON file with the following structure:
   - `difficulty`: Beginner, intermediate, or advanced
   - `readings`: Suggested reading materials
 
-## 🎨 Lesson Format
-
-Each generated lesson follows a consistent structure:
-
-### Markdown Front Matter
-```yaml
----
-title: "Topic Title"
-date: "YYYY-MM-DD"
-week: 7
-lesson: 3
-slug: "topic-slug"
----
-```
 
 ### Content Structure
 1. **Formal Definition**: What the concept is and how it's used
@@ -195,11 +163,6 @@ The repository uses GitHub Actions for automated lesson generation:
   2. Generates lessons for each curriculum in parallel
   3. Creates a Pull Request with new content
   4. Auto-merges the PR
-
-### Required Secrets
-
-Set up the following secret in your GitHub repository:
-- `GEMINI_API_KEY`: Your Google Gemini API key
 
 ## 🛠️ Customization
 
@@ -228,19 +191,6 @@ Current setting generates 6 lessons per day (24 hours / 4 hours = 6 lessons).
 
 Modify the `build_prompt()` function in `generate_lesson.py` to change the lesson structure or add additional sections.
 
-## 📖 Viewing Lessons
-
-### Via Web Browser
-
-1. Open `index.html` in a web browser (or host via GitHub Pages)
-2. Navigate to a subject hub
-3. Browse and read lessons
-
-### Via Files
-
-- **Markdown**: `topic/{subject}/week_N/day_YYYY-MM-DD/lesson_N/topic-name.md`
-- **HTML**: Same path with `.html` extension
-
 ## 🤝 Contributing
 
 Contributions are welcome! Here are some ways you can contribute:
@@ -262,16 +212,6 @@ Contributions are welcome! Here are some ways you can contribute:
 ## 📝 License
 
 This project is open source and available for educational purposes.
-
-## 🙏 Acknowledgments
-
-- **Google Gemini AI**: For powering the lesson generation
-- **Curriculum Sources**: Various academic resources and courses that inspired the curriculum structures
-- Educational content is generated for learning purposes and may require verification for accuracy
-
-## 📧 Contact
-
-For questions or suggestions, please open an issue in this repository.
 
 ---
 
