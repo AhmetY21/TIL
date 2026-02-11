@@ -219,7 +219,7 @@ Set up the following secret in your GitHub repository:
 Edit the `LESSON_EVERY_HOURS` variable in `generate_lesson.py`:
 
 ```python
-LESSON_EVERY_HOURS = 4  # 4 => 6 lessons/day
+LESSON_EVERY_HOURS = 4  # Every 4 hours = 6 lessons per day (24/4)
 ```
 
 Current setting generates 6 lessons per day (every 4 hours).
