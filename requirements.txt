@@ -3,4 +3,3 @@ python-slugify
 python-dotenv
 markdown
 
-bleach

@@ -13,7 +13,6 @@ import os
 import re
 import glob
 import json
-import html
 import argparse
 import datetime
 from dataclasses import dataclass
@@ -23,7 +22,6 @@ import google.generativeai as genai
 from slugify import slugify
 from dotenv import load_dotenv
 import markdown
-import bleach
 
 load_dotenv()
 
@@ -46,28 +44,6 @@ MD_EXTENSIONS = [
     "codehilite",
     "admonition",
 ]
-
-# Pre-compiled Regexes
-RE_MARKDOWN_FENCE = re.compile(r"^```(?:markdown)?\s*\n([\s\S]*?)\n```$")
-RE_TOPIC_HASH = re.compile(r"^#\s*Topic:\s*(.+)$", re.IGNORECASE)
-RE_TOPIC_PLAIN = re.compile(r"^Topic:\s*(.+)$", re.IGNORECASE)
-RE_WEEK = re.compile(r"^week_(\d+)$")
-RE_DAY = re.compile(r"^day_(\d{4}-\d{2}-\d{2})$")
-RE_LESSON = re.compile(r"^lesson_(\d+)$")
-# Bleach configuration for HTML sanitization
-BLEACH_ALLOWED_TAGS = [
-    "h1", "h2", "h3", "h4", "h5", "h6",
-    "p", "br", "hr", "em", "strong", "code", "pre", "blockquote",
-    "ul", "ol", "li", "dd", "dt",
-    "table", "thead", "tbody", "tr", "th", "td",
-    "a", "img", "span", "div",
-]
-
-BLEACH_ALLOWED_ATTRIBUTES = {
-    "a": ["href", "title", "rel"],
-    "img": ["src", "alt", "title"],
-    "*": ["class", "id"],
-}
 
 
 @dataclass(frozen=True)
@@ -133,7 +109,7 @@ def unwrap_outer_markdown_fence(text: str) -> str:
     unwrap it. Preserve internal code fences.
     """
     t = text.strip()
-    m = RE_MARKDOWN_FENCE.match(t)
+    m = re.match(r"^```(?:markdown)?\s*\n([\s\S]*?)\n```$", t)
     return m.group(1).strip() if m else t
 
 
@@ -334,19 +310,21 @@ def add_front_matter(md: str, *, title: str, date_str: str, week_num: int, lesso
 
 
 def convert_md_to_html(md_text: str, title: str) -> str:
-    raw_html = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
-    html_body = bleach.clean(
-        raw_html,
-        tags=BLEACH_ALLOWED_TAGS,
-        attributes=BLEACH_ALLOWED_ATTRIBUTES,
-    )
+    html_body = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{html.escape(title)}</title>
+  <title>{title}</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {{
+      document.documentElement.classList.add('dark');
+    }} else {{
+      document.documentElement.classList.remove('dark');
+    }}
+  </script>
   <style>
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -440,10 +418,10 @@ def convert_md_to_html(md_text: str, title: str) -> str:
 def extract_topic_title_fallback(md: str) -> Optional[str]:
     lines = [ln.strip() for ln in md.splitlines() if ln.strip()]
     for ln in lines[:30]:
-        m1 = RE_TOPIC_HASH.match(ln)
+        m1 = re.match(r"^#\s*Topic:\s*(.+)$", ln, re.IGNORECASE)
         if m1:
             return m1.group(1).replace("(Mock)", "").strip()
-        m2 = RE_TOPIC_PLAIN.match(ln)
+        m2 = re.match(r"^Topic:\s*(.+)$", ln, re.IGNORECASE)
         if m2:
             return m2.group(1).replace("(Mock)", "").strip()
     return None
@@ -499,9 +477,9 @@ def parse_lesson_path(rel_path: str, meta: CurriculumMeta) -> Optional[Dict[str,
     if parts[0] != "topic" or parts[1] != meta.slug:
         return None
 
-    m_week = RE_WEEK.match(parts[2])
-    m_day = RE_DAY.match(parts[3])
-    m_lsn = RE_LESSON.match(parts[4])
+    m_week = re.match(r"^week_(\d+)$", parts[2])
+    m_day = re.match(r"^day_(\d{4}-\d{2}-\d{2})$", parts[3])
+    m_lsn = re.match(r"^lesson_(\d+)$", parts[4])
     if not (m_week and m_day and m_lsn):
         return None
 
@@ -552,21 +530,14 @@ def update_index_page(meta: CurriculumMeta) -> None:
             if current_week_label is not None:
                 lessons_html += "</div>"
             current_week_label = week_label
-            # week_label is safe as it's "Week " + int
             lessons_html += f"<h2 class='week-title'>{week_label}</h2><div class='week-container'>"
-
-        # Escape metadata before inserting into HTML
-        safe_date = html.escape(str(lesson["day_str"]))
-        safe_lesson_num = html.escape(str(lesson["lesson_num"]))
-        safe_name = html.escape(lesson["name"])
-        safe_path = html.escape(lesson["html_path"])
 
         lessons_html += f"""
         <div class="lesson-card">
-            <div class="lesson-date">{safe_date} · Lesson {safe_lesson_num}</div>
-            <div class="lesson-name">{safe_name}</div>
+            <div class="lesson-date">{lesson["day_str"]} · Lesson {lesson["lesson_num"]}</div>
+            <div class="lesson-name">{lesson["name"]}</div>
             <div class="lesson-links">
-                <a href="{safe_path}" class="btn btn-primary">View Lesson (HTML)</a>
+                <a href="{lesson["html_path"]}" class="btn btn-primary">View Lesson (HTML)</a>
             </div>
         </div>
         """
@@ -574,15 +545,19 @@ def update_index_page(meta: CurriculumMeta) -> None:
     if current_week_label is not None:
         lessons_html += "</div>"
 
-    safe_subject = html.escape(meta.subject)
-    safe_subtitle = html.escape(meta.subtitle)
-
     index_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{safe_subject} Learning Hub</title>
+  <title>{meta.subject} Learning Hub</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {{
+      document.documentElement.classList.add('dark');
+    }} else {{
+      document.documentElement.classList.remove('dark');
+    }}
+  </script>
   <style>
     :root {{
       --primary: #2563eb;
@@ -691,8 +666,8 @@ def update_index_page(meta: CurriculumMeta) -> None:
   <div class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
     <header>
-      <h1>{safe_subject} Learning Hub</h1>
-      <p class="subtitle">{safe_subtitle}</p>
+      <h1>{meta.subject} Learning Hub</h1>
+      <p class="subtitle">{meta.subtitle}</p>
     </header>
 
     {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
