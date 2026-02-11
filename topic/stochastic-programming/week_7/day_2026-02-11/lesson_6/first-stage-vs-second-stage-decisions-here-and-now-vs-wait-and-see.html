@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>First-stage vs Second-stage Decisions (Here-and-now vs Wait-and-see)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-first-stage-vs-second-stage-decisions-here-and-now-vs-wait-and-see">Topic: First-stage vs Second-stage Decisions (Here-and-now vs Wait-and-see)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In stochastic programming, we explicitly acknowledge uncertainty in the parameters of an optimization problem.  We model this uncertainty through scenarios, probability distributions, or other representations of possible future events.  The core concept of first-stage vs. second-stage (or "here-and-now" vs. "wait-and-see") decisions concerns the timing and dependency of decisions in the face of this uncertainty.</p>
+<ul>
+<li>
+<p><strong>First-stage decisions (Here-and-now):</strong> These decisions must be made <em>before</em> we observe the realization of the uncertain parameters (the scenario unfolds). They are often referred to as "strategic" decisions.  They must be robust in the sense that they should perform reasonably well across all possible scenarios. These decisions are typically represented by variables <code>x</code>.</p>
+</li>
+<li>
+<p><strong>Second-stage decisions (Wait-and-see):</strong> These decisions can be made <em>after</em> we observe the realization of the uncertain parameters. They are often referred to as "tactical" or "operational" decisions. They are scenario-dependent, meaning that their values depend on which scenario actually occurs. These decisions are typically represented by variables <code>y_s</code>, where <code>s</code> denotes a specific scenario.  Because they can adapt to the realized scenario, they provide a mechanism to hedge against the uncertainty inherent in the first-stage decisions.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong> This framework is fundamental to formulating stochastic programming problems. We use it by:</p>
+<ol>
+<li><strong>Identifying the uncertainty:</strong> Characterize the uncertain parameters and their probability distribution (or other representation of uncertainty, such as scenario sets).</li>
+<li><strong>Defining the decision stages:</strong> Determine which decisions must be made before (first-stage) and after (second-stage) the uncertainty is revealed.</li>
+<li><strong>Formulating the objective function:</strong>  Typically, the objective function involves minimizing the expected cost (or maximizing the expected profit) over all scenarios. This includes the cost associated with first-stage decisions and the expected cost associated with the second-stage (scenario-dependent) decisions.</li>
+<li><strong>Formulating the constraints:</strong>  Constraints are categorized based on their timing:<ul>
+<li><strong>First-stage constraints:</strong> Constraints that must hold regardless of the scenario. They involve only first-stage variables (<code>x</code>).</li>
+<li><strong>Second-stage constraints:</strong> Constraints that must hold for each scenario. They involve both first-stage variables (<code>x</code>) and scenario-dependent second-stage variables (<code>y_s</code>).  These ensure feasibility given a particular outcome of the uncertain parameters.</li>
+</ul>
+</li>
+<li><strong>Nonanticipativity:</strong> In some stochastic programming formulations, we enforce nonanticipativity. This means that the first-stage decisions must be the same across all scenarios. This is often implicitly enforced by defining the first-stage variables outside the scenario loop in a mathematical programming model.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Example:</strong> Consider a supply chain network design problem.</p>
+<ul>
+<li>
+<p><strong>First-stage decision (Here-and-now):</strong> Deciding where to build distribution centers (DCs). The number, size, and location of DCs are determined <em>before</em> we know the exact future demand.  Let <code>x_j = 1</code> if a DC is built at location <code>j</code>, and <code>0</code> otherwise.</p>
+</li>
+<li>
+<p><strong>Uncertainty:</strong> Future demand at customer locations. We can model this uncertainty with several demand scenarios, each with an associated probability.  Let <code>d_{i,s}</code> be the demand at customer location <code>i</code> in scenario <code>s</code>.</p>
+</li>
+<li>
+<p><strong>Second-stage decision (Wait-and-see):</strong>  Deciding how much to ship from each DC to each customer in each scenario.  These decisions are made <em>after</em> we observe the realized demand scenario.  Let <code>y_{j,i,s}</code> be the amount shipped from DC <code>j</code> to customer <code>i</code> in scenario <code>s</code>.</p>
+</li>
+<li>
+<p><strong>Objective:</strong> Minimize the total cost, which includes the fixed cost of building the DCs (first-stage cost) plus the expected transportation cost (second-stage cost) across all demand scenarios.</p>
+</li>
+<li>
+<p><strong>Constraints:</strong></p>
+<ul>
+<li>First-stage constraints: Budget constraint on the total investment in building DCs.</li>
+<li>Second-stage constraints:<ul>
+<li>Supply constraints at each DC (the amount shipped cannot exceed the DC's capacity).</li>
+<li>Demand constraints at each customer location (the demand must be satisfied).</li>
+<li>Non-negativity constraints on the shipping quantities.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>In this scenario, the here-and-now decision (DC locations) is strategic, influencing the long-term structure of the supply chain. The wait-and-see decision (shipping quantities) is tactical, allowing the supply chain to adapt to the realized demand, mitigating the risk associated with uncertain demand.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use Pyomo, a Python-based optimization modeling language, to formulate and solve stochastic programming problems.  Here's a simplified example illustrating the first-stage/second-stage concept:</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import random
+
+# Define the number of scenarios
+num_scenarios = 3
+
+# Define probabilities for each scenario
+probabilities = {1: 0.3, 2: 0.4, 3: 0.3}
+
+# Define uncertain parameters (e.g., demand) - this is just an example
+demands = {
+    1: 10 + random.randint(-3, 3),  # Scenario 1 demand
+    2: 15 + random.randint(-3, 3),  # Scenario 2 demand
+    3: 20 + random.randint(-3, 3)   # Scenario 3 demand
+}
+
+# Create the model
+model = ConcreteModel()
+
+# First-stage variable (here-and-now): Production quantity
+model.x = Var(domain=NonNegativeReals)
+
+# Define Scenarios
+model.scenarios = Set(initialize=range(1, num_scenarios + 1))
+
+# Second-stage variable (wait-and-see): Inventory level for each scenario
+model.y = Var(model.scenarios, domain=NonNegativeReals)
+
+# Objective function: Minimize production cost + expected inventory cost
+def objective_rule(model):
+    production_cost = model.x  # Cost per unit produced is 1
+    expected_inventory_cost = sum(probabilities[s] * model.y[s] for s in model.scenarios)
+    return production_cost + expected_inventory_cost
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+# Constraint:  Production must be sufficient to meet demand in each scenario
+def constraint_rule(model, s):
+    return model.x + model.y[s] &gt;= demands[s]
+model.constraint = Constraint(model.scenarios, rule=constraint_rule)
+
+
+# Solve the model (assuming a solver like GLPK or CBC is installed)
+solver = SolverFactory('glpk') # You may need to adjust the solver name
+results = solver.solve(model)
+
+# Print the results
+if results.solver.termination_condition == TerminationCondition.optimal:
+    print(&quot;Optimal solution found:&quot;)
+    print(&quot;Production quantity (first-stage):&quot;, model.x.value)
+    for s in model.scenarios:
+        print(f&quot;Inventory level in scenario {s} (second-stage):&quot;, model.y[s].value)
+else:
+    print(&quot;Solver did not find an optimal solution.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>We define the number of scenarios and their probabilities.</li>
+<li><code>model.x</code> is the first-stage variable (production quantity) – decided <em>before</em> knowing the demand.</li>
+<li><code>model.scenarios</code> defines the possible scenarios.</li>
+<li><code>model.y[s]</code> is the second-stage variable (inventory level for each scenario) – decided <em>after</em> knowing the demand in scenario <code>s</code>.</li>
+<li>The objective function minimizes the production cost plus the expected inventory cost across all scenarios.</li>
+<li>The constraint ensures that production plus inventory is sufficient to meet demand <em>in each scenario</em>.  This links the first-stage and second-stage decisions.</li>
+</ul>
+<p>This simplified example demonstrates the basic structure. Real-world problems will be more complex, involving more variables, constraints, and scenarios.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the computational complexity of solving a stochastic programming problem with first-stage and second-stage decisions scale with the number of scenarios? Why is scenario reduction a common technique, and what are some approaches to scenario reduction?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
