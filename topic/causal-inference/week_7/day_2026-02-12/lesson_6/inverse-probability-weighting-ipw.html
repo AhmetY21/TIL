@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inverse Probability Weighting (IPW)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-inverse-probability-weighting-ipw">Topic: Inverse Probability Weighting (IPW)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Inverse Probability Weighting (IPW) is a statistical technique used in causal inference to estimate the average treatment effect (ATE) by creating a pseudo-population in which treatment assignment is independent of measured confounders.  It addresses confounding by weighting each observation by the inverse of the probability that they received the treatment they actually received, <em>given</em> their observed covariates.</p>
+<p><strong>More formally:</strong></p>
+<p>Let:</p>
+<ul>
+<li><code>A</code> be the binary treatment variable (1 for treated, 0 for untreated).</li>
+<li><code>X</code> be a set of confounders (observed covariates).</li>
+<li><code>Y</code> be the outcome variable.</li>
+<li><code>e(X) = P(A=1 | X)</code> be the propensity score, the probability of receiving treatment given the covariates <code>X</code>.</li>
+</ul>
+<p>The IPW estimator estimates the ATE as follows:</p>
+<ol>
+<li>
+<p><strong>Estimate the Propensity Score:</strong> This is often done using logistic regression, where the treatment <code>A</code> is regressed on the covariates <code>X</code>.  This gives us an estimate of <code>e(X)</code>.</p>
+</li>
+<li>
+<p><strong>Calculate the Weights:</strong>  Each observation is assigned a weight:</p>
+<ul>
+<li>If <code>A=1</code> (treated), the weight is <code>1 / e(X)</code>.</li>
+<li>If <code>A=0</code> (untreated), the weight is <code>1 / (1 - e(X))</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Estimate the ATE:</strong> The ATE is estimated as the weighted difference in means of the outcome variable <code>Y</code> between the treated and untreated groups:</p>
+<p>ATE =  mean(Y * (A / e(X)))  -  mean(Y * ((1-A) / (1-e(X))))</p>
+</li>
+</ol>
+<p><strong>How we use it:</strong></p>
+<p>IPW allows us to estimate the causal effect of a treatment even when there is confounding. By re-weighting the data, IPW aims to create a situation similar to a randomized controlled trial, where treatment assignment is independent of the observed covariates.  It's a crucial tool for estimating causal effects from observational data.</p>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Positivity/Overlap Assumption:</strong> IPW relies on the <em>positivity</em> or <em>overlap</em> assumption, which states that for every combination of covariate values <code>X</code>, there must be a non-zero probability of receiving both treatment and control. In other words, <code>0 &lt; P(A=1 | X) &lt; 1</code> for all <code>X</code>.  Violations of this assumption can lead to unstable and biased estimates, especially if propensity scores are very close to 0 or 1.</li>
+<li><strong>Model Specification:</strong> The accuracy of the IPW estimator depends heavily on the correct specification of the propensity score model. If the model is misspecified (e.g., important confounders are omitted), the resulting ATE estimate will be biased.</li>
+<li><strong>Stabilized Weights:</strong> To reduce the variance of the IPW estimator, <em>stabilized weights</em> are often used.  These are calculated as <code>P(A=a) / P(A=a | X)</code>, where <code>P(A=a)</code> is the marginal probability of treatment <code>a</code> (e.g., the proportion of treated individuals in the sample).  These are less susceptible to extreme weights.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are analyzing a dataset of patients who received a new drug to treat high blood pressure. You want to determine if the drug causally reduces blood pressure.  However, the decision to prescribe the drug was not randomized.  Doctors were more likely to prescribe the drug to patients with more severe hypertension and other pre-existing conditions (age, obesity, diabetes). These conditions are confounders, as they affect both the likelihood of receiving the drug and the outcome (blood pressure).</p>
+<p>In this scenario, you can use IPW to estimate the effect of the drug.</p>
+<ol>
+<li><strong>Identify Confounders (X):</strong> Age, obesity, diabetes, baseline blood pressure, etc.</li>
+<li><strong>Estimate Propensity Score (e(X)):</strong>  Use logistic regression to predict the probability of receiving the drug (A=1) based on the confounders (X).  <code>A ~ Age + Obesity + Diabetes + BaselineBloodPressure</code></li>
+<li><strong>Calculate Weights:</strong>  Calculate the inverse probability weights as described above.</li>
+<li><strong>Estimate ATE:</strong>  Calculate the weighted difference in mean blood pressure between the treated and untreated groups. This provides an estimate of the drug's causal effect on blood pressure, adjusted for the confounding effects of the observed covariates.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+def estimate_ate_ipw(data, treatment_col, outcome_col, confounders):
+    &quot;&quot;&quot;
+    Estimates the Average Treatment Effect (ATE) using Inverse Probability Weighting (IPW).
+
+    Args:
+        data (pd.DataFrame): The dataset.
+        treatment_col (str): Name of the treatment column (binary: 0 or 1).
+        outcome_col (str): Name of the outcome column.
+        confounders (list): List of column names representing confounders.
+
+    Returns:
+        float: Estimated ATE.
+    &quot;&quot;&quot;
+
+    # 1. Estimate Propensity Score
+    formula = treatment_col + &quot; ~ &quot; + &quot; + &quot;.join(confounders)
+    model = smf.glm(formula=formula, data=data, family=sm.families.Binomial()).fit()
+    propensity_scores = model.predict(data)
+
+    # 2. Calculate Weights
+    weights = np.where(data[treatment_col] == 1, 1 / propensity_scores, 1 / (1 - propensity_scores))
+
+
+    # 3. Estimate ATE
+    ate = np.mean(data[outcome_col] * weights * data[treatment_col]) - np.mean(data[outcome_col] * weights * (1 - data[treatment_col]))
+
+    return ate
+
+
+# Example usage with dummy data:
+data = pd.DataFrame({
+    'treatment': [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    'outcome': [2, 5, 1, 6, 3, 7, 2, 8, 1, 9],
+    'age': [30, 40, 35, 45, 32, 42, 37, 47, 33, 43],
+    'income': [50000, 70000, 60000, 80000, 55000, 75000, 65000, 85000, 58000, 78000]
+})
+
+treatment_col = 'treatment'
+outcome_col = 'outcome'
+confounders = ['age', 'income']
+
+ate = estimate_ate_ipw(data, treatment_col, outcome_col, confounders)
+print(f&quot;Estimated ATE: {ate}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does IPW compare to other causal inference methods like propensity score matching or regression adjustment, and when might one be preferred over the others? What are the relative strengths and weaknesses of each approach?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
