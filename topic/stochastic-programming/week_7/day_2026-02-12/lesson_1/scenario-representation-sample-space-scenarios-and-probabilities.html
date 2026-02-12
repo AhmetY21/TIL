@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scenario Representation: sample space, scenarios, and probabilities</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-scenario-representation-sample-space-scenarios-and-probabilities">Topic: Scenario Representation: sample space, scenarios, and probabilities</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In stochastic programming, we deal with optimization problems where some parameters are uncertain. <em>Scenario representation</em> is the process of characterizing this uncertainty using a discrete set of possible outcomes. It involves defining:</p>
+<ul>
+<li>
+<p><strong>Sample Space (Ω):</strong> The set of all possible realizations of the uncertain parameters. Ω is often very large or even infinite, making it impractical to work with directly.</p>
+</li>
+<li>
+<p><strong>Scenarios (ω ∈ Ω):</strong> A scenario is a specific realization of the uncertain parameters. Since we can't typically represent the entire sample space, we approximate it by selecting a finite set of scenarios, denoted as {ω₁, ω₂, ..., ωₙ}. Each scenario represents a specific state of the uncertain variables. The choice of scenarios is crucial for the accuracy of the stochastic programming model. For example, if we are modeling the demand for a product, each scenario might represent a particular level of demand.</p>
+</li>
+<li>
+<p><strong>Probabilities (pᵢ):</strong>  Each scenario ωᵢ is assigned a probability pᵢ, representing the likelihood of that scenario occurring.  The probabilities must sum to 1 (i.e., Σᵢ pᵢ = 1). These probabilities quantify our beliefs or estimates about the likelihood of each scenario.</p>
+</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<p>Scenario representation allows us to transform a stochastic optimization problem into a deterministic, but larger, problem. Instead of dealing with continuous probability distributions, we work with a finite set of possible outcomes. This allows us to:</p>
+<ul>
+<li>Approximate the expected value function: We replace integrals over the continuous sample space with weighted sums over the discrete scenarios.</li>
+<li>Formulate solvable optimization problems: We can create deterministic equivalent formulations of the stochastic problem, which can then be solved using standard optimization solvers.</li>
+<li>Analyze the impact of uncertainty: By examining the solutions under different scenarios, we can understand how the optimal decisions are affected by the uncertain parameters.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain problem where a company needs to decide how much product to order before knowing the actual demand. The demand is uncertain.</p>
+<ul>
+<li>
+<p><strong>Sample Space (Ω):</strong>  The range of all possible demand values. This could be a continuous range of values (e.g., between 0 and infinity) or a discrete set of values (e.g., possible integer values).</p>
+</li>
+<li>
+<p><strong>Scenarios (ω ∈ Ω):</strong> Instead of trying to model the continuous distribution of demand, we create a few representative scenarios:</p>
+<ul>
+<li>ω₁: Low Demand (e.g., 100 units)</li>
+<li>ω₂: Medium Demand (e.g., 200 units)</li>
+<li>ω₃: High Demand (e.g., 300 units)</li>
+</ul>
+</li>
+<li>
+<p><strong>Probabilities (pᵢ):</strong> We assign probabilities to each scenario based on our understanding of the demand distribution:</p>
+<ul>
+<li>p₁ = 0.3 (30% chance of low demand)</li>
+<li>p₂ = 0.5 (50% chance of medium demand)</li>
+<li>p₃ = 0.2 (20% chance of high demand)</li>
+</ul>
+</li>
+</ul>
+<p>Now, the stochastic programming model can be formulated with these three scenarios, each with its corresponding probability. The optimization problem becomes:  "How much to order to minimize the expected cost, considering the cost of ordering, potential stockouts, and potential leftover inventory under each demand scenario?"</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single Python function to <em>create</em> scenarios (as this depends heavily on the problem), we can demonstrate how to <em>represent</em> them using dictionaries or Pandas DataFrames, which are common tools for working with data in Python for optimization.  We can also use NumPy arrays. Here's an example using a dictionary:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+
+# Scenario representation using a dictionary
+scenarios = {
+    'low': {'demand': 100, 'probability': 0.3},
+    'medium': {'demand': 200, 'probability': 0.5},
+    'high': {'demand': 300, 'probability': 0.2}
+}
+
+# Example:  Calculate expected demand
+expected_demand = 0
+for scenario_name, scenario_data in scenarios.items():
+    expected_demand += scenario_data['demand'] * scenario_data['probability']
+
+print(f&quot;Expected Demand: {expected_demand}&quot;)
+
+
+# Scenario representation using NumPy arrays
+
+demands = np.array([100, 200, 300])
+probabilities = np.array([0.3, 0.5, 0.2])
+
+expected_demand_np = np.sum(demands * probabilities)
+
+print(f&quot;Expected demand using numpy {expected_demand_np}&quot;)
+</code></pre>
+
+<p>This code demonstrates how to represent scenarios and their probabilities. The crucial part would be how these scenarios are integrated into an optimization model using a library like Pyomo or Gurobipy, where the scenario probabilities are used to formulate the objective function (usually minimizing expected cost or maximizing expected profit).</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you decide on the number and nature of the scenarios to use in a stochastic programming model?  Are there any techniques for scenario reduction or generation that can help improve the efficiency and accuracy of the model?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
