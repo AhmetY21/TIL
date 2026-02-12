@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Part-of-Speech (POS) Tagging Concepts</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-part-of-speech-pos-tagging-concepts">Topic: Part-of-Speech (POS) Tagging Concepts</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Part-of-speech (POS) tagging, also known as grammatical tagging or word-category disambiguation, is the process of assigning a part-of-speech (e.g., noun, verb, adjective, adverb) to each word in a text corpus.  The part of speech indicates how a word functions grammatically and semantically within a sentence.  It's a fundamental task in natural language processing and is a crucial intermediate step for many higher-level NLP tasks.</p>
+<p>Formally, given a sentence <em>S</em> = <em>w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>n</sub></em>, where <em>w<sub>i</sub></em> represents the <em>i</em>-th word in the sentence, POS tagging aims to find the optimal sequence of tags <em>T</em> = <em>t<sub>1</sub>, t<sub>2</sub>, ..., t<sub>n</sub></em>, where <em>t<sub>i</sub></em> represents the part-of-speech tag for the <em>i</em>-th word <em>w<sub>i</sub></em>. The "optimality" is usually determined by maximizing a probability score, often learned from a tagged corpus.</p>
+<p>We can use POS tagging for:</p>
+<ul>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying nouns is a crucial first step. POS tagging helps to differentiate between person, location, and organization names.</li>
+<li><strong>Information Retrieval:</strong>  Improving search accuracy by understanding the grammatical role of words.  For example, searching for a "fast car" might benefit from knowing that "fast" is an adjective describing "car," a noun.</li>
+<li><strong>Sentiment Analysis:</strong> Determining the polarity of adjectives and adverbs.  The POS tag identifies that a word is indeed an adjective or adverb contributing to the sentiment.</li>
+<li><strong>Machine Translation:</strong>  Understanding the grammatical structure of the source language aids in translating it accurately into the target language.</li>
+<li><strong>Parsing:</strong>  Building parse trees that represent the grammatical structure of sentences. POS tags serve as the terminals of the parse tree.</li>
+<li><strong>Text-to-Speech (TTS):</strong>  Knowing the POS of a word can help in pronunciation (e.g., the word "lead" has different pronunciations as a noun vs. a verb).</li>
+<li><strong>Text Summarization:</strong> Identifying important nouns and verbs.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're building a chatbot that helps users find information about movies. A user might ask: "Show me action movies directed by Christopher Nolan." To accurately process this request, the chatbot needs to understand the grammatical structure of the sentence.</p>
+<ul>
+<li><strong>"Show"</strong>: Verb (commanding action)</li>
+<li><strong>"me"</strong>: Pronoun (object of the verb)</li>
+<li><strong>"action"</strong>: Adjective (describing the type of movie)</li>
+<li><strong>"movies"</strong>: Noun (the object being searched for)</li>
+<li><strong>"directed"</strong>: Verb (past participle, describing the movies)</li>
+<li><strong>"by"</strong>: Preposition</li>
+<li><strong>"Christopher Nolan"</strong>: Proper Noun (director's name)</li>
+</ul>
+<p>With this POS information, the chatbot can correctly interpret the query. It knows "action" modifies "movies," indicating the genre.  It knows "directed by Christopher Nolan" is a phrase describing the movies.  Without POS tagging, the chatbot might incorrectly interpret "action" as a verb, leading to irrelevant search results.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>spaCy</code> library for POS tagging in Python.</p>
+<pre class="codehilite"><code class="language-python">import spacy
+
+# Load the English language model
+nlp = spacy.load(&quot;en_core_web_sm&quot;)
+
+# Example sentence
+text = &quot;The quick brown fox jumps over the lazy dog.&quot;
+
+# Process the text
+doc = nlp(text)
+
+# Iterate through the tokens and print the word and its POS tag
+for token in doc:
+    print(token.text, token.pos_, token.tag_)
+
+# The 'pos_' attribute gives the coarse-grained POS tag
+# The 'tag_' attribute gives the fine-grained POS tag (more specific)
+</code></pre>
+
+<p>This code will output something like this:</p>
+<pre class="codehilite"><code>The DET DT
+quick ADJ JJ
+brown ADJ JJ
+fox NOUN NN
+jumps VERB VBZ
+over ADP IN
+the DET DT
+lazy ADJ JJ
+dog NOUN NN
+. PUNCT .
+</code></pre>
+
+<ul>
+<li><code>DET</code>: Determiner</li>
+<li><code>ADJ</code>: Adjective</li>
+<li><code>NOUN</code>: Noun</li>
+<li><code>VERB</code>: Verb</li>
+<li><code>ADP</code>: Adposition (preposition or postposition)</li>
+<li><code>PUNCT</code>: Punctuation</li>
+</ul>
+<p>Other Python libraries for POS tagging include NLTK (which offers multiple taggers) and TextBlob (which is built on NLTK and provides a simpler interface).</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do Hidden Markov Models (HMMs) relate to POS tagging? Explain the basic idea of how HMMs are used for this task.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
