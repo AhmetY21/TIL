@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonanticipativity Constraints (NAC): meaning and modeling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-nonanticipativity-constraints-nac-meaning-and-modeling">Topic: Nonanticipativity Constraints (NAC): meaning and modeling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Nonanticipativity constraints (NACs) are restrictions placed on decision variables in stochastic programming models to ensure that decisions made at a particular stage <em>cannot</em> depend on information that will only be revealed in the future.  In other words, decisions made <em>before</em> a certain realization of uncertainty must be identical across all scenarios that share the same history up to that point.</p>
+<p><strong>Meaning:</strong></p>
+<p>The core idea of NACs is to enforce realistic decision-making under uncertainty. Imagine you're managing an inventory and must place an order <em>before</em> knowing the exact demand for next month. The order quantity you choose today <em>cannot</em> be a function of information that is only available next month.  You must base your decision solely on available information (e.g., historical demand, forecasts, current inventory levels). NACs mathematically capture this restriction.</p>
+<p><strong>How we can use it:</strong></p>
+<ul>
+<li><strong>Multi-stage decision making:</strong> NACs are crucial in multi-stage stochastic programming problems where decisions are made sequentially over time as uncertainty unfolds.</li>
+<li><strong>Ensuring realistic solutions:</strong> By enforcing NACs, the optimization model produces solutions that are implementable in the real world, respecting the temporal flow of information.  Without NACs, the model could find solutions that are optimal in hindsight but impossible to execute.</li>
+<li><strong>Decomposition algorithms:</strong> NACs are often the constraints that link different scenarios together, allowing for decomposition algorithms (like Benders decomposition or Lagrangian relaxation) to be applied. By dualizing or relaxing NACs, the problem can be broken down into smaller, more manageable subproblems, one for each scenario. The solutions of these subproblems are then coordinated to satisfy the NACs.</li>
+</ul>
+<p><strong>Mathematical Representation:</strong></p>
+<p>Let:</p>
+<ul>
+<li><code>x_t(ω)</code> be the decision variable at stage <code>t</code> under scenario <code>ω</code>.</li>
+<li><code>Ω_t</code> be the set of possible scenarios up to stage <code>t</code>.</li>
+<li><code>ω' ∼ ω</code> denote that scenarios <code>ω'</code> and <code>ω</code> share the same history up to stage <code>t</code>.</li>
+</ul>
+<p>Then, the NAC can be formally expressed as:</p>
+<p><code>x_t(ω) = x_t(ω')  for all ω, ω' ∈ Ω_t  such that ω' ∼ ω</code></p>
+<p>This means the decision <code>x_t</code> must be the same for all scenarios that have the same history up to time <code>t</code>.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong>  A power company needs to plan its electricity generation mix for the next year, considering uncertain electricity demand and uncertain renewable energy generation (e.g., solar and wind).</p>
+<p><strong>Details:</strong></p>
+<ul>
+<li><strong>Stage 1 (Planning):</strong> The power company must decide on the capacity of different power plants (coal, gas, solar, wind) <em>before</em> knowing the actual demand or renewable generation. This is a "here-and-now" decision.</li>
+<li><strong>Stage 2 (Operation):</strong> After the capacity decisions are made, the actual demand and renewable generation are revealed. The power company then needs to decide how much electricity to generate from each plant to meet the demand. This is a "wait-and-see" decision.</li>
+</ul>
+<p><strong>Nonanticipativity in this context:</strong></p>
+<p>The capacity decisions made in Stage 1 <em>must</em> be the same across all scenarios.  The company cannot build different amounts of solar capacity depending on what a crystal ball tells them about future wind conditions. These decisions <em>must</em> be made based on the information available <em>at the time the decision is made</em>. The operational decisions in Stage 2, however, can vary across scenarios because they are made <em>after</em> the uncertainty is revealed.</p>
+<p><strong>Without NACs:</strong> The model might "cheat" by building very little capacity and then relying on extremely favorable renewable energy conditions in some scenarios to cover demand, which is unrealistic.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's how you can model nonanticipativity constraints using the Pyomo optimization library in Python.  This is a simplified example, but demonstrates the key concept.  Assume a two-stage problem.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+
+# Number of scenarios
+num_scenarios = 3
+
+# Stages
+num_stages = 2
+
+# Create a concrete model
+model = ConcreteModel()
+
+# Set of scenarios
+model.Scenarios = RangeSet(1, num_scenarios)
+
+# Set of stages
+model.Stages = RangeSet(1, num_stages)
+
+# Example decision variable (Stage 1, here-and-now)
+model.x = Var(within=NonNegativeReals) # Single decision, no scenario index in stage 1
+
+# Example decision variable (Stage 2, wait-and-see)
+model.y = Var(model.Scenarios, within=NonNegativeReals) # Stage 2 decision is scenario dependent
+
+# Objective Function (example)
+model.objective = Objective(expr= model.x + sum(model.y[s] for s in model.Scenarios), sense=minimize)
+
+# Example constraints (some generic constraints):
+model.constraint1 = Constraint(expr = model.x + sum(model.y[s] for s in model.Scenarios) &gt;= 10)
+
+# Nonanticipativity constraints:
+# Since x is a single variable defined *outside* of the scenarios, it automatically
+# satisfies nonanticipativity for stage 1. If we had multiple stage 1 variables, we would define
+# x as Var(model.Scenarios, within=NonNegativeReals)  and then add NACs.
+
+# If we had multiple stage 1 variables indexed by scenarios (which isn't necessary since they're
+# all the same), the NACs would look like this (for variables u indexed by scenarios) :
+
+# model.u = Var(model.Scenarios, within=NonNegativeReals)
+# def nonanticipativity_rule(model, s):
+#     if s &gt; 1:
+#         return model.u[s] == model.u[1]  # Force all scenario u values to equal the first scenario u
+#     else:
+#         return Constraint.Skip #Avoid building redundant constraints
+# model.nonanticipativity = Constraint(model.Scenarios, rule=nonanticipativity_rule)
+
+# Solve the model (example)
+solver = SolverFactory('glpk') # Or other solver like 'ipopt'
+results = solver.solve(model)
+
+# Print results (example)
+if results.solver.termination_condition == TerminationCondition.optimal:
+    print(&quot;Optimal solution found!&quot;)
+    print(f&quot;x = {model.x.value}&quot;)
+    for s in model.Scenarios:
+        print(f&quot;y[{s}] = {model.y[s].value}&quot;)
+else:
+    print(&quot;Solver did not find an optimal solution.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The code defines decision variables <code>x</code> (first-stage, here-and-now) and <code>y</code> (second-stage, wait-and-see).</li>
+<li>Crucially, <code>x</code> is <em>not</em> indexed by scenario in stage 1.  This implicitly enforces nonanticipativity.  If the first-stage decision <em>did</em> depend on the scenario, it would <em>not</em> be implementable.  If you <em>did</em> have multiple first-stage variables indexed by scenario, you would need explicit NACs as shown in the commented section.</li>
+<li>The commented code shows the <em>explicit</em> form of the NACs, which enforces that a first-stage variable <code>u</code> is the same across all scenarios.  This is typically needed when modeling more complex situations where decisions <em>are</em> initially indexed by scenario for modeling convenience but must be forced to be identical across scenarios.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do nonanticipativity constraints interact with risk measures in stochastic programming?  Specifically, how does adding risk aversion (e.g., using Conditional Value-at-Risk (CVaR)) to the objective function affect the formulation or implementation of nonanticipativity constraints?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
