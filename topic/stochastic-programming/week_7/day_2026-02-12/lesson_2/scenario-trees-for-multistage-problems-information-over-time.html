@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scenario Trees for Multistage Problems (information over time)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-scenario-trees-for-multistage-problems-information-over-time">Topic: Scenario Trees for Multistage Problems (information over time)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A scenario tree is a discrete representation of uncertainty evolving over time, used in multistage stochastic programming problems. It's a directed tree graph where:</p>
+<ul>
+<li><strong>Nodes:</strong> Each node represents a possible state of the world at a particular time stage. The root node represents the initial state at time 0.</li>
+<li><strong>Edges:</strong> Each edge represents a possible realization of the uncertain parameters between two consecutive time stages. Edges are associated with a probability representing the likelihood of that realization occurring.</li>
+<li><strong>Paths:</strong> A path from the root to a leaf node (a node at the final time stage) represents a complete scenario, or a specific sequence of realizations of the uncertain parameters over the entire planning horizon.</li>
+<li><strong>Stages:</strong> The tree is structured into stages, corresponding to decision epochs. At each stage, a decision must be made, knowing only the information available up to that stage.</li>
+</ul>
+<p><strong>How we use it:</strong></p>
+<p>Scenario trees allow us to model multistage decision problems under uncertainty. We formulate optimization problems where decisions at each stage can depend on the scenario (the path from the root to the current node). The objective function typically includes a weighted average of costs/profits across all scenarios, where the weights are the probabilities of the scenarios.  The optimization problem is then solved to find a set of decisions that are "best" in expectation, considering the possible future uncertainties. Specifically:</p>
+<ul>
+<li><strong>Representing Uncertainty:</strong> They approximate the continuous distribution of uncertain parameters with a finite set of discrete scenarios.</li>
+<li><strong>Decision-Making:</strong>  They allow us to incorporate the impact of future uncertainties on current decisions. Decisions made in earlier stages must be robust enough to perform well under different possible future scenarios.</li>
+<li><strong>Problem Formulation:</strong>  They provide a framework for formulating multistage stochastic programming problems mathematically (e.g., using linear programming, mixed-integer programming). The decisions at each node are variables in the optimization problem, and the constraints link these decisions across stages and scenarios.</li>
+</ul>
+<p>The quality of the solution depends heavily on the size and structure of the scenario tree.  Larger trees can represent the uncertainty more accurately but lead to computationally more demanding optimization problems. Scenario reduction techniques are often used to reduce the size of the tree while preserving its relevant statistical properties.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Example: Supply Chain Management under Demand Uncertainty</strong></p>
+<p>Imagine a company managing a supply chain over three months.  The demand for their product is uncertain each month.  They need to decide how much product to order at the beginning of each month.</p>
+<ol>
+<li><strong>Uncertainty:</strong> The uncertain parameter is the demand for the product in each month.</li>
+<li><strong>Decision Stages:</strong> The decision stages are the beginnings of each month (Month 1, Month 2, Month 3).</li>
+<li>
+<p><strong>Scenario Tree:</strong> We can construct a scenario tree to represent the possible demand scenarios:</p>
+<ul>
+<li><strong>Root Node (Month 0):</strong> Initial state (e.g., initial inventory).</li>
+<li><strong>Month 1 Nodes:</strong>  Two or three possible demand levels for Month 1 (e.g., Low, Medium, High). Each branch from the root represents a possible demand realization with an associated probability.</li>
+<li><strong>Month 2 Nodes:</strong>  For each Month 1 node, branch out with possible demand levels for Month 2 (again, Low, Medium, High, and associated probabilities).</li>
+<li><strong>Month 3 Nodes:</strong>  Similarly, for each Month 2 node, branch out with possible demand levels for Month 3.</li>
+</ul>
+</li>
+<li>
+<p><strong>Optimization:</strong>  The stochastic programming problem would involve:</p>
+<ul>
+<li><strong>Decision Variables:</strong> The quantity of product to order at the beginning of each month for each node in the scenario tree.</li>
+<li><strong>Objective Function:</strong> Minimize the total expected cost, including ordering costs, inventory holding costs, and potential shortage costs (weighted by the scenario probabilities).</li>
+<li><strong>Constraints:</strong>  Inventory balance equations (inventory at the end of the month depends on the initial inventory, orders, and demand). Constraints to avoid backorders, capacity limitations, etc.</li>
+<li><strong>Solution:</strong> The solution to the stochastic program provides the optimal ordering quantities for each month under each demand scenario. This provides a more robust and informed decision than simply using a single forecast of demand.</li>
+</ul>
+</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>There isn't a single, built-in Python library dedicated solely to building and manipulating scenario trees. However, you can use general optimization libraries like Pyomo or Gurobi (with its Python API) along with data structures to represent the tree. Below is a simplified example using Pyomo to illustrate the concept of creating the tree structure and setting up the stochastic programming problem. This example focuses on <em>defining</em> the tree structure. Setting up the actual optimization model is a separate, more complex task.</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+
+# Define the number of stages and scenarios
+num_stages = 3
+num_scenarios_per_stage = 2 # Binary branching
+
+# Create a dictionary to represent the scenario tree
+scenario_tree = {}
+
+# Root node
+scenario_tree[0] = {0: {'probability': 1.0, 'children': {}}}
+
+# Build the tree recursively
+def build_tree(stage, parent_node, parent_scenario_id):
+  if stage &lt; num_stages:
+    for i in range(num_scenarios_per_stage):
+      scenario_id = parent_scenario_id * num_scenarios_per_stage + i + 1
+      probability = 1.0 / num_scenarios_per_stage # Assuming equal probabilities for simplicity
+      if stage+1 not in scenario_tree:
+        scenario_tree[stage+1] = {}
+      scenario_tree[stage+1][scenario_id] = {'probability': probability, 'children': {}}
+      scenario_tree[stage][parent_node]['children'][i] = scenario_id # store children id to each node
+      build_tree(stage + 1, scenario_id, scenario_id * num_scenarios_per_stage if stage &lt; num_stages-1 else scenario_id)  # recursive call
+
+
+
+build_tree(0, 0, 0)
+
+
+# Print the scenario tree structure (simplified)
+for stage in scenario_tree:
+  print(f&quot;Stage: {stage}&quot;)
+  for node in scenario_tree[stage]:
+    print(f&quot;  Node: {node}, Probability: {scenario_tree[stage][node]['probability']}, Children: {scenario_tree[stage][node]['children']}&quot;)
+
+
+# Example Usage within a Pyomo Model:
+model = pyo.ConcreteModel()
+
+#Sets
+model.Stages = pyo.Set(initialize=range(num_stages+1))
+model.Nodes = pyo.Set(initialize = [node for stage in scenario_tree for node in scenario_tree[stage]])
+# Example Parameter (this is where you'd access the scenario-specific information)
+model.Demand = pyo.Param(model.Nodes, initialize = {node: node%3+1 for node in model.Nodes}) #example, make it depend on actual scenario.
+
+# Variables
+model.Order = pyo.Var(model.Nodes, within = pyo.NonNegativeReals)
+
+#Objective, Constraints will need to access tree structure and its stages /Nodes.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Tree Structure:</strong> The code creates a dictionary <code>scenario_tree</code> to represent the tree. Each key in the dictionary is a stage number. Within each stage, the keys are the node IDs. Each node has a probability and a dictionary of children nodes.</li>
+<li><strong>Recursive Building:</strong>  The <code>build_tree</code> function recursively creates the tree structure. You'll need to adapt this to your specific problem, incorporating how the uncertain parameters evolve between stages and their associated probabilities. In practice, these probabilities will probably come from simulation output or statistical modelling.</li>
+<li><strong>Pyomo Integration:</strong> The example demonstrates how to define sets of Stages and Nodes for your Pyomo model.  The crucial part is using the scenario tree data structure within your Pyomo model to define scenario-dependent parameters, decision variables, and constraints. The <code>model.Demand</code> shows the usage of scenarios.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This code only creates the tree structure. You still need to define the objective function, constraints, and solve the stochastic programming problem using Pyomo.</li>
+<li>Real-world problems often require scenario reduction techniques to manage the computational complexity of large scenario trees. There are Python libraries available for scenario reduction (e.g., <code>scengen</code> - although it requires GAMS).</li>
+<li>The probabilities used in the example are simplified. In practice, you would estimate them from data or using expert knowledge.</li>
+<li>This is a simplified example and doesn't show how to create nonanticipativity constraints (ensuring that decisions are the same up to a certain stage for scenarios that share the same history).  That is a crucial aspect of implementing multistage stochastic programming models.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you incorporate nonanticipativity constraints into a Pyomo model that uses a scenario tree? Provide a concise code snippet illustrating the implementation of such constraints.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
