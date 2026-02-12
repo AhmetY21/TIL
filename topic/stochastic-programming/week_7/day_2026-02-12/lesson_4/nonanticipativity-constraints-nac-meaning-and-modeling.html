@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonanticipativity Constraints (NAC): meaning and modeling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-nonanticipativity-constraints-nac-meaning-and-modeling">Topic: Nonanticipativity Constraints (NAC): meaning and modeling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Nonanticipativity constraints (NACs) are a crucial element in stochastic programming, specifically in multi-stage stochastic programming problems. They ensure that decisions made <em>before</em> the realization of a future random event (uncertainty) cannot depend on information that is not yet available. In other words, decisions in a particular stage of the model must be the same for all scenarios that have identical histories up to that stage. This reflects the realistic constraint that we can't use future information to decide on actions in the present.</p>
+<p>Formally, consider a multi-stage stochastic program with stages <em>t</em> = 0, 1, ..., <em>T</em>.  Let <em>x<sub>t</sub>(ω)</em> represent the decision made at stage <em>t</em> under scenario <em>ω</em>. The scenario <em>ω</em> represents a particular realization of the uncertain parameters over time. The history up to stage <em>t</em> for scenario <em>ω</em> is the path of the uncertain parameters observed up to stage <em>t</em>.</p>
+<p>Nonanticipativity constraints enforce that:</p>
+<p><em>x<sub>t</sub>(ω) = x<sub>t</sub>(ω')</em>  for all <em>t</em>, and for all scenario pairs <em>(ω, ω')</em> that have identical histories up to stage <em>t</em>.</p>
+<p>In simpler terms: If two scenarios have experienced the same events up to stage <em>t</em>, then the decision made at stage <em>t</em> must be the same in both scenarios.  We "tie" decisions across scenarios that share a common past.</p>
+<p>How do we use them?</p>
+<ul>
+<li><strong>Ensuring Realism:</strong> They model the fact that decisions cannot be based on future information.</li>
+<li><strong>Decomposition:</strong> They enable decomposition algorithms like Benders Decomposition (L-Shaped Method) and Progressive Hedging by providing a way to separate the overall stochastic problem into smaller, more manageable subproblems for each scenario, linked by the nonanticipativity constraints.</li>
+<li><strong>Scenario Reduction/Aggregation:</strong> NACs are used to guide scenario reduction techniques, ensuring that the reduced scenario set preserves the essential nonanticipativity properties of the original problem.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a power generation company that needs to decide how much electricity to generate from different sources (e.g., coal, natural gas, renewables) over the next few days.  The demand for electricity is uncertain and depends on factors like weather and economic activity.</p>
+<ul>
+<li><strong>Stage 0 (Today):</strong> The company decides on the initial generation levels for each power source for the next day.</li>
+<li><strong>Stage 1 (Tomorrow):</strong> The actual demand for electricity becomes known, and the company can adjust the generation levels of some sources (e.g., natural gas, which is more flexible) to meet the demand.</li>
+</ul>
+<p>Different weather scenarios (e.g., hot weather leading to high demand, mild weather leading to low demand) can unfold. The company needs to make decisions <em>today</em> about the initial generation levels, <em>before</em> knowing what the actual weather will be <em>tomorrow</em>.</p>
+<p>Nonanticipativity constraints would be applied at Stage 0. The generation levels decided <em>today</em> for coal, gas, and renewables <em>must be the same</em> across all weather scenarios because the company doesn't know which scenario will actually occur.  Once the weather is known (Stage 1), the company <em>can</em> adjust generation levels based on the specific weather scenario, but <em>only</em> for flexible sources like natural gas (if the model allows such adjustments).</p>
+<p>Without nonanticipativity constraints, the optimization model could theoretically "peek into the future" and set different initial generation levels for each weather scenario, which is unrealistic.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's how you might model nonanticipativity constraints using the <code>Pyomo</code> optimization library in Python. We will use a simplified version of the power generation example.</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+
+# Define the model
+model = pyo.ConcreteModel()
+
+# Sets
+model.Scenarios = pyo.Set(initialize=['Scenario1', 'Scenario2'])
+model.Sources = pyo.Set(initialize=['Coal', 'Gas', 'Renewables'])
+
+# Parameters (simplified, representing initial capacity decisions)
+model.capacity_cost = pyo.Param(model.Sources, initialize={'Coal': 10, 'Gas': 5, 'Renewables': 15})
+
+# Variables: capacity of each source in each scenario
+model.Capacity = pyo.Var(model.Sources, model.Scenarios, within=pyo.NonNegativeReals)
+
+# Objective (Minimize total cost across scenarios)
+def obj_rule(model):
+    return sum(model.capacity_cost[s] * model.Capacity[s, scenario] for s in model.Sources for scenario in model.Scenarios)
+model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
+
+
+# Nonanticipativity Constraints (NAC) - Enforce same capacity decisions at the beginning
+def nac_rule(model, source):
+    return model.Capacity[source, 'Scenario1'] == model.Capacity[source, 'Scenario2']
+model.nac = pyo.Constraint(model.Sources, rule=nac_rule) #This is the NAC constraint
+
+#Example Constraints
+def cap_bounds_rule(model,source,scenario):
+  return (0,model.Capacity[source,scenario], 100) # Max capacity of 100 for all sources across all scenarios
+model.cap_bounds = pyo.Constraint(model.Sources, model.Scenarios, rule=cap_bounds_rule)
+
+# Solve the model
+solver = pyo.SolverFactory('glpk') # You can use other solvers like 'cbc', 'gurobi', 'cplex'
+results = solver.solve(model)
+
+# Print the results
+if results.solver.status == pyo.SolverStatus.ok and results.solver.termination_condition == pyo.TerminationCondition.optimal:
+    print(&quot;Solution is optimal&quot;)
+    for s in model.Sources:
+        print(f&quot;Capacity for {s}: Scenario1 = {model.Capacity[s, 'Scenario1'].value}, Scenario2 = {model.Capacity[s, 'Scenario2'].value}&quot;)
+else:
+    print(&quot;Solver failed to find an optimal solution.&quot;)
+    print(results.solver)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Model Setup:</strong> We define a simple <code>Pyomo</code> model with sets for scenarios (<code>Scenarios</code>) and power sources (<code>Sources</code>).  We have a variable called <code>Capacity</code> that dictates how much capacity of each source to implement for each scenario.</li>
+<li><strong>Nonanticipativity Constraint:</strong> The <code>nac_rule</code> function enforces that the capacity decision for each power source must be the same in <code>Scenario1</code> and <code>Scenario2</code>. This ensures the decision is made without knowing which scenario will occur.  We apply this constraint to all sources using <code>model.nac = pyo.Constraint(model.Sources, rule=nac_rule)</code>.</li>
+<li><strong>Objective Function:</strong> The objective is to minimize the total cost of capacity.</li>
+<li><strong>Solver:</strong> We use <code>glpk</code> to solve the optimization problem.  You'll likely want to use a more powerful solver like Gurobi or CPLEX for larger, more complex problems.</li>
+<li><strong>Output:</strong> The code prints the optimal capacity levels for each power source and scenario.  You should see that the capacity levels are the same for both scenarios due to the nonanticipativity constraints.</li>
+</ol>
+<p>This example demonstrates how to create a nonanticipativity constraint in <code>Pyomo</code> by equating decision variables across different scenarios for the initial stage. The core idea is to ensure that decisions are aligned until new information becomes available.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do nonanticipativity constraints affect the complexity of solving a stochastic programming problem, and what techniques are used to mitigate this increased complexity?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
