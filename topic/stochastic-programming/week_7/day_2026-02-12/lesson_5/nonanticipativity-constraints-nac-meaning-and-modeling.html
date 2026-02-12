@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonanticipativity Constraints (NAC): meaning and modeling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-nonanticipativity-constraints-nac-meaning-and-modeling">Topic: Nonanticipativity Constraints (NAC): meaning and modeling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Nonanticipativity constraints (NACs) are a fundamental concept in stochastic programming. They enforce the principle that decisions made <em>before</em> knowing the realization of uncertain parameters must be the same across all scenarios that are indistinguishable up to that point in time. In other words, you cannot use information you don't have yet to make decisions.</p>
+<p>Formally, in a multi-stage stochastic programming problem, let:</p>
+<ul>
+<li><code>x_t(ω)</code> represent the decision vector at stage <code>t</code> under scenario <code>ω</code>.</li>
+<li><code>F_t</code> be the information available up to stage <code>t</code>. This could be represented as a sigma-algebra, meaning we can observe the outcome of some random variables.</li>
+</ul>
+<p>Then, NACs require that:</p>
+<p><code>x_t(ω) = x_t(ω')</code>  for all <code>ω, ω'</code> such that <code>ω</code> and <code>ω'</code> are indistinguishable given <code>F_t</code>.  This means <code>ω</code> and <code>ω'</code> have the same history up to stage <code>t</code>.</p>
+<p>In simpler terms:</p>
+<ul>
+<li><strong>Meaning:</strong> Decisions in early stages cannot depend on future information.</li>
+<li><strong>Use:</strong> NACs ensure that the solution is <em>implementable</em>. Without them, the optimal solution might involve making different decisions at the same stage based on different hypothetical future outcomes that haven't happened yet. This is unrealistic. They constrain the decision variables in different scenarios to have the same value when they are supposed to be based on the same information.</li>
+</ul>
+<p>NACs are often implemented by explicitly equating decision variables in different scenarios up to the time at which the uncertainty is realized. For example, if the first stage decision is made before any uncertainty is revealed, then the first stage decision variable must be the same for all scenarios.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a power generation company that needs to decide how much to invest in different types of power plants (e.g., coal, solar, wind) over a planning horizon of several years. The future electricity demand and fuel prices are uncertain. This is a stochastic programming problem.</p>
+<ul>
+<li><strong>Stage 1 (Year 0):</strong> Invest in power plants.</li>
+<li><strong>Stage 2 (Year 1-5):</strong> Operate the plants, buy fuel, and meet electricity demand.</li>
+</ul>
+<p>Let <code>x</code> be the vector of investment decisions (e.g., capacity of each type of power plant) and <code>y_t(ω)</code> be the vector of operating decisions at year <code>t</code> under scenario <code>ω</code> (e.g., amount of electricity generated by each plant, amount of fuel purchased).</p>
+<p>Without NACs, the investment decision <code>x</code> could be different for each scenario.  This would mean the company builds different power plants in Year 0 depending on what electricity demand will be like in 5 years, even though they don't <em>know</em> the demand in 5 years at Year 0. This is impossible.</p>
+<p>To impose NACs, we would require:</p>
+<p><code>x(ω) = x(ω')  for all scenarios ω, ω'</code></p>
+<p>This means the investment decision (which is made before any uncertainty is revealed) is the same across all scenarios. This ensures the solution is implementable - the company makes a single investment decision in Year 0 based on the information available at that time. The second-stage operational decisions <code>y_t(ω)</code> can vary across scenarios, as they are made after the uncertainty has been partially revealed and new information is available.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The implementation depends on the specific stochastic programming solver and modeling environment. Here's an example using the <code>pyomo</code> library and assuming a scenario-based formulation:</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+
+def create_model(scenarios):
+    model = pyo.ConcreteModel()
+
+    # Scenario set
+    model.S = pyo.Set(initialize=scenarios)
+
+    # Decision Variables (example: amount to invest in a certain technology)
+    model.x = pyo.Var(domain=pyo.NonNegativeReals) # First stage decision: investment
+
+    model.y = pyo.Var(model.S, domain=pyo.NonNegativeReals) #Second stage decision: operational
+    # Objective Function (example: minimizing total cost across all scenarios)
+    def objective_rule(model):
+        return sum(model.y[s] for s in model.S) + model.x # Simplified.  Should involve scenario probabilities.
+    model.objective = pyo.Objective(rule=objective_rule, sense=pyo.MINIMIZE)
+
+    # Nonanticipativity Constraint
+    def nac_rule(model):
+        # Ensure the investment decision is the same for all scenarios.
+        # Choose an arbitrary scenario as the reference point.
+        first_scenario = next(iter(model.S))  #Get first element
+        for s in model.S:
+            if s != first_scenario:
+                yield model.x == model.x  #  A bit redundant in this simple example, but shows concept
+                # More commonly, there might be scenario specific costs/constraints that influence x's definition but are equivalent due to NAC.
+    model.nac_constraint = pyo.ConstraintList(rule=nac_rule) #constraint list to handle multiple constraints
+
+    # Constraints (example: demand must be met in each scenario)
+    def demand_rule(model, s):
+      #model.y[s] &gt;= demand[s] # Replace with actual demand calculation
+      return pyo.Constraint.Skip  #dummy, for demonstration purposes
+    model.demand_constraint = pyo.Constraint(model.S, rule=demand_rule)
+    return model
+
+# Example Usage:
+scenarios = ['scenario_1', 'scenario_2', 'scenario_3']
+model = create_model(scenarios)
+
+# Solve the model (replace with your preferred solver and settings)
+solver = pyo.SolverFactory('glpk')  # or e.g., 'cplex'
+results = solver.solve(model)
+
+# Print results (example: optimal investment level)
+print(f&quot;Optimal investment: {model.x.value}&quot;)
+for s in scenarios:
+  print(f&quot;Optimal operational decision in {s}: {model.y[s].value}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>model.x</code>:</strong> This is the first-stage decision variable (e.g., investment), which must be the same across all scenarios.</li>
+<li><strong><code>model.S</code>:</strong> This is the set of scenarios.</li>
+<li><strong><code>nac_rule</code>:</strong> This function defines the nonanticipativity constraint.  It iterates through the scenarios and ensures that the investment decision <code>model.x</code> is equal to itself. This is a simplistic example; in a real-world problem, <code>x</code>'s definition might depend on scenario-specific information, but the NAC would ensure its value is consistent.  The first scenario is used as a reference point.</li>
+<li><strong><code>pyo.ConstraintList</code></strong>: Use a constraint list to add multiple NACs if you have multiple first-stage variables.</li>
+<li>The solver will throw an error if infeasibility is detected due to conflicting NACs.</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>This is a simplified example.  In more complex models, the NACs may involve more complex relationships between variables and across scenarios.</li>
+<li>The efficiency of the solution depends on the specific stochastic programming solver and the structure of the problem.</li>
+<li>In scenarios with more complex information revelation structures (e.g., decisions made at multiple points in time), the NACs will need to be adapted to reflect the information available at each decision point. You would equate the variables only across scenarios that are indistinguishable <em>up to that point in time</em>.</li>
+<li>The solver choice (glpk, cplex, gurobi) is crucial for large and complex problems.</li>
+<li>The objective function should include scenario probabilities.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you handle nonanticipativity constraints when using decomposition methods like L-shaped method or progressive hedging to solve stochastic programs? How do the NACs influence the master and subproblem formulations in these approaches?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
