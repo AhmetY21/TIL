@@ -309,8 +309,24 @@ def add_front_matter(md: str, *, title: str, date_str: str, week_num: int, lesso
     return fm + md
 
 
-def convert_md_to_html(md_text: str, title: str) -> str:
+def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] = None) -> str:
     html_body = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
+
+    header_html = ""
+    if meta:
+        # Assuming fixed directory structure: topic/{slug}/week_N/day_Y/lesson_N/slug.html
+        # Relative path to root is ../../../../../ (5 levels up)
+        # Hub is at hubs/{slug}-index.html
+        hub_link = f"../../../../../hubs/{meta.slug}-index.html"
+        header_html = f"""
+  <div class="page-header">
+    <a href="{hub_link}" class="back-link">← Back to {meta.subject}</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+"""
+    else:
+        # Fallback if no meta provided
+        header_html = '<button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>'
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -347,14 +363,27 @@ def convert_md_to_html(md_text: str, title: str) -> str:
     th {{ background: #f9fafb; }}
     hr {{ border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }}
 
+    .page-header {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }}
+    .back-link {{
+      font-weight: 600;
+      text-decoration: none;
+    }}
+    .back-link:hover {{
+      text-decoration: underline;
+    }}
+
     .theme-toggle {{
-      position: absolute;
-      top: 20px;
-      right: 20px;
       background: none;
       border: none;
-      font-size: 1.5rem;
       cursor: pointer;
+      font-size: 1.5rem;
       padding: 8px;
       border-radius: 50%;
       transition: background 0.2s;
@@ -372,6 +401,7 @@ def convert_md_to_html(md_text: str, title: str) -> str:
     }}
     .dark h1, .dark h2, .dark h3 {{ color: #f1f5f9; }}
     .dark a {{ color: #60a5fa; }}
+    .dark .page-header {{ border-bottom-color: #334155; }}
     .dark code {{ background-color: #1e293b; color: #e2e8f0; }}
     .dark pre {{
       border: 1px solid #334155;
@@ -386,7 +416,7 @@ def convert_md_to_html(md_text: str, title: str) -> str:
   </style>
 </head>
 <body>
-  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+{header_html}
 {html_body}
   <script>
     const btn = document.getElementById('theme-toggle');
@@ -459,7 +489,7 @@ def save_content(meta: CurriculumMeta, content: str, topic_name: Optional[str], 
 
     filename_html = f"{slug}.html"
     filepath_html = os.path.join(output_dir, filename_html)
-    html_content = convert_md_to_html(raw_md, title)
+    html_content = convert_md_to_html(raw_md, title, meta)
     safe_write(filepath_html, html_content)
 
     print(f"[{meta.slug}] Generated Markdown: {filepath_md}")

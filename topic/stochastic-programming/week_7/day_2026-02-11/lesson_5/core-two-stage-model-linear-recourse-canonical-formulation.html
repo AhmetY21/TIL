@@ -69,10 +69,51 @@
     .dark th, .dark td { border-color: #334155; }
     .dark th { background: #1e293b; }
     .dark hr { border-top-color: #334155; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      position: static;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .dark .page-header { border-bottom-color: #334155; }
+
   </style>
 </head>
 <body>
-  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+
 <h1 id="topic-core-two-stage-model-linear-recourse-canonical-formulation">Topic: Core Two-Stage Model (Linear Recourse) — canonical formulation</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>The <em>core two-stage stochastic programming model with linear recourse</em> is a fundamental model for decision-making under uncertainty. It represents situations where we make a decision in the first stage <em>before</em> the uncertainty is realized, and then in the second stage, we take <em>recourse</em> actions to mitigate the impact of the realized uncertainty. The term "linear recourse" refers to the fact that the second-stage problem is a linear program. The canonical formulation highlights the structure of the model for analysis and optimization.</p>
