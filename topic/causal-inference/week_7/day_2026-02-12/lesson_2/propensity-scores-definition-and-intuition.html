@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propensity Scores: Definition and Intuition</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-propensity-scores-definition-and-intuition">Topic: Propensity Scores: Definition and Intuition</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The propensity score is the conditional probability of assignment to a particular treatment or intervention given a set of observed covariates. In simpler terms, it's the probability that a person receives treatment <em>given</em> their characteristics.</p>
+<p>Formally, let:</p>
+<ul>
+<li>T be a binary treatment indicator (1 = treated, 0 = control).</li>
+<li>X be a set of observed pre-treatment covariates.</li>
+</ul>
+<p>Then, the propensity score, denoted as <em>e(X)</em>, is defined as:</p>
+<ul>
+<li><em>e(X) = P(T = 1 | X)</em></li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>The propensity score allows us to balance the observed covariates between the treatment and control groups, even when there's no randomization.  It addresses confounding by summarizing the influence of multiple covariates into a single scalar value.  This single value can then be used for various causal inference techniques, including:</p>
+<ul>
+<li><strong>Propensity Score Matching:</strong>  Match treated individuals with untreated individuals who have similar propensity scores. This creates groups that are more comparable on the observed covariates.</li>
+<li><strong>Propensity Score Weighting:</strong>  Weight individuals by the inverse of their propensity score (Inverse Probability of Treatment Weighting or IPTW). This effectively creates a pseudo-population where treatment assignment is independent of the observed covariates. For treated individuals, the weight is 1/e(X). For untreated individuals, the weight is 1/(1-e(X)).</li>
+<li><strong>Stratification (or Subclassification):</strong>  Divide the sample into strata based on propensity score values.  Within each stratum, treatment and control groups are expected to be more balanced in terms of observed covariates, allowing for estimation of treatment effects within each stratum.</li>
+<li><strong>Covariate Adjustment:</strong> Include the propensity score as a covariate in a regression model. This can help adjust for observed confounding when estimating the treatment effect.</li>
+</ul>
+<p>The fundamental idea behind using propensity scores is that if individuals with the same propensity score have the same probability of receiving treatment, then within groups defined by the propensity score, treatment assignment is essentially random (conditional on the observed covariates).  This allows us to estimate causal effects under the assumption of <em>conditional exchangeability</em> (or <em>ignorability</em>):  the potential outcomes are independent of treatment assignment, conditional on the observed covariates X.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a study investigating the effect of a new job training program on future earnings.  Participation in the program is <em>not</em> randomized.  Individuals self-select into the program, and those who enroll might differ systematically from those who don't. For example, individuals who are more motivated, highly educated, or have more work experience might be more likely to participate.  These characteristics (motivation, education, experience) are <em>confounders</em> because they influence both participation in the training program and future earnings.</p>
+<p>Without accounting for these confounders, simply comparing the earnings of those who participated in the program to those who didn't would likely give a biased estimate of the program's effect.  The observed difference in earnings might be due to the training program <em>or</em> due to the pre-existing differences in the characteristics of the participants.</p>
+<p>Propensity score methods can help to address this confounding.  We can use the observed covariates (motivation, education, experience) to estimate the propensity score for each individual - the probability of participating in the training program <em>given</em> those characteristics. We can then use the propensity score to balance the observed covariates between the treatment (program participants) and control (non-participants) groups, allowing for a less biased estimate of the program's impact on earnings.  For example, we might match each program participant with a non-participant who has a similar propensity score, thus creating comparable groups.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import statsmodels.api as sm
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression  # For binary treatment
+
+# Sample Data (replace with your actual data)
+data = pd.DataFrame({
+    'treatment': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+    'age': [30, 25, 35, 40, 28, 32, 45, 27, 38, 31],
+    'education': [12, 16, 14, 10, 18, 12, 16, 14, 10, 18],
+    'income': [50000, 60000, 70000, 40000, 80000, 55000, 75000, 65000, 45000, 85000]
+})
+
+# Define the treatment and covariates
+T = data['treatment']
+X = data[['age', 'education', 'income']]
+
+# Option 1: Logistic Regression (more common for binary treatment)
+# Fit a logistic regression model to estimate propensity scores
+model = LogisticRegression(random_state=0)
+model.fit(X, T)
+
+# Predict propensity scores
+propensity_scores = model.predict_proba(X)[:, 1]  # Probability of treatment = 1
+
+# Add propensity scores to the DataFrame
+data['propensity_score'] = propensity_scores
+
+print(data)
+
+# Example usage: Matching (very basic)
+# This is a very simplified example and requires more sophisticated matching techniques
+from sklearn.neighbors import NearestNeighbors
+treated_indices = data[data['treatment'] == 1].index
+control_indices = data[data['treatment'] == 0].index
+
+treated_ps = data.loc[treated_indices, 'propensity_score'].values.reshape(-1, 1)
+control_ps = data.loc[control_indices, 'propensity_score'].values.reshape(-1, 1)
+
+nbrs = NearestNeighbors(n_neighbors=1, algorithm='ball_tree').fit(control_ps)
+distances, indices = nbrs.kneighbors(treated_ps)
+
+matched_control_indices = control_indices[indices.flatten()]
+
+# Now you have a set of matched indices, which allows you to compare the outcome of interest between these two groups.
+print(&quot;\nMatched Control Indices:&quot;, matched_control_indices)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong>  We create a sample DataFrame <code>data</code> with a binary treatment variable ('treatment') and covariates ('age', 'education', 'income').  Replace this with your own data.</li>
+<li><strong>Model Fitting:</strong>  We use <code>LogisticRegression</code> from <code>sklearn.linear_model</code> to estimate the propensity scores. The target variable is the treatment indicator, and the predictors are the observed covariates.</li>
+<li><strong>Propensity Score Prediction:</strong>  <code>model.predict_proba(X)[:, 1]</code> predicts the probability of being treated (T=1) for each individual, given their covariates. These probabilities are the propensity scores.</li>
+<li><strong>Integration:</strong> Propensity scores are added to the dataframe.</li>
+<li><strong>Matching example:</strong> A very rudimentary one to one matching is implemented for illustration purposes. This is not considered a complete approach. Use the results to compare the outcome of interest.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>The choice of model (logistic regression, probit, etc.) for estimating propensity scores depends on the nature of the treatment variable. Logistic regression is commonly used for binary treatments.</li>
+<li>The inclusion of covariates in the propensity score model is crucial. Include all covariates that are thought to influence both the treatment assignment and the outcome.</li>
+<li><strong>Overlapping support (common support) is essential.</strong> Make sure there is overlap in the covariate distributions of the treated and untreated groups. If there is no overlap, propensity score methods may not be appropriate. Common support issues should be addressed before matching using methods such as trimming or re-weighting.</li>
+<li>Matching requires more sophisticated techniques and libraries, especially for large datasets. Consider libraries like <code>MatchIt</code> in R (though its concepts apply generally) or the <code>CausalML</code> library in python. The example given is for demonstration only.</li>
+<li>Evaluate the balance achieved by matching/weighting by examining covariate balance before and after adjusting for propensity scores. Check the Standardized Mean Difference (SMD) for each covariate. A SMD less than 0.1 is generally considered good balance.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the limitations of propensity score methods, and how do we assess the quality of the estimated propensity scores and the balance achieved using these scores? Consider unobserved confounders in your answer.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
