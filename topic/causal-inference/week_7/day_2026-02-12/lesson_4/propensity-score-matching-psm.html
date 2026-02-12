@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propensity Score Matching (PSM)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-propensity-score-matching-psm">Topic: Propensity Score Matching (PSM)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Propensity Score Matching (PSM) is a statistical matching technique that attempts to estimate the effect of a treatment, intervention, or exposure by accounting for the covariates that predict receiving the treatment.  In essence, it aims to create a pseudo-randomized control trial from observational data, mitigating selection bias and confounding.</p>
+<p>The <em>propensity score</em> is the conditional probability of receiving the treatment given a set of observed covariates. Mathematically, it is defined as:</p>
+<p><code>e(X) = P(T = 1 | X)</code></p>
+<p>Where:
+*   <code>e(X)</code> is the propensity score.
+*   <code>T</code> is the treatment indicator (1 = treated, 0 = control).
+*   <code>X</code> is the vector of observed covariates.</p>
+<p>PSM works by matching treated individuals with control individuals who have similar propensity scores. After matching, we can compare the outcomes of the matched treated and control groups to estimate the average treatment effect on the treated (ATT).  There are several matching algorithms used in PSM:</p>
+<ul>
+<li>
+<p><strong>Nearest Neighbor Matching:</strong>  Each treated unit is matched to the closest control unit based on propensity score. Variants include matching <em>with replacement</em> (a control unit can be matched to multiple treated units) and <em>without replacement</em> (a control unit can only be matched once).</p>
+</li>
+<li>
+<p><strong>Calipers:</strong> A maximum allowable difference (caliper) in propensity scores is imposed for a match to be considered valid. This prevents matches that are too dissimilar.</p>
+</li>
+<li>
+<p><strong>Radius Matching:</strong>  Each treated unit is matched to all control units within a specific radius of its propensity score.</p>
+</li>
+<li>
+<p><strong>Kernel Matching:</strong> Uses a weighted average of the outcomes of all control units, with weights proportional to the similarity of their propensity scores to the treated unit.</p>
+</li>
+<li>
+<p><strong>Stratification (Subclassification):</strong>  The data is divided into strata based on propensity score ranges, and the treatment effect is estimated separately within each stratum.</p>
+</li>
+</ul>
+<p>The key assumption underlying PSM is <em>conditional independence</em> (also known as unconfoundedness or ignorability):  Given the observed covariates, treatment assignment is independent of the potential outcomes.  In other words, all confounding variables have been observed and included in the propensity score model. If there are unobserved confounders, PSM will not produce unbiased estimates.</p>
+<p>We can use PSM to:</p>
+<ul>
+<li>Estimate the causal effect of a program or policy.</li>
+<li>Reduce bias in observational studies.</li>
+<li>Compare the outcomes of different groups when random assignment is not possible.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine we want to study the impact of a new job training program on individuals' income. We cannot randomly assign people to participate in the program. Instead, we observe who chooses to participate (the treated group) and compare their income to those who did not participate (the control group).</p>
+<p>People who choose to participate in the training program might be systematically different from those who don't. For example, they might be more motivated, have lower initial skills, or live in areas with limited job opportunities. These differences could confound the relationship between the training program and income, leading to biased estimates.</p>
+<p>Using PSM, we would:</p>
+<ol>
+<li>Collect data on relevant covariates, such as education level, age, prior work experience, geographic location, and motivation.</li>
+<li>Estimate the propensity score (the probability of participating in the training program) based on these covariates using a logistic regression model.</li>
+<li>Match participants in the training program (treated group) to non-participants (control group) with similar propensity scores. For example, we might use nearest neighbor matching with a caliper to ensure the matches are close enough.</li>
+<li>Compare the income of the matched treated and control groups. The difference in income would be our estimate of the effect of the job training program on income.</li>
+<li>Assess the balance of covariates between the treated and matched controls. Ideally, these groups should be more similar after matching. Common metrics include standardized mean differences and variance ratios.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import roc_auc_score
+
+# Sample data (replace with your actual data)
+data = {
+    'treatment': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],  # 1 = treated, 0 = control
+    'age': [30, 25, 35, 28, 40, 32, 27, 38, 33, 29],
+    'education': [12, 16, 14, 12, 18, 14, 10, 16, 12, 14],  # Years of education
+    'income_pre': [30000, 40000, 35000, 32000, 50000, 38000, 25000, 45000, 33000, 36000],
+    'outcome': [35000, 42000, 40000, 34000, 55000, 40000, 28000, 48000, 38000, 37000] # Income after
+}
+df = pd.DataFrame(data)
+
+# 1. Estimate the propensity scores using logistic regression
+X = df[['age', 'education', 'income_pre']]  # Covariates
+y = df['treatment']  # Treatment indicator
+
+model = LogisticRegression()
+model.fit(X, y)
+propensity_scores = model.predict_proba(X)[:, 1]  # Probabilities of being treated
+df['propensity_score'] = propensity_scores
+
+# Check the model's ability to discriminate between treated and control
+auc = roc_auc_score(y, propensity_scores)
+print(f&quot;AUC: {auc}&quot;)
+
+# 2. Perform nearest neighbor matching with a caliper
+def perform_psm(df, caliper=0.2):
+    &quot;&quot;&quot;Performs propensity score matching using nearest neighbors.&quot;&quot;&quot;
+    treated_indices = df[df['treatment'] == 1].index
+    control_indices = df[df['treatment'] == 0].index
+
+    treated_ps = df.loc[treated_indices, 'propensity_score'].values.reshape(-1, 1)
+    control_ps = df.loc[control_indices, 'propensity_score'].values.reshape(-1, 1)
+
+    # Nearest Neighbors matching
+    nn = NearestNeighbors(n_neighbors=1, algorithm='ball_tree')
+    nn.fit(control_ps)
+
+    distances, indices = nn.kneighbors(treated_ps)
+
+    # Apply caliper
+    caliper_condition = distances &lt;= caliper
+    matched_indices = [control_indices[indices[i][0]] if caliper_condition[i][0] else None for i in range(len(treated_indices))]
+
+    matched_df = df.loc[treated_indices, :].copy()
+    matched_df['matched_control'] = matched_indices  # index of the matched control
+    matched_df = matched_df[matched_df['matched_control'].notna()] # Drop treated individuals without matching
+    matched_df['matched_control'] = matched_df['matched_control'].astype(int)
+
+    return matched_df
+
+matched_df = perform_psm(df)
+
+# 3. Calculate the average treatment effect on the treated (ATT)
+matched_df['outcome_control'] = matched_df['matched_control'].apply(lambda x: df.loc[x, 'outcome'])
+matched_df['treatment_effect'] = matched_df['outcome'] - matched_df['outcome_control']
+att = matched_df['treatment_effect'].mean()
+
+print(f&quot;Average Treatment Effect on the Treated (ATT): {att}&quot;)
+
+# 4. Check balance (example: standardized mean difference for age)
+def standardized_mean_difference(group1, group2):
+    &quot;&quot;&quot;Calculates the standardized mean difference.&quot;&quot;&quot;
+    mean1 = group1.mean()
+    mean2 = group2.mean()
+    std1 = group1.std()
+    std2 = group2.std()
+    pooled_std = np.sqrt((std1**2 + std2**2) / 2)
+    return (mean1 - mean2) / pooled_std
+
+# Before matching
+before_match_smd_age = standardized_mean_difference(df[df['treatment'] == 1]['age'], df[df['treatment'] == 0]['age'])
+print(f&quot;SMD (Age) Before Matching: {before_match_smd_age}&quot;)
+
+# After matching
+treated_matched_age = matched_df['age']
+control_matched_age = matched_df['matched_control'].apply(lambda x: df.loc[x, 'age'])
+after_match_smd_age = standardized_mean_difference(treated_matched_age, control_matched_age)
+print(f&quot;SMD (Age) After Matching: {after_match_smd_age}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong> Creates a sample DataFrame (replace this with your actual data).  Includes a <code>treatment</code> column (1 for treated, 0 for control), covariates (<code>age</code>, <code>education</code>, <code>income_pre</code>), and an <code>outcome</code> column (income after).</li>
+<li><strong>Propensity Score Estimation:</strong>  Uses <code>LogisticRegression</code> from scikit-learn to estimate the propensity scores.  The covariates are used to predict the probability of being treated.  The predicted probabilities are stored in a new column called <code>propensity_score</code>.  Also calculates and prints the Area Under the ROC Curve (AUC) to assess the propensity score model's performance.  A good model should be able to distinguish between treated and control groups.</li>
+<li><strong>Nearest Neighbor Matching:</strong> The <code>perform_psm</code> function does the matching using <code>NearestNeighbors</code>.  It finds the nearest control unit for each treated unit based on the propensity score, applying a <code>caliper</code> to restrict matching to reasonably similar units. The <code>caliper</code> is set to 0.2, which is a reasonable starting point.</li>
+<li><strong>ATT Calculation:</strong> Calculates the Average Treatment Effect on the Treated (ATT) by comparing the outcomes of the matched treated and control groups.</li>
+<li><strong>Balance Checking:</strong>  Includes an example of checking balance using the standardized mean difference (SMD). The goal of matching is to reduce the SMD between the treated and control groups for all covariates. You should check the balance for <em>all</em> relevant covariates after matching.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example. You'll likely need to adapt the code to your specific dataset and research question.</li>
+<li>Parameter Tuning:  The caliper value can significantly affect the results. Experiment with different values to find the one that provides the best balance without sacrificing too much sample size.</li>
+<li>Balance Checking:  Rigorously check the balance of covariates <em>after</em> matching.  Use appropriate balance diagnostics like standardized mean differences, variance ratios, and visual inspections (e.g., histograms, boxplots).  If balance is poor, you may need to adjust the propensity score model (add interaction terms or higher-order terms), change the matching algorithm, or try different caliper values.</li>
+<li>Sensitivity Analysis:  Since PSM relies on the assumption of no unobserved confounders, it's crucial to perform sensitivity analyses to assess how robust your results are to potential hidden biases. Methods such as Rosenbaum sensitivity analysis can be employed for this purpose.</li>
+<li>Package Alternatives: Consider using more specialized causal inference packages like <code>causalml</code> or <code>EconML</code> for more advanced PSM implementations and balance diagnostics.</li>
+<li>Consider using cross-validation to select the optimal caliper size to improve the robustness of the matching process.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do I assess the quality of the matching in PSM to determine if it effectively reduced bias?  What metrics and visualizations are most helpful, and what are the acceptable ranges for these metrics to ensure reliable causal inference?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
