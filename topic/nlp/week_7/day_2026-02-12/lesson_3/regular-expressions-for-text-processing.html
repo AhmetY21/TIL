@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regular Expressions for Text Processing</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+<h1 id="topic-regular-expressions-for-text-processing">Topic: Regular Expressions for Text Processing</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A regular expression (regex or regexp) is a sequence of characters that define a <em>search pattern</em>. It's a powerful tool for pattern matching within text. Think of it as a miniature programming language designed specifically for describing text patterns.</p>
+<p>Formally, regular expressions are a way to represent regular languages, which are a class of formal languages that can be recognized by a finite state machine. However, in practice, modern regular expression engines often implement features that go beyond strict regular languages (like backreferences).</p>
+<p>We can use regular expressions for:</p>
+<ul>
+<li><strong>Searching:</strong> Finding occurrences of a specific pattern within a larger text.  For example, finding all email addresses in a document.</li>
+<li><strong>Replacing:</strong>  Replacing text that matches a pattern with a different string. For example, standardizing phone number formats.</li>
+<li><strong>Validating:</strong>  Checking if a piece of text conforms to a specific format. For example, validating that an input string is a valid date.</li>
+<li><strong>Splitting:</strong>  Dividing a string into multiple parts based on a pattern. For example, splitting a sentence into individual words.</li>
+<li><strong>Extracting:</strong>  Pulling out specific parts of a string that match a pattern. For example, extracting area codes from phone numbers.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are working with a large dataset of customer reviews and you want to analyze the sentiment towards a specific product, say "SmartWatch X".</p>
+<p>You could use regular expressions to:</p>
+<ol>
+<li>
+<p><strong>Identify relevant reviews:</strong> Search for reviews that contain the phrase "SmartWatch X" or variations like "Smart Watch X" or "SmartWatchX".  A regex like <code>Smart\s*Watch\s*X</code> (explained below) could handle these variations.</p>
+</li>
+<li>
+<p><strong>Extract product features mentioned:</strong>  Look for patterns near the product name that mention specific features, like "battery life," "screen resolution," or "user interface."  For example, you might use a regex to find phrases like "SmartWatch X has great battery life" or "The screen resolution of SmartWatch X is disappointing."</p>
+</li>
+<li>
+<p><strong>Clean up the text data:</strong>  Remove unwanted characters like extra spaces, HTML tags, or special symbols that might interfere with sentiment analysis. You could use regex for removing all HTML tags using a pattern like <code>&lt;[^&gt;]+&gt;</code>.</p>
+</li>
+</ol>
+<p>In short, regular expressions help preprocess and extract structured information from unstructured text data (the reviews), making it suitable for further analysis.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Python's <code>re</code> module provides regular expression operations.</p>
+<pre class="codehilite"><code class="language-python">import re
+
+text = &quot;This is a sample text with SmartWatch X and Smart Watch X. Also contains email address example@domain.com and phone number 123-456-7890.&quot;
+
+# 1. Searching for &quot;SmartWatch X&quot; (handling variations in whitespace)
+pattern = r&quot;Smart\s*Watch\s*X&quot; #r&quot;&quot; denotes a raw string, preventing unintended escape sequences. \s matches any whitespace character, * matches zero or more occurences
+matches = re.findall(pattern, text)
+print(f&quot;Matches for 'SmartWatch X': {matches}&quot;)
+
+# 2. Extracting email addresses
+email_pattern = r&quot;\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b&quot;  #\b matches a word boundary.  [A-Za-z0-9._%+-]+ matches one or more alphanumeric characters, dots, underscores, %, +, or -.  @[A-Za-z0-9.-]+ matches @ followed by one or more alphanumeric characters, dots, or -.  \.[A-Z|a-z]{2,} matches a dot followed by two or more alphabetic characters.
+email_matches = re.findall(email_pattern, text)
+print(f&quot;Email addresses found: {email_matches}&quot;)
+
+# 3. Replacing phone number format
+phone_pattern = r&quot;(\d{3})-(\d{3})-(\d{4})&quot; # Capture groups for area code, exchange, and line number
+replaced_text = re.sub(phone_pattern, r&quot;(\1) \2-\3&quot;, text) # \1, \2, and \3 are backreferences to the captured groups.
+print(f&quot;Text with reformatted phone number: {replaced_text}&quot;)
+
+# 4. Splitting the string into sentences
+sentence_pattern = r&quot;(?&lt;!\w\.\w.)(?&lt;![A-Z][a-z]\.)(?&lt;=\.|\?)\s&quot; #complex pattern that uses negative lookbehinds and lookaheads to split based on sentence end marks
+sentences = re.split(sentence_pattern, text)
+print(f&quot;Sentences : {sentences}&quot;)
+</code></pre>
+
+<p><strong>Explanation of some regex elements:</strong></p>
+<ul>
+<li><code>\s</code>: Matches any whitespace character (space, tab, newline).</li>
+<li><code>*</code>: Matches zero or more occurrences of the preceding character or group.</li>
+<li><code>.</code>: Matches any character (except newline).</li>
+<li><code>[]</code>: Defines a character class, matching any character within the brackets.</li>
+<li><code>\d</code>: Matches a digit (0-9).</li>
+<li><code>\w</code>: Matches a word character (alphanumeric and underscore).</li>
+<li><code>+</code>: Matches one or more occurrences of the preceding character or group.</li>
+<li><code>\b</code>: Matches a word boundary.</li>
+<li><code>()</code>: Creates a capturing group, allowing you to extract or refer to the matched text.</li>
+<li><code>|</code>: acts as an "OR"</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can regular expressions be used to detect and filter out spam emails based on common patterns in subject lines or email content? For example, what regex patterns might indicate a phishing email?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
