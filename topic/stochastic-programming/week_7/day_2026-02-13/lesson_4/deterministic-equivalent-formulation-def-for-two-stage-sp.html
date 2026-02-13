@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deterministic Equivalent Formulation (DEF) for two-stage SP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-deterministic-equivalent-formulation-def-for-two-stage-sp">Topic: Deterministic Equivalent Formulation (DEF) for two-stage SP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Deterministic Equivalent Formulation (DEF) of a two-stage stochastic program is a deterministic optimization problem that is equivalent to the original stochastic program.  By "equivalent," we mean that solving the DEF yields the optimal first-stage decisions, which, when implemented, lead to the same expected value of the objective function as solving the stochastic program directly (though solving the stochastic program "directly" is generally intractable unless the number of scenarios is very small).</p>
+<p>Here's a breakdown:</p>
+<ul>
+<li><strong>Two-Stage Stochastic Program:</strong> These problems involve making decisions in two stages.<ul>
+<li><strong>First Stage (Here-and-Now):</strong>  Decisions made <em>before</em> the realization of uncertain parameters. Let's denote these variables as <code>x</code>.</li>
+<li><strong>Second Stage (Wait-and-See):</strong> Decisions made <em>after</em> the realization of uncertain parameters. These decisions are recourse actions taken to mitigate the effect of the uncertainty.  Let's denote these variables as <code>y</code>. These second-stage variables depend on both the first-stage decisions <code>x</code> and the realization of the uncertain parameters, which we will denote with <code>ξ</code> (Greek letter xi), and thus are written as <code>y(x, ξ)</code>.</li>
+</ul>
+</li>
+<li><strong>Uncertainty:</strong> The uncertain parameters (<code>ξ</code>) follow a known probability distribution. We often approximate this distribution by a discrete set of scenarios, denoted by <code>ω</code>. The probability of each scenario <code>ω</code> is denoted by <code>p_ω</code>.</li>
+<li><strong>DEF Formulation:</strong> The DEF explicitly incorporates all possible scenarios and their probabilities into a single, deterministic optimization problem.  Instead of having a second-stage decision function <code>y(x, ξ)</code>, we have specific second-stage decision variables, <code>y_ω</code>, for <em>each</em> scenario <code>ω</code>.  The objective function is the expected value of the total cost/profit across all scenarios.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<ol>
+<li><strong>Solvability:</strong> DEF transforms a difficult stochastic program into a (potentially very large) deterministic optimization problem that can be solved by standard optimization solvers (e.g., LP, MILP, QP, NLP solvers).</li>
+<li><strong>Tractability (Important caveat):</strong> The size of the DEF grows linearly with the number of scenarios. If the uncertainty is represented by a large number of scenarios, the DEF can become computationally intractable due to its size. This is often referred to as the "curse of dimensionality."</li>
+<li><strong>Benchmarking:</strong> If a solution to a smaller scenario set is found, it can be used as a benchmark or lower bound for more sophisticated solution approaches on the true (larger) scenario set.</li>
+</ol>
+<p><strong>General Form of a Two-Stage SP and its DEF:</strong></p>
+<ul>
+<li>
+<p><strong>Two-Stage Stochastic Program:</strong></p>
+<p><code>min  c'x + E_ξ[Q(x, ξ)]
+s.t. Ax = b
+     x &gt;= 0</code></p>
+<p>where:
+*   <code>x</code> are the first-stage variables
+*   <code>c</code> is the cost vector for the first stage
+*   <code>Q(x, ξ) = min q(ξ)'y  s.t.  T(ξ)x + W(ξ)y = h(ξ), y &gt;= 0</code> is the recourse function
+*   <code>ξ</code> represents the random parameters.
+*   <code>E_ξ[...]</code> denotes the expectation with respect to <code>ξ</code>.</p>
+</li>
+<li>
+<p><strong>Deterministic Equivalent Formulation (using discrete scenarios):</strong></p>
+<p><code>min  c'x + Σ_ω p_ω * q_ω'y_ω
+s.t. Ax = b
+     T_ω x + W_ω y_ω = h_ω,  ∀ ω ∈ Ω  (Ω is the set of scenarios)
+     x &gt;= 0
+     y_ω &gt;= 0, ∀ ω ∈ Ω</code></p>
+<p>where:
+*   <code>x</code> are the first-stage variables (same for all scenarios)
+*   <code>y_ω</code> are the second-stage variables for scenario <code>ω</code>
+*   <code>p_ω</code> is the probability of scenario <code>ω</code>
+*   <code>q_ω</code>, <code>T_ω</code>, <code>W_ω</code>, and <code>h_ω</code> are the values of <code>q(ξ)</code>, <code>T(ξ)</code>, <code>W(ξ)</code>, and <code>h(ξ)</code> under scenario <code>ω</code></p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Inventory Management Under Demand Uncertainty:</strong></p>
+<p>A retailer needs to decide how much of a product to order from a supplier (first-stage decision: <code>x</code>: order quantity). The demand for the product is uncertain (random parameter: <code>ξ</code>). If the demand exceeds the order quantity, the retailer loses potential sales (lost sales cost). If the order quantity exceeds the demand, the retailer has to sell the remaining products at a discounted price (salvage value). The second-stage decision (<code>y_ω</code>) is how to handle the difference between the order quantity and the realized demand in each scenario <code>ω</code>.</p>
+<ul>
+<li><strong>First-stage:</strong> <code>x</code> = amount of product to order.</li>
+<li><strong>Uncertainty:</strong>  Demand for the product, <code>d_ω</code>, follows a discrete probability distribution (scenarios represent different possible demand levels).</li>
+<li><strong>Second-stage:</strong><ul>
+<li><code>s_ω</code> = amount of product sold in scenario <code>ω</code></li>
+<li><code>ls_ω</code> = amount of lost sales in scenario <code>ω</code></li>
+</ul>
+</li>
+<li><strong>Objective:</strong> Minimize the sum of ordering costs and expected costs related to unsold inventory and lost sales.</li>
+</ul>
+<p><strong>Mathematical formulation:</strong></p>
+<p>Let <code>c</code> be the per-unit cost of ordering the product. Let <code>r</code> be the revenue per unit sold. Let <code>v</code> be the salvage value per unit of unsold inventory, and <code>pen</code> be the penalty cost per unit of lost sales.</p>
+<p>The DEF would be:</p>
+<pre class="codehilite"><code>min  c*x + Σ_ω p_ω * (r*s_ω - v*(x - s_ω) + pen*ls_ω)
+s.t. s_ω + ls_ω = d_ω, ∀ ω
+     s_ω &lt;= x, ∀ ω
+     x &gt;= 0
+     s_ω &gt;= 0, ∀ ω
+     ls_ω &gt;= 0, ∀ ω
+</code></pre>
+
+<p>Here, we are minimizing the total cost. The first term is the ordering cost. The second term is the expected value (across all scenarios) of the revenue from sales, less salvage value of any remaining stock and cost of any lost sales.  The constraints in the <code>s.t.</code> (subject to) section ensure that the amount sold plus the amount of lost sales equals demand in each scenario, sales cannot exceed the order quantity, and all variables are non-negative.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+def create_inventory_def(scenarios, probabilities, demands, c, r, v, pen):
+    &quot;&quot;&quot;
+    Creates the deterministic equivalent formulation (DEF) for the inventory
+    management problem.
+
+    Args:
+        scenarios (list): List of scenario names (e.g., [&quot;Scenario1&quot;, &quot;Scenario2&quot;]).
+        probabilities (list): List of probabilities for each scenario.
+        demands (list): List of demand values for each scenario.
+        c (float): Cost per unit of ordering the product.
+        r (float): Revenue per unit sold.
+        v (float): Salvage value per unit of unsold inventory.
+        pen (float): Penalty cost per unit of lost sales.
+
+    Returns:
+        pyomo.environ.ConcreteModel: The Pyomo model representing the DEF.
+    &quot;&quot;&quot;
+
+    model = pyo.ConcreteModel()
+
+    # Sets
+    model.SCENARIOS = pyo.Set(initialize=scenarios)
+
+    # Parameters (can also be hardcoded within the constraints if desired)
+    model.probabilities = pyo.Param(model.SCENARIOS, initialize=dict(zip(scenarios, probabilities)))
+    model.demands = pyo.Param(model.SCENARIOS, initialize=dict(zip(scenarios, demands)))
+
+
+    # Variables
+    model.x = pyo.Var(domain=pyo.NonNegativeReals)  # Order quantity
+    model.s = pyo.Var(model.SCENARIOS, domain=pyo.NonNegativeReals)  # Sales in each scenario
+    model.ls = pyo.Var(model.SCENARIOS, domain=pyo.NonNegativeReals) # Lost sales in each scenario
+
+    # Objective Function
+    def objective_rule(model):
+        return c * model.x + sum(model.probabilities[omega] * (r*model.s[omega] - v*(model.x - model.s[omega]) + pen*model.ls[omega]) for omega in model.SCENARIOS)
+    model.objective = pyo.Objective(rule=objective_rule, sense=pyo.minimize)
+
+    # Constraints
+    def demand_balance_rule(model, omega):
+        return model.s[omega] + model.ls[omega] == model.demands[omega]
+    model.demand_balance = pyo.Constraint(model.SCENARIOS, rule=demand_balance_rule)
+
+    def sales_limit_rule(model, omega):
+        return model.s[omega] &lt;= model.x
+    model.sales_limit = pyo.Constraint(model.SCENARIOS, rule=sales_limit_rule)
+
+    return model
+
+# Example Usage:
+scenarios = [&quot;LowDemand&quot;, &quot;MediumDemand&quot;, &quot;HighDemand&quot;]
+probabilities = [0.2, 0.5, 0.3]
+demands = [50, 100, 150]
+c = 10  # Ordering cost per unit
+r = 20  # Revenue per unit sold
+v = 5   # Salvage value per unit unsold
+pen = 30 # Penalty per unit lost sale
+
+model = create_inventory_def(scenarios, probabilities, demands, c, r, v, pen)
+
+# Solve the model
+solver = pyo.SolverFactory('glpk') # Or use another solver like 'gurobi', 'cplex'
+solver.solve(model)
+
+# Print the results
+print(f&quot;Optimal order quantity: {pyo.value(model.x)}&quot;)
+for omega in scenarios:
+    print(f&quot;  Scenario {omega}: Sales = {pyo.value(model.s[omega])}, Lost Sales = {pyo.value(model.ls[omega])}&quot;)
+print(f&quot;Optimal objective value: {pyo.value(model.objective)}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Pyomo Model:</strong> We use Pyomo to define the optimization model.</li>
+<li><strong>Sets and Parameters:</strong> We define sets (e.g., <code>SCENARIOS</code>) and parameters (e.g., probabilities, demands).</li>
+<li><strong>Variables:</strong>  We define the decision variables: <code>x</code> (order quantity), <code>s_ω</code> (sales in each scenario), and <code>ls_ω</code> (lost sales in each scenario).</li>
+<li><strong>Objective Function:</strong> The objective function minimizes the total expected cost.</li>
+<li><strong>Constraints:</strong>  The constraints ensure that demand is met (either through sales or lost sales) and that sales do not exceed the order quantity.</li>
+<li><strong>Solving:</strong> We use a solver (GLPK in this example, but you can use Gurobi or CPLEX if you have them installed) to solve the model.</li>
+<li><strong>Output:</strong>  The code prints the optimal order quantity, sales, lost sales, and objective value.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the Deterministic Equivalent Formulation relate to sample average approximation (SAA) in Stochastic Programming, and what are the pros and cons of using each method?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
