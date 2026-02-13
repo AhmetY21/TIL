@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonanticipativity Constraints (NAC): meaning and modeling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-nonanticipativity-constraints-nac-meaning-and-modeling">Topic: Nonanticipativity Constraints (NAC): meaning and modeling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Nonanticipativity constraints (NACs) are fundamental in stochastic programming, particularly in multi-stage stochastic programming. They enforce the principle that <strong>decisions made at a given stage cannot depend on information that is not yet available at that stage.</strong> In other words, decisions in the current period must be identical across all scenarios that share the same history up to that period. They are designed to maintain <em>causality</em>.</p>
+<p><strong>What is it?</strong></p>
+<p>Mathematically, let's say we have a multi-stage stochastic programming problem with <em>T</em> stages and a set of scenarios <em>Ω</em>. Let <em>x<sub>t</sub>(ω)</em> represent the decision variable at stage <em>t</em> under scenario <em>ω</em>. The nonanticipativity constraints ensure that for all scenarios <em>ω, ω' ∈ Ω</em> that have the same history up to stage <em>t</em>, the decision <em>x<sub>t</sub>(ω)</em> must be equal to <em>x<sub>t</sub>(ω')</em>. The "same history" typically refers to the realization of the random variables up to stage <em>t</em>.</p>
+<p>More formally, if <em>ξ<sub>t</sub>(ω)</em> represents the realization of the random variable at stage <em>t</em> under scenario <em>ω</em>, and if <em>ξ<sub>1</sub>(ω) = ξ<sub>1</sub>(ω')</em>, ..., <em>ξ<sub>t-1</sub>(ω) = ξ<sub>t-1</sub>(ω')</em>, then we must have <em>x<sub>t</sub>(ω) = x<sub>t</sub>(ω')</em>. This means that the decision <em>x<sub>t</sub></em> can only depend on <em>ξ<sub>1</sub>, ..., ξ<sub>t-1</sub></em>.</p>
+<p><strong>How can we use it?</strong></p>
+<p>NACs are typically incorporated into the optimization model as explicit constraints. For example:</p>
+<p><code>x_t(ω) = x_t(ω')  for all ω, ω' such that ξ_1(ω)=ξ_1(ω'), ..., ξ_{t-1}(ω)=ξ_{t-1}(ω')</code></p>
+<p>If there are many scenarios, this could lead to a large number of constraints.  The way the scenarios are generated impacts the number of NACs that are needed. For instance, in a scenario tree, NACs are only needed where the tree branches.  Where the tree is a single "trunk", decisions will be the same anyway.</p>
+<p>Using NACs ensures that the solution is implementable in reality. Without NACs, the optimization might prescribe different actions based on future information that is not yet known, rendering the solution impractical.  They ensure that decisions can actually be made at each time stage with the information that is available at that stage.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain management problem where a company needs to decide how much inventory to order at each stage of a planning horizon. The demand at each stage is uncertain and revealed sequentially. The company needs to decide on its inventory levels at the beginning of each stage, but cannot base its decisions on future demand realizations.</p>
+<ul>
+<li><strong>Stage 1:</strong> The company decides how much to order before observing any customer demand.</li>
+<li><strong>Stage 2:</strong> The demand for the first period is realized. Knowing the demand, the company decides how much to order for the second period.</li>
+<li><strong>Stage 3:</strong> The demand for the second period is realized. The company decides how much to order for the third period.</li>
+</ul>
+<p>In this scenario, the inventory ordering decisions at Stage 2 cannot depend on the demand at Stage 3, and the ordering decisions at Stage 3 cannot depend on future (non-existent) demands. NACs are crucial here. They force the ordering decisions for the same past demand realizations to be the same. For example, if the Stage 1 demand is <em>d<sub>1</sub></em>, then regardless of what <em>d<sub>2</sub></em> and <em>d<sub>3</sub></em> may be, the Stage 2 decision <em>x<sub>2</sub></em> must be the same across all scenarios sharing this demand at <em>t=1</em>.</p>
+<p>Without NACs, an optimization might recommend an ordering strategy that effectively anticipates future demand, which is impossible in a real-world setting.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single built-in function to <em>automatically</em> generate NACs, they can be implemented using optimization libraries like Pyomo or Gurobi (with Python bindings). Here's an example using Pyomo to illustrate how to model NACs:</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+
+# Sample scenario tree structure (replace with your actual data)
+# Each tuple represents a scenario with demand realizations at each stage
+scenarios = [
+    (10, 15, 20),  # Scenario 1: Demand of 10, 15, 20 at stages 1, 2, 3
+    (10, 15, 25),  # Scenario 2: Demand of 10, 15, 25 at stages 1, 2, 3
+    (10, 20, 25),  # Scenario 3: Demand of 10, 20, 25 at stages 1, 2, 3
+    (15, 20, 25),  # Scenario 4: Demand of 15, 20, 25 at stages 1, 2, 3
+    (15, 20, 30)   # Scenario 5: Demand of 15, 20, 30 at stages 1, 2, 3
+]
+
+# Stages
+stages = range(1, 4)  # Stages 1, 2, 3
+
+# Create a Pyomo model
+model = ConcreteModel()
+
+# Decision variables: inventory level at each stage for each scenario
+model.inventory = Var(stages, range(len(scenarios)), domain=NonNegativeReals)
+
+# Demand data (from scenarios)
+model.demand = Param(range(len(scenarios)), stages, initialize={(s, t): scenarios[s][t-1] for s in range(len(scenarios)) for t in stages})
+
+
+# Objective function (simplified - minimize total inventory holding cost)
+model.obj = Objective(expr=sum(model.inventory[t, s] for t in stages for s in range(len(scenarios))), sense=minimize)
+
+# Nonanticipativity constraints
+def nonanticipativity_rule(model, t, scenario1, scenario2):
+    if t &gt; 1:  # No NAC at the first stage (all scenarios have the same history)
+        # Check if scenarios share the same history up to stage t-1
+        same_history = all(model.demand[scenario1, s] == model.demand[scenario2, s] for s in range(1, t))
+        if same_history:
+            return model.inventory[t, scenario1] == model.inventory[t, scenario2]
+        else:
+            return Constraint.Skip  # No NAC needed if histories differ
+    else:
+        return Constraint.Skip # No NAC at the first stage
+
+model.nonanticipativity = Constraint(stages, range(len(scenarios)), range(len(scenarios)), rule=nonanticipativity_rule)
+
+#Example Balance Constraints
+def balance_rule(model, s, t):
+    if t == 1:
+        return model.inventory[t,s] &gt;= model.demand[s, t]  # initial order &gt;= first period demand
+    else:
+        return model.inventory[t, s] &gt;= model.demand[s,t] + model.inventory[t-1, s] - model.demand[s, t-1]
+
+
+model.balance = Constraint(range(len(scenarios)), stages, rule=balance_rule)
+
+
+# Solve the model
+solver = SolverFactory('glpk') # Replace with your preferred solver (e.g., Gurobi, CPLEX)
+results = solver.solve(model)
+
+# Print the results (example)
+if results.solver.termination_condition == TerminationCondition.optimal:
+    for t in stages:
+        for s in range(len(scenarios)):
+            print(f&quot;Stage {t}, Scenario {s}: Inventory = {model.inventory[t, s].value}&quot;)
+else:
+    print(&quot;Solver did not find an optimal solution.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The <code>scenarios</code> list represents a simple scenario tree structure.</li>
+<li>The <code>demand</code> parameter stores the demand realizations for each scenario and stage.</li>
+<li>The <code>nonanticipativity_rule</code> function enforces the NACs. It checks if two scenarios share the same demand history up to stage <code>t-1</code>. If they do, it adds a constraint that the inventory levels at stage <code>t</code> must be equal. If not, it skips the constraint using <code>Constraint.Skip</code> (to avoid unnecessary constraints).</li>
+<li>Example <code>balance_rule</code> constraint is added for completeness.</li>
+<li>The solver then finds the optimal inventory levels, satisfying the NACs.</li>
+</ul>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example.  Real-world problems will have more complex scenario structures, objective functions, and other constraints.</li>
+<li>You'll need to adapt the scenario generation and constraint formulation to fit your specific problem.</li>
+<li>The number of NACs can grow rapidly with the number of scenarios and stages. Techniques like scenario reduction can help manage the problem size.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of scenario generation technique (e.g., Monte Carlo simulation, scenario trees, moment matching) affect the number and complexity of the nonanticipativity constraints that need to be implemented in a stochastic programming model? Are there scenario generation techniques that are particularly well-suited for problems with many stages and uncertainties, in terms of simplifying the implementation of NACs?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
