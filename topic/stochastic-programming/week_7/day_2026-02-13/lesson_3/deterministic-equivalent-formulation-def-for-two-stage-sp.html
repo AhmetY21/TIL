@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deterministic Equivalent Formulation (DEF) for two-stage SP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-deterministic-equivalent-formulation-def-for-two-stage-sp">Topic: Deterministic Equivalent Formulation (DEF) for two-stage SP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Deterministic Equivalent Formulation (DEF) is a single, large-scale deterministic optimization problem that is equivalent to a two-stage stochastic programming problem. In essence, it unfolds the decision-making process across all possible realizations (scenarios) of the uncertain parameters.</p>
+<p>Here's a breakdown:</p>
+<ul>
+<li><strong>Two-Stage Stochastic Program:</strong> A two-stage stochastic program involves making decisions in two stages.<ul>
+<li><em>First-stage decisions (here-and-now decisions):</em>  These decisions must be made <em>before</em> the uncertainty is revealed.  These are usually represented by the variable vector <code>x</code>.</li>
+<li><em>Second-stage decisions (recourse decisions):</em> These decisions are made <em>after</em> the uncertainty is revealed. They are adjustments made to mitigate the consequences of the first-stage decisions, and depend on the specific realization of the uncertain parameters (the "scenario"). These are usually represented by the variable vector <code>y_s</code>, where <code>s</code> represents the scenario.</li>
+</ul>
+</li>
+<li><strong>Uncertainty:</strong> The uncertain parameters are typically represented by a random variable with a known (or estimated) probability distribution.  We often discretize the uncertainty into a finite set of scenarios, each with a corresponding probability <code>p_s</code>.</li>
+<li><strong>Deterministic Equivalent:</strong> The DEF replaces the stochastic program with a deterministic optimization problem that explicitly includes variables for each scenario of the second-stage decisions.  It incorporates constraints and the objective function to account for all scenarios and their probabilities.</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<p>The DEF allows us to solve stochastic programs using standard deterministic optimization solvers. By explicitly accounting for all scenarios, it ensures that the first-stage decisions are robust to the uncertainty.</p>
+<p><strong>Mathematical Representation (General Form):</strong></p>
+<p>Consider a two-stage stochastic linear program with the following general form:</p>
+<p>Minimize:  <code>c'x + E_ξ[Q(x, ξ)]</code>
+Subject to:
+<code>Ax = b</code>
+<code>x &gt;= 0</code></p>
+<p>Where:</p>
+<ul>
+<li><code>x</code>: First-stage decision variables.</li>
+<li><code>c</code>: Cost vector for the first-stage variables.</li>
+<li><code>ξ</code>: Random variable representing the uncertain parameters.</li>
+<li><code>E_ξ[Q(x, ξ)]</code>: The expected value of the second-stage cost.</li>
+<li><code>A</code>: First-stage constraint matrix.</li>
+<li><code>b</code>: First-stage constraint vector.</li>
+<li><code>Q(x, ξ)</code>: Optimal value of the second-stage problem, given the first-stage decision <code>x</code> and the realization of uncertainty <code>ξ</code>. The second stage problem is usually of the form:
+Minimize: <code>q'(ξ)y(ξ)</code>
+Subject to:
+<code>T(ξ)x + W(ξ)y(ξ) = h(ξ)</code>
+<code>y(ξ) &gt;= 0</code></li>
+</ul>
+<p>Where:
+* <code>y(ξ)</code>: Second-stage decision variables given scenario <code>ξ</code>.
+* <code>q'(ξ)</code>: Cost vector for the second-stage variables given scenario <code>ξ</code>.
+* <code>T(ξ)</code>: Technology matrix linking first and second stage decisions given scenario <code>ξ</code>.
+* <code>W(ξ)</code>: Recourse matrix given scenario <code>ξ</code>.
+* <code>h(ξ)</code>: Right-hand side vector of the second stage constraint given scenario <code>ξ</code>.</p>
+<p>The deterministic equivalent of this two-stage problem (assuming <code>S</code> scenarios) is:</p>
+<p>Minimize: <code>c'x + ∑_{s=1}^{S} p_s * q_s' y_s</code>
+Subject to:
+<code>Ax = b</code>
+<code>T_s x + W_s y_s = h_s</code> for all <code>s = 1, ..., S</code>
+<code>x &gt;= 0</code>
+<code>y_s &gt;= 0</code> for all <code>s = 1, ..., S</code></p>
+<p>Where:</p>
+<ul>
+<li><code>s</code>: Index for scenario <code>s</code>.</li>
+<li><code>p_s</code>: Probability of scenario <code>s</code>.</li>
+<li><code>q_s</code>: Second-stage cost vector for scenario <code>s</code>.</li>
+<li><code>y_s</code>: Second-stage decision variables for scenario <code>s</code>.</li>
+<li><code>T_s</code>, <code>W_s</code>, <code>h_s</code>: Scenario-specific matrices and vectors for the second-stage constraints. These are scenario-dependent realizations of the stochastic parameters <code>T(ξ)</code>, <code>W(ξ)</code>, and <code>h(ξ)</code>.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Supply Chain Management with Demand Uncertainty:</strong></p>
+<p>A company needs to decide how much inventory to order (first-stage decision, <code>x</code>) <em>before</em> knowing the actual demand. After the demand is revealed, the company can make adjustments (second-stage decisions, <code>y_s</code>) such as purchasing additional inventory at a higher cost, or selling excess inventory at a discounted price. The uncertainty lies in the customer demand.</p>
+<p>In this scenario:</p>
+<ul>
+<li><code>x</code>: Represents the initial order quantity for each product.</li>
+<li><code>y_s</code>:  Represents the amount of additional inventory purchased (or excess inventory sold) for each product in scenario <code>s</code>.</li>
+<li><code>ξ</code>: Represents the uncertain demand for each product.</li>
+<li><code>c</code>: Represents the initial ordering cost per unit.</li>
+<li><code>q_s</code>: Represents the cost of purchasing additional inventory or the revenue from selling excess inventory in scenario <code>s</code>.</li>
+<li><code>A</code> and <code>b</code>: might represent budget constraints on the initial order quantity.</li>
+<li><code>T_s</code>, <code>W_s</code>, and <code>h_s</code>: Represents the constraints linking the initial order quantity to the demand, additional purchase/sale quantities, and inventory levels in each scenario. <code>h_s</code> would depend on the demand realization for that scenario.</li>
+</ul>
+<p>The objective is to minimize the total cost, which includes the initial ordering cost <em>plus</em> the expected cost of the second-stage decisions (adjustments to the initial order based on the realized demand). The DEF would explicitly include a variable for the additional inventory purchased/sold for each scenario of possible demand. This allows the company to determine an initial order quantity that minimizes the expected total cost across all possible demand scenarios.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using the <code>pyomo</code> library to formulate and solve a Deterministic Equivalent for a simplified two-stage stochastic program:</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+# Define the number of scenarios
+num_scenarios = 3
+
+# Scenario probabilities
+scenario_probs = [0.3, 0.4, 0.3]
+
+# Scenario-specific data (example: right-hand side of second-stage constraints)
+h_values = [5, 7, 9]
+
+# Create a concrete Pyomo model
+model = ConcreteModel()
+
+# First-stage variable
+model.x = Var(within=NonNegativeReals)
+
+# Second-stage variables (indexed by scenario)
+model.y = Var(range(num_scenarios), within=NonNegativeReals)
+
+# Objective function
+model.objective = Objective(
+    expr=model.x + sum(scenario_probs[s] * model.y[s] for s in range(num_scenarios)),
+    sense=minimize,
+)
+
+# First-stage constraint
+model.constraint1 = Constraint(expr=model.x &gt;= 2)
+
+# Second-stage constraints (indexed by scenario)
+def second_stage_constraint_rule(model, s):
+    #Simplified to x + y[s] &gt;= h_values[s]
+    return model.x + model.y[s] &gt;= h_values[s]
+
+model.second_stage_constraints = Constraint(range(num_scenarios), rule=second_stage_constraint_rule)
+
+
+# Solve the model
+solver = SolverFactory('glpk')  # Or use another solver like 'ipopt'
+solver.solve(model)
+
+# Print the results
+print(&quot;First-stage decision (x):&quot;, model.x.value)
+for s in range(num_scenarios):
+    print(f&quot;Second-stage decision (y_{s}):&quot;, model.y[s].value)
+print(&quot;Objective Value:&quot;, model.objective.expr())
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports <code>pyomo.environ</code> for modeling and <code>numpy</code> for numerical operations.</li>
+<li><strong>Define Scenarios and Data:</strong> Defines the number of scenarios, their probabilities, and scenario-specific data (e.g., <code>h_values</code>).</li>
+<li><strong>Create Pyomo Model:</strong> Creates a concrete Pyomo model instance.</li>
+<li><strong>Define Variables:</strong> Defines the first-stage variable <code>x</code> and the second-stage variables <code>y[s]</code> indexed by scenario.</li>
+<li><strong>Define Objective Function:</strong> Defines the objective function, which is the sum of the first-stage cost and the expected second-stage cost (weighted by scenario probabilities).</li>
+<li><strong>Define Constraints:</strong> Defines the first-stage constraint and the second-stage constraints, indexed by scenario.  This example simplifies the second-stage constraint structure for brevity.  The general form would involve matrices <code>T_s</code>, <code>W_s</code>, and vectors <code>h_s</code>.</li>
+<li><strong>Solve the Model:</strong> Creates a solver instance (using <code>glpk</code> in this case), solves the model, and prints the results.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a <em>very</em> simplified example. Real-world stochastic programs can have much more complex objective functions and constraints.</li>
+<li>The choice of solver is important. <code>glpk</code> is suitable for small to medium-sized <em>linear</em> problems. For larger or non-linear problems, consider solvers like <code>ipopt</code>, <code>cplex</code>, or <code>gurobi</code>.</li>
+<li>Scenario generation is a critical aspect of stochastic programming.  The quality of the solution depends heavily on the representativeness of the chosen scenarios. Techniques like Monte Carlo simulation, scenario trees, and moment matching are used to generate scenarios.</li>
+<li>The technology matrix <code>T_s</code> and the recourse matrix <code>W_s</code> will dictate how the first stage decisions influence the second stage decisions based on the realized scenario.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the size of the Deterministic Equivalent Formulation grow as the number of scenarios increases? What are some techniques for dealing with a large number of scenarios to make the problem computationally tractable?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
