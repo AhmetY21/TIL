@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonanticipativity Constraints (NAC): meaning and modeling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-nonanticipativity-constraints-nac-meaning-and-modeling">Topic: Nonanticipativity Constraints (NAC): meaning and modeling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>What is it?</strong></p>
+<p>Nonanticipativity constraints (NACs) are a fundamental concept in multi-stage stochastic programming. They enforce the requirement that decisions made <em>before</em> the realization of future uncertainty cannot depend on the <em>specific</em> realization of that uncertainty.  In simpler terms, your first-stage decision cannot <em>anticipate</em> what will happen later.  Decisions must be based only on the information available at the time they are made.</p>
+<p><strong>How can we use it?</strong></p>
+<p>NACs are crucial for formulating realistic stochastic optimization problems because they prevent unrealistic or impossible solutions. Imagine making an investment decision <em>today</em> based on knowing the <em>exact</em> weather conditions three months from now. That's clearly impossible. NACs ensure that your model only considers information actually available at each stage. They are essential to correctly model decisions that must be made before all the uncertainty is revealed.</p>
+<p>Mathematically, NACs often take the form of equality constraints that ensure the first-stage (or generally, <em>t</em>-th stage) decision variables are equal across different scenarios (or realizations) of the uncertainty <em>up to time t</em>.  Let's say <code>x_t</code> represents the decision at time <code>t</code>, and <code>ω</code> represents a scenario.  Then, for two scenarios <code>ω_1</code> and <code>ω_2</code> that are indistinguishable up to time <code>t</code>, the NAC would be:</p>
+<p><code>x_t(ω_1) = x_t(ω_2)</code> for all scenarios <code>ω_1</code>, <code>ω_2</code> where the information available at time <code>t</code> is the same.</p>
+<p>This constraint ensures that the decision <code>x_t</code> is the same regardless of which of those indistinguishable scenarios actually occurs.  Essentially, the first-stage decision is only one decision that applies to all scenarios.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider an electric utility company planning its electricity generation capacity. They need to decide how much to invest in different types of power plants (solar, wind, gas) today (stage 1).  The future electricity demand (stage 2) is uncertain, and depends on factors like economic growth and weather conditions.</p>
+<ul>
+<li><strong>Decisions:</strong><ul>
+<li><code>x</code>: Capacity of each type of power plant to build (stage 1 - made now).  This is a vector of decisions.</li>
+<li><code>y(ω)</code>: Amount of electricity to generate from each plant type under scenario <code>ω</code> (stage 2 - made after demand is revealed).  This is a vector of decisions for each scenario.</li>
+</ul>
+</li>
+<li><strong>Uncertainty:</strong><ul>
+<li><code>ω</code>: Scenarios representing different possible electricity demand patterns.</li>
+</ul>
+</li>
+</ul>
+<p>Without NACs, the model might allow the company to choose different capacity investments for each scenario, essentially <em>knowing</em> in advance which demand scenario will occur. This is not realistic.</p>
+<p>The NACs would require:</p>
+<p><code>x(ω_1) = x(ω_2)</code>  for all scenarios <code>ω_1</code>, <code>ω_2</code>.</p>
+<p>This ensures that the capacity investment decision <code>x</code> is the <em>same</em> regardless of the future demand scenario. The company makes one capacity investment decision that must be suitable for <em>all</em> plausible demand scenarios. Later, after observing the actual demand scenario, the company can then adjust the generation levels <code>y(ω)</code> to meet that demand.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using the Pyomo modeling language to demonstrate how nonanticipativity constraints can be implemented.  This example uses a simple two-stage model.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+
+# Define a model
+model = ConcreteModel()
+
+# Define scenarios
+scenarios = ['low_demand', 'high_demand']
+model.Scenarios = Set(initialize=scenarios)
+
+# Define first-stage decision variable (investment capacity - same across scenarios)
+model.Investment = Var(domain=NonNegativeReals)
+
+# Define second-stage decision variables (production level - different for each scenario)
+model.Production = Var(model.Scenarios, domain=NonNegativeReals)
+
+# Define scenario probabilities (assuming equal probability for simplicity)
+scenario_probabilities = {'low_demand': 0.5, 'high_demand': 0.5}
+model.ScenarioProb = Param(model.Scenarios, initialize=scenario_probabilities)
+
+
+# Define objective function (expected cost, simplified)
+def objective_rule(model):
+    return sum(model.ScenarioProb[s] * (model.Production[s] - 0.1*model.Investment)**2 for s in model.Scenarios) #simplified cost
+model.Objective = Objective(rule=objective_rule, sense=minimize)
+
+
+# Define a simplified production constraint (cannot exceed installed capacity, plus some demand factor)
+def production_constraint_rule(model, s):
+    demand_factor = 0.5 if s == 'low_demand' else 1.0 # Example demand factors
+    return model.Production[s] &lt;= model.Investment + demand_factor
+model.ProductionConstraint = Constraint(model.Scenarios, rule=production_constraint_rule)
+
+
+# **Define Nonanticipativity Constraints**  (here, trivial since only one first-stage var)
+# In this particular example, because 'Investment' is a single variable and designed to be identical across all scenarios *by construction*, the constraint isn't strictly *necessary*.
+#However, if 'Investment' *was* indexed by the scenarios, then we would *require* this constraint:
+
+def nonanticipativity_rule(model, s):
+    return model.Investment == model.Investment
+    #More generally (if 'Investment' were indexed) something like:
+    #return model.Investment[s] == model.Investment[scenarios[0]] #forcing all investments equal to the first scenario's value
+
+model.Nonanticipativity = Constraint(model.Scenarios, rule=nonanticipativity_rule) #Add the constraint to the model
+
+
+# Solve the model
+solver = SolverFactory('ipopt') # You might need to install an appropriate solver
+results = solver.solve(model)
+
+# Print the results
+print(&quot;Investment:&quot;, model.Investment.value)
+for s in scenarios:
+    print(f&quot;Production in {s}:&quot;, model.Production[s].value)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The key part is the <code>nonanticipativity_rule</code>.  In this simple example, since there is only one first-stage variable ('Investment') and it is NOT indexed by scenario, the NAC effectively does nothing. But I've included it to demonstrate the <em>structure</em> of how you <em>would</em> define a NAC. If your first-stage variables <em>were</em> indexed by scenario (which would technically allow them to vary across scenarios without a NAC), then the NAC constraint would be crucial to enforce equality between these variables across all scenarios. The more general form, commented out, shows how one could anchor to one of the scenarios for comparison.</li>
+<li>The production constraint demonstrates how second-stage decisions can vary based on the scenario.</li>
+<li>The <code>ScenarioProb</code> parameter represents the probability of each scenario occurring.</li>
+<li>The objective function represents the expected cost across all scenarios.</li>
+</ul>
+<p>This Pyomo example demonstrates the basic structure.  In more complex models, you would adapt the <code>nonanticipativity_rule</code> to enforce equality of the <em>relevant</em> first-stage (or <em>t</em>-th stage) decisions across scenarios that are indistinguishable up to that stage.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you handle a very large number of scenarios in stochastic programming? Specifically, what are some common techniques to reduce the computational burden of models with numerous scenarios, while still accurately representing the uncertainty? Consider scenario reduction techniques, sampling methods, and approximation strategies.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
