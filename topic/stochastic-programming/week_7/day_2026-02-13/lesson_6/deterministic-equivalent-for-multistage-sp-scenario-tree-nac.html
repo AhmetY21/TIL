@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deterministic Equivalent for multistage SP (scenario tree + NAC)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-deterministic-equivalent-for-multistage-sp-scenario-tree-nac">Topic: Deterministic Equivalent for multistage SP (scenario tree + NAC)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The "Deterministic Equivalent" of a multistage Stochastic Program (SP) with a scenario tree and Non-Anticipativity Constraints (NACs) is a large-scale deterministic optimization problem that, when solved, yields the optimal decisions for all stages and scenarios of the original stochastic problem. It essentially transforms the stochastic problem into a deterministic one by explicitly representing all possible scenarios and their interdependencies.</p>
+<p><strong>Components:</strong></p>
+<ul>
+<li>
+<p><strong>Scenario Tree:</strong> A directed tree structure that represents the evolution of uncertainty over time. Each node represents a state or "scenario" at a particular stage. The root node represents the initial state, and branches emanating from a node represent possible realizations of uncertain parameters.  Each path from the root to a leaf node represents a complete scenario.</p>
+</li>
+<li>
+<p><strong>Non-Anticipativity Constraints (NACs):</strong>  These constraints enforce the principle that decisions made at a particular stage cannot depend on future information that is not yet available at that stage.  In other words, decisions made <em>before</em> a particular branch point in the scenario tree must be the same for all scenarios that are indistinguishable up to that point.  NACs typically equate decision variables across scenarios that share the same history.</p>
+</li>
+<li>
+<p><strong>Deterministic Equivalent Formulation:</strong></p>
+<ol>
+<li><strong>Variables:</strong> Decision variables are indexed by stage and scenario (or node in the scenario tree).  So, we have variables like <code>x_{t,s}</code> representing the decision <code>x</code> at stage <code>t</code> in scenario <code>s</code>.</li>
+<li><strong>Objective Function:</strong> The objective function is a weighted sum of the objective values in each scenario, where the weights are the probabilities of each scenario occurring. This represents the expected value of the objective over all possible scenarios.  Often it minimizes costs or maximizes profits.</li>
+<li><strong>Constraints:</strong><ul>
+<li><strong>Stage-specific constraints:</strong> These are the constraints that apply at each stage and in each scenario, relating the decision variables to the uncertain parameters realized in that scenario. They typically include resource constraints, demand satisfaction constraints, etc.</li>
+<li><strong>NACs:</strong> These are <em>equality</em> constraints that ensure decisions are consistent across indistinguishable scenarios up to a given stage.  For example, if scenarios <em>s1</em> and <em>s2</em> are identical up to stage <em>t</em>, then <code>x_{t,s1} = x_{t,s2}</code>.</li>
+<li><strong>Dynamics/Recourse constraints:</strong> These link decisions across stages within a single scenario, representing the evolution of the system. They describe how the state of the system changes from one stage to the next based on the decisions made and the realized uncertainties.</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<ol>
+<li><strong>Solve for Optimal Decisions:</strong> By solving the deterministic equivalent using a standard optimization solver (e.g., Gurobi, CPLEX), we obtain the optimal decisions for each stage and scenario.</li>
+<li><strong>Analyze Sensitivity:</strong> The deterministic equivalent allows us to analyze the sensitivity of the optimal solution to changes in scenario probabilities or uncertain parameters.</li>
+<li><strong>Evaluate the Value of Information:</strong>  By comparing the expected value of the stochastic solution (obtained from the deterministic equivalent) to the value of a "wait-and-see" solution (where we solve the problem separately for each scenario after the uncertainty is revealed), we can quantify the value of information.</li>
+<li><strong>Implement Robust Strategies:</strong> The solution to the deterministic equivalent provides a set of robust strategies that can be implemented under different realizations of uncertainty.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a multi-period electricity generation planning problem. An electric utility company needs to decide how much electricity to generate from different sources (e.g., coal, gas, renewable energy) over the next 3 years.  The uncertain parameters are:</p>
+<ul>
+<li><strong>Electricity demand:</strong> Fluctuates each year and is influenced by weather patterns and economic activity. We represent this with a scenario tree showing potential demand levels each year.</li>
+<li><strong>Fuel prices (e.g., gas prices):</strong>  These can vary significantly and impact the cost of electricity generation.  Again, represented by a scenario tree.</li>
+<li><strong>Renewable energy availability (e.g., solar and wind):</strong> Varies based on weather conditions. Also represented by a scenario tree.</li>
+</ul>
+<p><strong>The stochastic program would aim to minimize the expected cost of electricity generation over the 3 years, subject to the following constraints:</strong></p>
+<ul>
+<li><strong>Demand satisfaction:</strong>  The total electricity generated in each period must meet the demand in that period.</li>
+<li><strong>Capacity constraints:</strong> The amount of electricity generated from each source cannot exceed its capacity.</li>
+<li><strong>Fuel availability constraints:</strong> The amount of fuel consumed cannot exceed the available fuel supply.</li>
+<li><strong>Non-anticipativity constraints:</strong> The electricity generation decisions for the first year must be the same for all scenarios since we don't know which scenario will actually occur. The year 2 decisions must be the same for all scenarios that share the same first-year realization of demand, fuel prices, and renewable energy availability, and so on.</li>
+</ul>
+<p>The Deterministic Equivalent would expand this problem by:</p>
+<ol>
+<li>Creating decision variables for the electricity generation from each source <em>in each year</em> <em>under each scenario</em>.</li>
+<li>Writing the objective function as the expected total cost of electricity generation, computed as the weighted sum of costs across all scenarios.</li>
+<li>Including all the demand satisfaction, capacity, and fuel availability constraints <em>for each year</em> <em>under each scenario</em>.</li>
+<li>Adding non-anticipativity constraints to ensure that generation decisions are identical for scenarios that are indistinguishable up to a certain stage. For example, the generation decisions for year 1 would be constrained to be equal across all scenarios.</li>
+</ol>
+<p>Solving this deterministic equivalent provides the optimal generation plan for each year under each possible scenario, considering the uncertainty in demand, fuel prices, and renewable energy availability, and ensuring that decisions are made without looking into the future.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+def create_deterministic_equivalent(scenario_tree, stage_vars, stage_constraints, objective_function):
+    &quot;&quot;&quot;
+    Creates the deterministic equivalent formulation of a multistage stochastic program.
+
+    Args:
+        scenario_tree (dict): A dictionary representing the scenario tree.
+                           Keys are node IDs, values are dictionaries containing:
+                           'probability': Probability of the scenario.
+                           'stage': Stage of the scenario.
+                           'parent': ID of the parent node (None for the root).
+                           'children': List of child node IDs.
+        stage_vars (dict): A dictionary containing lists of pyomo variables for each stage.
+                           Keys are stage numbers, values are lists of pyomo variables.
+        stage_constraints (dict): A dictionary containing lists of pyomo constraints for each stage.
+                               Keys are stage numbers, values are lists of pyomo constraints.
+        objective_function (pyo.Expression): A Pyomo expression representing the stage-wise objective function.
+                                 This should contain decision variables indexed by stage and scenario
+
+    Returns:
+        pyo.ConcreteModel: The deterministic equivalent Pyomo model.
+    &quot;&quot;&quot;
+
+    model = pyo.ConcreteModel()
+
+    # Nodes set
+    model.NODES = set(scenario_tree.keys())
+
+    # Stages set
+    stages = set(scenario_tree[n]['stage'] for n in scenario_tree)
+    model.STAGES = stages
+
+    # 1. Variables (already defined using Pyomo)
+    #    - Add the variables into the model (needed, even if defined externally)
+    model.vars = pyo.Set(initialize=[v.name for stage in stage_vars.values() for v in stage])
+
+
+    # 2. Objective Function
+    def obj_rule(model):
+      return sum(scenario_tree[node]['probability'] * objective_function.expr(model, node)
+                 for node in model.NODES)
+
+    model.objective = pyo.Objective(rule=obj_rule, sense=pyo.MINIMIZE)  # Minimizing cost
+
+    # 3. Constraints
+
+    # Scenario-specific constraints
+    model.scenario_constraints = pyo.ConstraintList()
+    for node in model.NODES:
+        stage = scenario_tree[node]['stage']
+        for constr in stage_constraints.get(stage, []): # Check if the stage exist in the constraints
+            model.scenario_constraints.add(constr.expr(model,node))
+
+    # Non-Anticipativity Constraints (NACs)
+
+    # Function to find scenarios with the same history
+    def find_common_history(scenario_tree, stage):
+        scenarios_by_history = {}
+        for node, data in scenario_tree.items():
+            if data['stage'] == stage:
+                history = []
+                current_node = node
+                while scenario_tree[current_node]['parent'] is not None:
+                    history.insert(0, current_node)  # Prepend to maintain order
+                    current_node = scenario_tree[current_node]['parent']
+                history_tuple = tuple(history)  # Tuples are hashable for dictionary keys
+                if history_tuple not in scenarios_by_history:
+                    scenarios_by_history[history_tuple] = []
+                scenarios_by_history[history_tuple].append(node)
+        return scenarios_by_history
+
+    model.nacs = pyo.ConstraintList()
+    for t in model.STAGES:
+        if t &gt; 0:  # NACs don't apply at the root stage (stage 0)
+            common_histories = find_common_history(scenario_tree, t)
+            for history, scenarios in common_histories.items():
+                if len(scenarios) &gt; 1:  # Only need NACs if there are multiple scenarios with the same history
+                    #  Iterate over all variables defined in the previous stage
+                    for var in stage_vars.get(t-1,[]): # check for empty dictionary
+
+                      # We need to define some way to correctly access the variables of interest. Here is a dummy:
+                      def access_var(model,scenario,var_name):
+                          # Replace with an actual way to index the variables within your model.
+                          # This depends heavily on how the scenario id is defined.
+                          return getattr(model,var_name)[scenario] # Default scenario tree indexed as model.var[scenario]
+
+
+                      for i in range(1, len(scenarios)):
+                            # Add NAC to constrain decision variables for indistinguishable scenarios
+                            model.nacs.add(access_var(model,scenarios[0],var.name) == access_var(model,scenarios[i],var.name)) # equality constraint
+
+    return model
+
+# Example Usage (Requires defining your scenario tree, stage_vars, stage_constraints, and objective_function appropriately)
+# You need to replace the dummy functions and parameters with the actual variables
+# and relationships relevant to your optimization model.
+
+if __name__ == '__main__':
+
+    # Dummy data for example
+    scenario_tree = {
+        0: {'probability': 1.0, 'stage': 0, 'parent': None, 'children': [1, 2]},
+        1: {'probability': 0.5, 'stage': 1, 'parent': 0, 'children': [3, 4]},
+        2: {'probability': 0.5, 'stage': 1, 'parent': 0, 'children': [5, 6]},
+        3: {'probability': 0.25, 'stage': 2, 'parent': 1, 'children': []},
+        4: {'probability': 0.25, 'stage': 2, 'parent': 1, 'children': []},
+        5: {'probability': 0.25, 'stage': 2, 'parent': 2, 'children': []},
+        6: {'probability': 0.25, 'stage': 2, 'parent': 2, 'children': []}
+    }
+
+    # Initialize variables
+    stage_vars = {
+        0: [pyo.Var(domain=pyo.NonNegativeReals, name='x0', initialize=1)],
+        1: [pyo.Var(domain=pyo.NonNegativeReals, name='x1', initialize=1)],
+        2: [pyo.Var(domain=pyo.NonNegativeReals, name='x2', initialize=1)],
+    }
+
+    # Constraints are defined externally. This is a dummy constraint.
+    def constr_rule(model,node):
+        stage = scenario_tree[node]['stage']
+        if stage == 0:
+            return stage_vars[0][0](model) &gt;= 0
+        elif stage == 1:
+            return stage_vars[1][0](model) &gt;= 0
+        else:
+            return stage_vars[2][0](model) &gt;= 0
+
+
+    stage_constraints = {
+        0: [pyo.Constraint(rule=constr_rule, name='c0')],
+        1: [pyo.Constraint(rule=constr_rule, name='c1')],
+        2: [pyo.Constraint(rule=constr_rule, name='c2')]
+    }
+
+
+    # Objective function (example)
+    class Objective_Expr:
+        def expr(self, model, node):
+            stage = scenario_tree[node]['stage']
+            # In reality, you would access the specific variable correctly from your model.
+            if stage == 0:
+                return stage_vars[0][0](model) * 1
+            elif stage == 1:
+                return stage_vars[1][0](model) * 2
+            else:
+                return stage_vars[2][0](model) * 3
+
+
+    objective_function = Objective_Expr()
+
+    # Create the deterministic equivalent model
+    deterministic_model = create_deterministic_equivalent(scenario_tree, stage_vars, stage_constraints, objective_function)
+
+    # Solve the model
+    solver = pyo.SolverFactory('glpk')  # or 'gurobi', 'cplex', etc.
+    solver.solve(deterministic_model)
+
+    # Print the solution (example)
+    for var_name in deterministic_model.vars:
+        for node in deterministic_model.NODES:
+            try:
+                print(f&quot;{var_name}[{node}]: {deterministic_model.find_component(var_name)[node].value}&quot;)
+            except:
+                pass
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>create_deterministic_equivalent(scenario_tree, stage_vars, stage_constraints, objective_function)</code> Function:</strong><ul>
+<li>Takes the scenario tree, stage variables, stage constraints, and objective expression as input.</li>
+<li>Creates a <code>pyo.ConcreteModel</code> to represent the deterministic equivalent.</li>
+<li>Iterates through the scenario tree, adding the stage-specific constraints for each scenario.</li>
+<li>Implements the Non-Anticipativity Constraints (NACs) by:<ul>
+<li>Finding scenarios that share the same history up to a given stage using function <code>find_common_history</code>.</li>
+<li>For each set of scenarios with a common history, iterates through the variables and enforces equality constraints between the corresponding decision variables in those scenarios.  The essential part here is correctly accessing the variables using a model index.</li>
+</ul>
+</li>
+<li>Defines the objective function as the expected value across all scenarios.</li>
+<li>Returns the deterministic equivalent Pyomo model.</li>
+</ul>
+</li>
+<li><strong><code>scenario_tree</code> Dictionary:</strong> This represents the tree structure.  Each key is a node ID, and the value is a dictionary containing the node's probability, stage, parent node, and child nodes.</li>
+<li><strong><code>stage_vars</code> Dictionary:</strong> Stores the Pyomo variables for each stage.  This example creates simple scalar variables indexed by stage. <strong>Crucially, your implementation needs variables indexed by <em>both</em> stage and scenario/node to represent decisions within the scenario tree.</strong></li>
+<li><strong><code>stage_constraints</code> Dictionary:</strong> Holds the Pyomo constraints defined for each stage. This example has dummy constraints that simply bound x &gt;=0</li>
+<li><strong><code>Objective_Expr</code> Class:</strong> Defines the objective function as a Pyomo expression, accessed through the objective_function.expr(model,node) call.  This returns an objective expression.</li>
+<li><strong>Example Usage:</strong><ul>
+<li>Creates dummy data for the scenario tree, stage variables, and stage constraints.</li>
+<li>Calls the <code>create_deterministic_equivalent</code> function to construct the deterministic equivalent model.</li>
+<li>Solves the model using a solver (GLPK in this example). You may need to install an appropriate solver.</li>
+<li>Prints the solution.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Variable Indexing:</strong>  The example code uses simplified scalar variables.  In a real application, you will need to create decision variables indexed by <em>both</em> stage and scenario. For instance, <code>model.x = pyo.Var(model.STAGES, model.NODES, domain=pyo.NonNegativeReals)</code> and properly adjust the <code>access_var</code> function.</li>
+<li><strong>Constraint Definition:</strong> The <code>stage_constraints</code> dictionary and the <code>constr_rule</code> function are placeholders. You'll need to define your actual constraints based on the specific problem you're modeling. They must be indexed correctly (e.g., by stage and scenario).</li>
+<li><strong>Objective Function Definition:</strong> Replace the dummy objective function definition with the actual objective function for your problem.  It also needs to correctly access variables indexed by stage and scenario.</li>
+<li><strong>Scenario Tree Representation:</strong> Ensure the scenario tree representation is accurate and captures the dependencies between scenarios.</li>
+<li><strong>Solver Selection:</strong>  Choose an appropriate solver (e.g., Gurobi, CPLEX) based on the size and complexity of the deterministic equivalent problem.  You might need to install the solver and ensure it is accessible from Pyomo.</li>
+</ul>
+<p>This code provides a template. Adapting it to your specific problem requires careful consideration of how you define your decision variables, constraints, and objective function within the scenario tree structure.  The <code>access_var</code> function is particularly important, and it needs to be customized based on the specific indexing scheme of your Pyomo variables. The example uses string variables as an alternative, it still needs to be adjusted to a custom indexing scheme.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the size of the deterministic equivalent problem grow as the number of stages and the branching factor of the scenario tree increase? What are some techniques to mitigate the computational challenges associated with solving very large deterministic equivalents (e.g., decomposition methods)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
