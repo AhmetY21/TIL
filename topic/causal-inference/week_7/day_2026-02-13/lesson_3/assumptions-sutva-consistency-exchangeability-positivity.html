@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assumptions: SUTVA, Consistency, Exchangeability, Positivity</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-assumptions-sutva-consistency-exchangeability-positivity">Topic: Assumptions: SUTVA, Consistency, Exchangeability, Positivity</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Causal inference relies heavily on several key assumptions to allow us to draw valid conclusions about cause-and-effect relationships from observational or experimental data. These assumptions, while often implicit, are crucial for the validity of any causal analysis. The following are four common assumptions:</p>
+<ul>
+<li>
+<p><strong>SUTVA (Stable Unit Treatment Value Assumption):</strong> This is actually <em>two</em> assumptions rolled into one:</p>
+<ul>
+<li><em>No Interference:</em> A subject's treatment only affects their own outcome and not the outcome of any other subject.  In other words, the treatment assigned to one unit doesn't impact another unit's outcome.</li>
+<li><em>Single Version of Treatment:</em>  There are no hidden variations of the treatment that affect the outcome differently.  The treatment is well-defined, and all units receiving the treatment experience the same "version" of it.</li>
+</ul>
+<p><em>Use:</em> SUTVA allows us to define potential outcomes for each unit independent of the treatment assignment of other units.  If violated, causal estimates can be biased as observed effects might be due to spillover or varying treatment forms rather than the treatment itself.</p>
+</li>
+<li>
+<p><strong>Consistency:</strong> The potential outcome under the treatment a unit <em>actually</em> receives is equal to the observed outcome for that unit.  Formally, if <em>Z<sub>i</sub></em> is the treatment received by unit <em>i</em>, and <em>Y<sub>i</sub></em> is the observed outcome, then <em>Y<sub>i</sub> = Y<sub>i</sub>(Z<sub>i</sub>)</em>, where <em>Y<sub>i</sub>(Z<sub>i</sub>)</em> is the potential outcome for unit <em>i</em> if they received treatment <em>Z<sub>i</sub></em>.</p>
+<p><em>Use:</em> Consistency links potential outcomes to observed outcomes.  Without consistency, potential outcomes become purely hypothetical, making causal inference based on observed data impossible. It states that what <em>would</em> happen under the treatment <em>actually</em> received is what <em>did</em> happen.</p>
+</li>
+<li>
+<p><strong>Exchangeability (also called Unconfoundedness, No Unmeasured Confounding, Ignorability):</strong> Given a set of observed covariates <em>X</em>, the treatment assignment <em>Z</em> is independent of the potential outcomes <em>Y(0)</em> and <em>Y(1)</em>. In notation: <em>(Y(0), Y(1)) ⊥ Z | X</em>.  This means that after controlling for <em>X</em>, the treated and untreated groups are comparable.  All confounders (variables that affect both treatment and outcome) must be included in <em>X</em>.</p>
+<p><em>Use:</em> Exchangeability allows us to estimate the causal effect of a treatment by comparing the outcomes of treated and untreated groups within strata defined by <em>X</em>.  If exchangeability doesn't hold (i.e., there are unmeasured confounders), then any observed differences in outcomes between the groups might be due to these unmeasured confounders rather than the treatment.</p>
+</li>
+<li>
+<p><strong>Positivity (also called Overlap):</strong> For every value of the covariates <em>X</em>, there is a non-zero probability of receiving each treatment level. Formally, <em>0 &lt; P(Z = z | X = x) &lt; 1</em> for all values <em>x</em> and <em>z</em>. This means there must be some individuals in each stratum of <em>X</em> who receive each treatment.</p>
+<p><em>Use:</em> Positivity ensures that we can actually compare treated and untreated groups within each stratum of <em>X</em>. If positivity is violated (e.g., everyone with a certain value of <em>X</em> always receives the treatment), we cannot estimate the causal effect for that stratum.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider evaluating the causal effect of a new medication on blood pressure reduction.</p>
+<ul>
+<li>
+<p><strong>SUTVA:</strong>  If patients discuss the medication and change their diets or exercise habits based on these discussions (interference), or if there are different batches of the medication with varying potencies (multiple versions of treatment), SUTVA is violated.</p>
+</li>
+<li>
+<p><strong>Consistency:</strong> If a patient took the medication as prescribed (Z=1), then their observed blood pressure reduction is what <em>would</em> happen if they took the medication (Y(1)). If they didn't take the medication as prescribed (e.g., only took it sporadically), then consistency becomes less certain.</p>
+</li>
+<li>
+<p><strong>Exchangeability:</strong>  If healthier individuals are more likely to be prescribed the medication (due to doctor's preferences or patient's health-seeking behavior), and we don't account for pre-existing health conditions (e.g., diabetes, heart disease) in our analysis (X), then exchangeability is violated.  Pre-existing health conditions are confounders, affecting both the likelihood of receiving the treatment and the outcome (blood pressure reduction).</p>
+</li>
+<li>
+<p><strong>Positivity:</strong>  If, based on some characteristic X, all individuals with very high blood pressure <em>always</em> get the new medication, and nobody with that characteristic is <em>ever</em> in the control group, then positivity is violated for that value of X. We can't estimate the medication's effect for that subpopulation.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a direct Python function to <em>check</em> these assumptions (they are generally untestable from data alone), Python libraries for causal inference provide tools that can help assess <em>sensitivity</em> to violations.</p>
+<p>Specifically, for Exchangeability, libraries like <code>CausalML</code> or <code>EconML</code> help evaluate the impact of unobserved confounders. For positivity, libraries can help identify areas where propensity scores are too close to 0 or 1.</p>
+<p>Here is an example using <code>statsmodels</code> to examine covariate overlap (related to positivity) after propensity score matching:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Generate synthetic data
+np.random.seed(42)
+n_samples = 200
+X = np.random.rand(n_samples, 2)  # Covariates
+treatment_effect = 0.5
+propensity_score = 1 / (1 + np.exp(-(X[:, 0] - 0.5)))
+treatment = np.random.binomial(1, propensity_score)
+outcome = 2 * X[:, 0] + X[:, 1] + treatment_effect * treatment + np.random.normal(0, 0.5, n_samples)
+
+data = pd.DataFrame(X, columns=['X1', 'X2'])
+data['treatment'] = treatment
+data['outcome'] = outcome
+
+# Propensity score estimation using logistic regression
+X_train, X_test, y_train, y_test, t_train, t_test = train_test_split(data[['X1', 'X2']], data['outcome'], data['treatment'], test_size=0.3, random_state=42)
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+propensity_model = LogisticRegression(random_state=42)
+propensity_model.fit(X_train, t_train)
+propensity_scores = propensity_model.predict_proba(X_test)[:, 1]
+
+# Examine Propensity Score distribution to evaluate Positivity
+print(&quot;Min propensity score:&quot;, np.min(propensity_scores))
+print(&quot;Max propensity score:&quot;, np.max(propensity_scores))
+
+# Check covariate balance AFTER matching (simplified example using inverse propensity weighting for demonstration)
+# In practice, you'd perform actual matching or weighting
+weights = data['treatment']/ propensity_score + (1-data['treatment']) / (1- propensity_score)
+
+# Weighted means for treatment and control groups
+weighted_mean_x1_treated = np.mean(data[data['treatment'] == 1]['X1'] * weights[data['treatment']==1])
+weighted_mean_x1_control = np.mean(data[data['treatment'] == 0]['X1'] * weights[data['treatment']==0])
+
+print(f&quot;Weighted mean of X1 for treated: {weighted_mean_x1_treated}&quot;)
+print(f&quot;Weighted mean of X1 for control: {weighted_mean_x1_control}&quot;)
+
+# Regression adjustment to estimate treatment effect (after addressing confounding)
+model = sm.WLS(data['outcome'], sm.add_constant(data[['treatment', 'X1', 'X2']]), weights=weights)
+results = model.fit()
+print(results.summary())
+</code></pre>
+
+<p>This code demonstrates how to:</p>
+<ol>
+<li>Generate synthetic data with covariates, treatment, and outcome.</li>
+<li>Estimate propensity scores using logistic regression.</li>
+<li>Print the minimum and maximum propensity scores to assess positivity. Values very close to 0 or 1 indicate a violation.</li>
+<li>Calculates the means of the covariates for treatment and control groups using the weights from IPW.</li>
+<li>Estimate the causal effect by running a WLS regression.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some strategies for addressing violations of each of these assumptions (SUTVA, Consistency, Exchangeability, Positivity) in a real-world causal inference problem?  For example, if I suspect interference is occurring, what could I do? If I suspect unmeasured confounding, what are my options?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
