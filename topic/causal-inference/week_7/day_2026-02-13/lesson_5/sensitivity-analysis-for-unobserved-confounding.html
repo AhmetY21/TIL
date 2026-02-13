@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sensitivity Analysis for Unobserved Confounding</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-sensitivity-analysis-for-unobserved-confounding">Topic: Sensitivity Analysis for Unobserved Confounding</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Sensitivity analysis for unobserved confounding is a technique used in causal inference to assess the robustness of causal effect estimates to the presence of unobserved confounders. In observational studies, we often cannot control for all variables that might influence both the treatment (or exposure) and the outcome, leading to potentially biased causal estimates. Sensitivity analysis aims to quantify how <em>strong</em> an unobserved confounder would need to be to overturn or substantially alter the conclusions of our causal analysis. It doesn't eliminate the bias, but it helps us understand how sensitive our results are to violations of the assumption of no unobserved confounding (also known as the ignorability or exchangeability assumption).</p>
+<p>Specifically, sensitivity analysis typically involves defining one or more parameters that characterize the relationship between the unobserved confounder, the treatment, and the outcome. These parameters represent the <em>strength</em> of confounding. The goal is to then vary these parameters over a plausible range and observe how the estimated causal effect changes. If the estimated effect remains relatively stable (e.g., remains significantly different from zero or doesn't change direction) across a wide range of values for the sensitivity parameters, we can be more confident that our results are robust. Conversely, if a relatively weak unobserved confounder can significantly alter the effect estimate, our conclusions might be fragile.</p>
+<p>In essence, we're asking the question: "How much would the unobserved confounder need to be associated with the treatment <em>and</em> the outcome to completely explain away the observed effect?" By exploring this question, we gain valuable insight into the credibility of our causal claims.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine we are studying the effect of a new job training program (treatment) on future earnings (outcome). We observe that individuals who participate in the program earn significantly more than those who don't. However, we are concerned about selection bias: individuals who choose to participate in the program might be more motivated, skilled, or have better social networks than those who don't. We measure and control for several observed confounders like education level, prior work experience, and age.  However, we worry that "motivation" is an unobserved confounder – highly motivated people might be more likely to enroll in the program <em>and</em> more likely to have higher future earnings regardless of the program.</p>
+<p>In this scenario, we can use sensitivity analysis to assess how strong the unobserved "motivation" variable would need to be, in terms of its relationship with both program participation and future earnings, to explain away the observed positive effect of the training program on earnings. If a plausible level of motivation bias is sufficient to reverse the observed effect, it would strongly suggest that our initial conclusion about the program's effectiveness is unreliable. Conversely, if even a very strong association with motivation cannot eliminate the positive effect, we have more confidence in the program's effectiveness.</p>
+<p>Other application scenarios include:</p>
+<ul>
+<li>Evaluating the effect of a new drug on patient outcomes, accounting for unobserved health behaviors.</li>
+<li>Assessing the impact of a policy intervention on crime rates, considering unobserved neighborhood characteristics.</li>
+<li>Determining the influence of a marketing campaign on sales, controlling for unobserved customer preferences.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single, universally accepted "sensitivity analysis package" in Python that works across all causal inference methods and sensitivity parameterizations, several tools and libraries offer functionalities that can be adapted for sensitivity analysis. Furthermore, many newer packages are being developed to specifically address sensitivity analysis for unobserved confounding. The <code>statsmodels</code> package also offers tools that can be used for sensitivity analysis, especially in linear models.</p>
+<p>Here's an example using the <code>EValue</code> package, which focuses on calculating E-values, a type of sensitivity analysis metric, primarily for relative risks:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+from evalue import EValue
+
+# Example data (replace with your actual data)
+# In this example, we have a binary treatment, a binary outcome, and no measured covariates,
+# to keep the example simple.
+# Real-world scenarios would have more data and confounders.
+data = pd.DataFrame({
+    'treatment': np.random.binomial(1, 0.5, 1000),
+    'outcome': np.random.binomial(1, 0.6, 1000) # Slightly positive correlation to treatment
+})
+
+# Calculate the observed relative risk (RR)
+def calculate_relative_risk(data, treatment_col='treatment', outcome_col='outcome'):
+    treated_outcome = data[(data[treatment_col] == 1) &amp; (data[outcome_col] == 1)].shape[0]
+    treated_total = data[data[treatment_col] == 1].shape[0]
+    untreated_outcome = data[(data[treatment_col] == 0) &amp; (data[outcome_col] == 1)].shape[0]
+    untreated_total = data[data[treatment_col] == 0].shape[0]
+
+    rr = (treated_outcome / treated_total) / (untreated_outcome / untreated_total)
+    return rr
+
+observed_rr = calculate_relative_risk(data)
+print(f&quot;Observed Relative Risk: {observed_rr}&quot;)
+
+# Calculate the E-value
+evalue_result = EValue.from_relative_risk(observed_rr)
+evalue = evalue_result.evalue
+print(f&quot;E-value: {evalue}&quot;)
+
+# Interpretation: An unmeasured confounder would need to have associations with both the treatment
+# and outcome of at least 'evalue' (on the risk ratio scale) to explain away the observed association.
+# A larger E-value implies more robust results.
+
+# Calculate the E-value for the lower confidence interval bound (if available).  Not available here without actual confidence intervals calculated initially.
+# evalue_lower = EValue.from_relative_risk(confidence_interval_lower_bound) # Placeholder.  You need to calculate CI first.
+# print(f&quot;E-value lower: {evalue_lower}&quot;)
+
+
+#Example for Odds Ratio
+data['outcome'] = np.random.binomial(1, 0.3, 1000)
+def calculate_odds_ratio(data, treatment_col='treatment', outcome_col='outcome'):
+    treated_outcome = data[(data[treatment_col] == 1) &amp; (data[outcome_col] == 1)].shape[0]
+    treated_nooutcome = data[(data[treatment_col] == 1) &amp; (data[outcome_col] == 0)].shape[0]
+    untreated_outcome = data[(data[treatment_col] == 0) &amp; (data[outcome_col] == 1)].shape[0]
+    untreated_nooutcome = data[(data[treatment_col] == 0) &amp; (data[outcome_col] == 0)].shape[0]
+
+    oratio = (treated_outcome/treated_nooutcome) / (untreated_outcome/untreated_nooutcome)
+    return oratio
+
+observed_oratio = calculate_odds_ratio(data)
+print(f&quot;Observed Odds Ratio: {observed_oratio}&quot;)
+evalue_result_or = EValue.from_odds_ratio(observed_oratio)
+evalue_or = evalue_result_or.evalue
+print(f&quot;E-value (Odds Ratio): {evalue_or}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong>Data Generation:</strong> We simulate some example data to have a binary treatment and a binary outcome. <strong>Important</strong>: Replace this with your real data!</p>
+</li>
+<li>
+<p><strong>Calculate Observed Relative Risk/Odds Ratio</strong>: We calculate the observed relative risk and odds ratio. This is crucial as the E-value is calculated <em>based on</em> the observed effect size.</p>
+</li>
+<li>
+<p><strong><code>EValue.from_relative_risk()</code></strong>: We use the <code>EValue.from_relative_risk()</code> or <code>EValue.from_odds_ratio()</code> function to calculate the E-value.</p>
+</li>
+<li>
+<p><strong>Interpretation</strong>: The E-value represents the minimum strength of association that an unmeasured confounder would need to have with <em>both</em> the treatment and the outcome, above and beyond the measured confounders, to explain away the observed association.  Higher E-values suggest more robust evidence. A rough rule of thumb is that E-values above 1.1 are okay, and the greater the E-value, the better.</p>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Choice of Sensitivity Parameter:</strong> The E-value is just <em>one</em> approach to sensitivity analysis. Other approaches involve specifying the correlation or the magnitude of the effect of the unobserved confounder on the treatment and outcome using different metrics.</li>
+<li><strong>Plausibility of Parameter Values:</strong> The key to meaningful sensitivity analysis is to choose a plausible range of values for the sensitivity parameters. This often requires domain expertise and careful consideration of the specific context.  The <code>EValue</code> package deals with a specific metric (relative risk).</li>
+<li><strong>Integration with Causal Inference Methods:</strong> Sensitivity analysis is often performed <em>after</em> estimating a causal effect using methods like propensity score matching, inverse probability weighting, or instrumental variables. The sensitivity analysis then assesses the robustness of the estimated effect to unobserved confounding.  It's a supplementary analysis, not a replacement for these methods.</li>
+</ul>
+<p><strong>Other Potential Python tools/approaches:</strong></p>
+<ul>
+<li><strong><code>statsmodels</code>:</strong> You can use <code>statsmodels</code> to build a model, calculate coefficients, and then manually implement sensitivity analysis by adding hypothetical confounders and re-estimating the model. This requires a more manual approach but provides flexibility.</li>
+<li><strong>DoWhy + Sensitivity Analysis Libraries (in development):</strong> The <code>DoWhy</code> library is a popular tool for causal inference.  It is currently developing or integrating with libraries focusing on sensitivity analysis to provide more integrated solutions. Watch for updates in the DoWhy ecosystem.</li>
+<li><strong>R's <code>sensitivitymv</code> (use <code>rpy2</code>):</strong> The <code>sensitivitymv</code> package in R provides a general framework for sensitivity analysis, including the ability to plot sensitivity contours.  You can use <code>rpy2</code> in Python to call R functions and access this package.</li>
+<li><strong>Roll your own</strong>: Sensitivity analyses can be conducted even without advanced tools, e.g., you could try to establish a range of plausible confounder magnitudes using domain knowledge and calculate the resulting bias.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you decide on a "plausible range" for the sensitivity parameters in a real-world application? What factors should you consider? Are there any guidelines or best practices for selecting this range? This is important because if the plausible range is too narrow, the sensitivity analysis is meaningless, and if it is too wide, it becomes uninformative.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
