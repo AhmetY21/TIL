@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Common Failure Modes: Positivity Violations and Extrapolation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-common-failure-modes-positivity-violations-and-extrapolation">Topic: Common Failure Modes: Positivity Violations and Extrapolation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Positivity Violation (or Lack of Overlap):</strong> Positivity, also called overlap or common support, refers to the condition that for every value of the confounders, there is a non-zero probability of receiving each treatment level. Formally, for a treatment <em>A</em> and covariates <em>X</em>, positivity requires that 0 &lt; P(A = a | X = x) &lt; 1 for all values <em>a</em> that <em>A</em> can take and for all values <em>x</em> in the support of <em>X</em>.  A positivity violation occurs when this condition is not met. This often manifests as regions of the covariate space where some treatment groups are completely absent. In these regions, we cannot reliably estimate the causal effect of the treatment, as we have no observed data to inform the counterfactual.</p>
+<p><strong>How to Use It:</strong> Diagnosing positivity violations helps identify regions of the data where causal inference is unreliable. If detected, we must acknowledge the limitations of our causal estimates and may need to either:
+*   Adjust the target population to focus on regions with positivity.
+*   Collect more data to establish better overlap.
+*   Modify the treatment regime of interest, if possible.
+*   Consider more advanced methods like causal transport or leveraging external data.
+*   Acknowledge and transparently report the limitations of the inference.</p>
+<p><strong>Extrapolation:</strong> Extrapolation involves making predictions or inferences outside the range of the observed data. In causal inference, extrapolation occurs when we attempt to estimate the causal effect of a treatment for covariate values that are not represented in our dataset, or for treatment regimes never observed in the study. If we don't have observations under specific treatment regimes and values of covariates, we are essentially extrapolating the causal effects beyond what we have seen. This extrapolation can be highly sensitive to model misspecification because the model's behavior outside the observed range is unconstrained by the data.</p>
+<p><strong>How to Use It:</strong>  Extrapolation requires caution.  While sometimes necessary, it is crucial to assess the plausibility of the assumed causal relationships beyond the observed data.  Sensitivity analysis and domain expertise become critical. Possible ways to address extrapolation issues:
+*   Restrict analysis to areas with empirical support.
+*   Use more robust models less sensitive to extrapolation.
+*   Explicitly model the extrapolation assumptions and perform sensitivity analysis.
+*   Collect additional data to cover the extrapolated region.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:  Treatment for Heart Failure</strong></p>
+<p>Suppose we are studying the effectiveness of a new drug (Treatment <em>A</em>) for heart failure.  The treatment assignment depends on patient age (<em>X1</em>) and disease severity (<em>X2</em>).</p>
+<ul>
+<li>
+<p><strong>Positivity Violation Example:</strong> Imagine that in our dataset, no patients under 50 years old ( <em>X1</em> &lt; 50) with severe disease (high <em>X2</em>) ever received the new drug (<em>A</em>=1).  This could be due to a doctor's protocol or some unknown selection bias. Attempting to estimate the effect of the drug on these patients would violate the positivity assumption as there is no overlap.</p>
+</li>
+<li>
+<p><strong>Extrapolation Example:</strong>  Our study only includes patients aged 50-80 years old (<em>X1</em> is between 50 and 80). We want to estimate the effect of the drug on patients aged 85. This is an extrapolation problem, because we are trying to extend our findings beyond the observed range of age. The effect of the drug might be very different for much older patients due to age-related physiological changes.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+
+def check_positivity(df, treatment_col, covariate_cols):
+    &quot;&quot;&quot;
+    Checks for positivity violations in a dataset.
+
+    Args:
+        df: Pandas DataFrame containing the data.
+        treatment_col: Name of the column representing the treatment variable.
+        covariate_cols: List of column names representing the covariates.
+
+    Returns:
+        A Pandas DataFrame indicating positivity violations.  Each row represents a 
+        unique combination of covariate values, and columns show the treatment levels
+        and their observed frequencies. Rows where any treatment frequency is zero indicate
+        a potential positivity violation.  Returns None if the DataFrame is empty.
+    &quot;&quot;&quot;
+    if df.empty:
+        return None
+
+    grouped = df.groupby(covariate_cols)[treatment_col].value_counts(normalize=True).unstack(fill_value=0)
+
+    # Identify combinations with zero probability for any treatment
+    violation_rows = grouped.isin([0]).any(axis=1)
+    violations = grouped[violation_rows]
+    violations['positivity_violated'] = True
+    return violations
+
+def check_extrapolation(df, covariate_cols, new_data):
+  &quot;&quot;&quot;
+  Checks if `new_data` contains values outside the range of `df` for specified covariates.
+
+  Args:
+      df: Pandas DataFrame representing the original data.
+      covariate_cols: List of column names to check for extrapolation.
+      new_data: Pandas DataFrame representing the new data points to be predicted.
+
+  Returns:
+      Pandas DataFrame indicating rows in `new_data` that are extrapolations with an extrapolation_flag.
+      Returns None if the DataFrames are empty.
+  &quot;&quot;&quot;
+
+  if df.empty or new_data.empty:
+        return None
+
+  extrapolation_flags = []
+  for index, row in new_data.iterrows():
+      extrapolation = False
+      for col in covariate_cols:
+          min_val = df[col].min()
+          max_val = df[col].max()
+          if row[col] &lt; min_val or row[col] &gt; max_val:
+              extrapolation = True
+              break
+      extrapolation_flags.append(extrapolation)
+
+  new_data['extrapolation_flag'] = extrapolation_flags
+  return new_data[new_data['extrapolation_flag'] == True] #Return only the extrapolation flags
+# Example Usage (Simulated Data)
+np.random.seed(42) # For reproducibility
+n = 100
+
+data = {
+    'age': np.random.randint(40, 70, n), # Simulated Age
+    'severity': np.random.choice(['Mild', 'Moderate', 'Severe'], n, p=[0.3, 0.4, 0.3]),
+    'treatment': np.random.choice([0, 1], n, p=[0.6, 0.4])
+}
+
+df = pd.DataFrame(data)
+
+# Positivity Check
+covariates = ['age', 'severity']
+treatment_col = 'treatment'
+positivity_violations = check_positivity(df, treatment_col, covariates)
+
+if positivity_violations is not None and not positivity_violations.empty:
+    print(&quot;Positivity Violations Detected:\n&quot;, positivity_violations)
+else:
+    print(&quot;No Positivity Violations Detected.&quot;)
+
+
+# Extrapolation Check
+new_data_points = pd.DataFrame({
+    'age': [30, 75],  # Age values outside the range of the original data
+    'severity': ['Moderate', 'Severe'],
+    'treatment': [0, 1]
+})
+
+extrapolations = check_extrapolation(df, covariates, new_data_points)
+
+if extrapolations is not None and not extrapolations.empty:
+    print(&quot;\nExtrapolations Detected:\n&quot;, extrapolations)
+else:
+    print(&quot;No Extrapolations Detected.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>
+<p><code>check_positivity</code>: This function groups the data by the specified covariates and then calculates the proportion of each treatment level within each group.  If any treatment level has a zero proportion for a particular combination of covariates, it flags a potential positivity violation.</p>
+</li>
+<li>
+<p><code>check_extrapolation</code>:  This function checks if the values in <code>new_data</code> for the specified covariates fall within the range of the same covariates in the original data (<code>df</code>). If a value is outside the range, it indicates extrapolation.</p>
+</li>
+</ul>
+<p><strong>Limitations:</strong></p>
+<ul>
+<li>The <code>check_positivity</code> function only flags <em>potential</em> violations. More sophisticated methods might be needed to confirm the severity and impact.</li>
+<li>The <code>check_extrapolation</code> function only checks for violations in the ranges. It does not check for combinations of covariates or density of points in specific regions.</li>
+<li>For continuous covariates, discretizing might be necessary before applying <code>check_positivity</code>, but this comes with its own set of considerations.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can propensity score methods (e.g., inverse probability of treatment weighting) be affected by positivity violations and extrapolation, and what strategies can be used to mitigate these effects when using propensity scores for causal inference?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
