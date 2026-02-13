@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N-Grams and Language Models</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-n-grams-and-language-models">Topic: N-Grams and Language Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>N-grams:</strong> An n-gram is a contiguous sequence of <em>n</em> items from a given sample of text or speech. The items can be characters, syllables, words, or even phrases.  For example, in the sentence "The quick brown fox jumps over the lazy dog.", the 2-grams (or bigrams) would be: "The quick", "quick brown", "brown fox", "fox jumps", "jumps over", "over the", "the lazy", "lazy dog". The 3-grams (or trigrams) would be: "The quick brown", "quick brown fox", "brown fox jumps", "fox jumps over", "jumps over the", "over the lazy", "the lazy dog". A 1-gram is also known as a unigram.</p>
+<p><strong>Language Models:</strong> A language model (LM) is a probabilistic model that assigns a probability to a sequence of words (or, more generally, any sequence of tokens). In simpler terms, given a sequence of words, a language model tries to predict the next word. LMs are used to assess the "likelihood" or "grammaticality" of a sentence. The higher the probability, the more likely the sentence is to occur (according to the model's training data).</p>
+<p><strong>How N-grams are used in Language Models:</strong>  N-gram language models are a type of statistical language model that uses the concept of n-grams to estimate the probability of a word occurring given the preceding <em>n-1</em> words. The core idea is that the probability of a word depends only on the <em>n-1</em> preceding words.  This is known as the Markov assumption.  Mathematically, this is expressed as:</p>
+<p>P(w<sub>i</sub> | w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>i-1</sub>) ≈ P(w<sub>i</sub> | w<sub>i-n+1</sub>, w<sub>i-n+2</sub>, ..., w<sub>i-1</sub>)</p>
+<p>Where:</p>
+<ul>
+<li>P(w<sub>i</sub> | w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>i-1</sub>) is the probability of the word w<sub>i</sub> given the preceding words.</li>
+<li>P(w<sub>i</sub> | w<sub>i-n+1</sub>, w<sub>i-n+2</sub>, ..., w<sub>i-1</sub>) is the approximation used by the n-gram model, which considers only the n-1 preceding words.</li>
+</ul>
+<p>This probability is typically estimated from a large corpus of text by counting the occurrences of n-grams and normalizing.</p>
+<p><strong>Use:</strong> N-gram language models are used for:</p>
+<ul>
+<li><strong>Speech Recognition:</strong>  To improve the accuracy of transcription by predicting the most likely sequence of words.</li>
+<li><strong>Machine Translation:</strong> To evaluate the fluency of translated sentences.</li>
+<li><strong>Text Generation:</strong> To generate realistic text, such as chatbot responses or article headlines.</li>
+<li><strong>Spelling Correction:</strong>  To identify and correct misspelled words based on context.</li>
+<li><strong>Grammar Checking:</strong>  To detect grammatical errors.</li>
+<li><strong>Information Retrieval:</strong>  To rank search results based on relevance.</li>
+<li><strong>Text classification:</strong> Can be features used in text classification algorithms.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Application scenario: Autocompletion in search engines or text editors.</strong></p>
+<p>Imagine you are typing "I went to the" in a search engine.  An n-gram language model, trained on a large corpus of web text, can predict the most likely next words. If the model uses trigrams, it considers the n-gram "went to the".  Based on its training data, it might predict that "I went to the beach", "I went to the store", "I went to the park" are the most likely completions. The search engine then displays these suggestions to the user, speeding up the search process and improving user experience. The predictions are determined by calculating the probabilities: P(beach | went to the), P(store | went to the), P(park | went to the), etc. and suggesting the options with the highest probabilities.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.util import ngrams
+from collections import Counter
+
+def create_ngrams(text, n):
+    &quot;&quot;&quot;
+    Generates n-grams from a given text.
+
+    Args:
+        text (str): The input text.
+        n (int): The size of the n-gram.
+
+    Returns:
+        list: A list of n-grams.
+    &quot;&quot;&quot;
+    tokens = nltk.word_tokenize(text) #Tokenize into words
+    n_grams = list(ngrams(tokens, n))
+    return n_grams
+
+def calculate_ngram_probabilities(corpus, n):
+  &quot;&quot;&quot;
+  Calculates probabilities of n-grams in a corpus using maximum likelihood estimation.
+
+  Args:
+      corpus (str): The corpus of text.
+      n (int): The size of the n-gram.
+
+  Returns:
+      dict: A dictionary where keys are n-grams (tuples) and values are their probabilities.
+  &quot;&quot;&quot;
+  all_ngrams = create_ngrams(corpus, n)
+  ngram_counts = Counter(all_ngrams)
+
+  if n == 1:
+      total_count = len(all_ngrams) #Total number of unigrams.
+  else:
+      #Use n-1 grams to normalize, this is the context.
+      all_context_ngrams = create_ngrams(corpus, n-1)
+      context_ngram_counts = Counter(all_context_ngrams)
+      total_count = len(all_context_ngrams) #Total number of n-1 grams
+  ngram_probabilities = {}
+
+  for ngram, count in ngram_counts.items():
+      if n == 1:
+          ngram_probabilities[ngram] = count / total_count
+      else:
+        # Get the count of the n-1 gram that precedes the current ngram
+        context_ngram = ngram[:-1] # get the first n-1 tokens.
+        context_count = context_ngram_counts[context_ngram]
+        ngram_probabilities[ngram] = count / context_count
+
+  return ngram_probabilities
+
+# Example usage:
+text = &quot;The quick brown fox jumps over the lazy dog. The quick brown cat sleeps.&quot;
+bigrams = create_ngrams(text, 2)
+print(&quot;Bigrams:&quot;, bigrams)
+
+ngram_probs = calculate_ngram_probabilities(text, 2)
+print(&quot;\nBigram Probabilities (example):&quot;)
+print(f&quot;P(('brown', 'fox')): {ngram_probs.get(('brown', 'fox'), 0):.4f}&quot;) # Access prob with .get() in case ngram doesn't exist.
+print(f&quot;P(('quick', 'brown')): {ngram_probs.get(('quick', 'brown'), 0):.4f}&quot;)
+print(f&quot;P(('lazy', 'dog')): {ngram_probs.get(('lazy', 'dog'), 0):.4f}&quot;)
+
+unigram_probs = calculate_ngram_probabilities(text, 1)
+print(&quot;\nUnigram Probabilities (example):&quot;)
+print(f&quot;P(('the',)): {unigram_probs.get(('the',), 0):.4f}&quot;)
+print(f&quot;P(('quick',)): {unigram_probs.get(('quick',), 0):.4f}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>create_ngrams(text, n)</code>:</strong></p>
+<ul>
+<li>Takes text and n as input.</li>
+<li>Uses <code>nltk.word_tokenize</code> to split the text into words.</li>
+<li>Uses <code>nltk.util.ngrams</code> to generate n-grams from the tokens.</li>
+<li>Returns a list of n-grams (each n-gram is a tuple).</li>
+</ul>
+</li>
+<li>
+<p><strong><code>calculate_ngram_probabilities(corpus, n)</code>:</strong></p>
+<ul>
+<li>Takes corpus of text and n as input.</li>
+<li>Calls <code>create_ngrams</code> to generate all n-grams in the corpus.</li>
+<li>Uses <code>Counter</code> to count the occurrences of each n-gram.</li>
+<li>If n == 1, just calculate the probability of each unigram by dividing it's count by the total number of unigrams.</li>
+<li>If n &gt; 1, this function implements Maximum Likelihood Estimation (MLE) for estimating the probability of an n-gram. It divides the count of a specific n-gram by the count of its n-1 gram context. The probabilities are stored in a dictionary where the keys are n-grams (tuples), and the values are their calculated probabilities.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Smoothing:</strong>  The above code does not implement smoothing techniques (e.g., Laplace smoothing, Kneser-Ney smoothing).  Without smoothing, n-grams that do not appear in the training data will have a probability of zero. Smoothing techniques help to avoid zero probabilities and improve the model's generalization ability.</li>
+<li><strong>Out-of-Vocabulary (OOV) words:</strong>  The model will not be able to handle words that are not in the training vocabulary.  Techniques for handling OOV words include using a special <code>&lt;UNK&gt;</code> token to represent unknown words.</li>
+<li><strong>Corpus Size:</strong> The larger the training corpus, the better the model will be at capturing the nuances of the language.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different smoothing techniques (e.g., Laplace smoothing, Kneser-Ney smoothing) affect the performance of an n-gram language model, and when would you choose one smoothing technique over another?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
