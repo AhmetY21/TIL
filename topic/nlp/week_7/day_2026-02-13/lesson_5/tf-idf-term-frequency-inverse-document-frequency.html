@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TF-IDF (Term Frequency-Inverse Document Frequency)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-tf-idf-term-frequency-inverse-document-frequency">Topic: TF-IDF (Term Frequency-Inverse Document Frequency)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>TF-IDF (Term Frequency-Inverse Document Frequency) is a numerical statistic that reflects how important a word is to a document in a collection or corpus. It is often used in information retrieval and text mining as a weighting factor in search engines, text summarization, and document classification.</p>
+<p>Essentially, TF-IDF attempts to quantify the importance of a term within a document relative to the entire corpus. It works by:</p>
+<ul>
+<li>
+<p><strong>Term Frequency (TF):</strong> Measures how frequently a term occurs in a given document. Higher TF values indicate that the term appears more often in the document.  A common formula for TF is:</p>
+<p><code>TF(t, d) = (Number of times term t appears in document d) / (Total number of terms in document d)</code></p>
+</li>
+<li>
+<p><strong>Inverse Document Frequency (IDF):</strong> Measures how important a term is across the entire corpus. It diminishes the weight of terms that occur very frequently in the corpus and increases the weight of terms that occur rarely. This helps to highlight terms that are more discriminative for specific documents. A common formula for IDF is:</p>
+<p><code>IDF(t, D) = log (Total number of documents in corpus D / Number of documents in corpus D containing term t)</code></p>
+<p>Where log is usually the base-10 logarithm.  We typically add 1 to the denominator inside the log to avoid division by zero (if a term never appears in any document) and sometimes also add 1 to the entire result to prevent IDF from being zero.</p>
+</li>
+</ul>
+<p>The TF-IDF score for a term <em>t</em> in a document <em>d</em> within corpus <em>D</em> is calculated by multiplying the term frequency (TF) and inverse document frequency (IDF):</p>
+<p><code>TF-IDF(t, d, D) = TF(t, d) * IDF(t, D)</code></p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Information Retrieval (Search Engines):</strong>  TF-IDF is a core component in many search engines.  When a user submits a query, the search engine can calculate the TF-IDF score of the query terms in each document in its index.  Documents with higher TF-IDF scores for the query terms are ranked higher in the search results.</li>
+<li><strong>Text Summarization:</strong> Identify important sentences in a document by calculating TF-IDF scores for the words in each sentence. Sentences with higher average TF-IDF scores may be included in a summary.</li>
+<li><strong>Document Classification:</strong>  Use TF-IDF scores to represent documents as vectors.  These vectors can then be used as input features for machine learning classifiers to categorize documents into different classes.</li>
+<li><strong>Keyword Extraction:</strong> Extract the most relevant keywords from a document by selecting terms with the highest TF-IDF scores.</li>
+<li><strong>Recommendation Systems:</strong>  Recommend documents to users based on the similarity of their TF-IDF vectors.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you have a collection of three documents:</p>
+<ul>
+<li>Document 1: "The cat sat on the mat."</li>
+<li>Document 2: "The dog sat on the rug."</li>
+<li>Document 3: "The cat and dog played."</li>
+</ul>
+<p>You want to find the most relevant document for the query "cat".</p>
+<ol>
+<li>
+<p><strong>Calculate TF-IDF scores for the term "cat" in each document:</strong></p>
+<ul>
+<li>Document 1:<ul>
+<li>TF("cat", Document 1) = 1/6 (1 "cat" out of 6 total words)</li>
+<li>IDF("cat", Corpus) = log(3/2) (3 total documents, 2 contain "cat") ≈ 0.176</li>
+<li>TF-IDF("cat", Document 1, Corpus) ≈ 0.029</li>
+</ul>
+</li>
+<li>Document 2:<ul>
+<li>TF("cat", Document 2) = 0/6 = 0</li>
+<li>TF-IDF("cat", Document 2, Corpus) = 0</li>
+</ul>
+</li>
+<li>Document 3:<ul>
+<li>TF("cat", Document 3) = 1/5 (1 "cat" out of 5 total words)</li>
+<li>IDF("cat", Corpus) = log(3/2) ≈ 0.176</li>
+<li>TF-IDF("cat", Document 3, Corpus) ≈ 0.035</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Rank the documents based on TF-IDF scores:</strong></p>
+<p>Document 3 has the highest TF-IDF score (0.035), followed by Document 1 (0.029), and Document 2 (0). Therefore, Document 3 is considered the most relevant document for the query "cat".</p>
+</li>
+</ol>
+<p>In this simple example, TF-IDF helps to identify that Document 3, while also mentioning "dog", is more relevant to the single word query "cat" because "cat" has a greater relative frequency within that document as compared to Document 1. Document 2 which does not contain the word, is not considered.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Scikit-learn provides a <code>TfidfVectorizer</code> class that simplifies the calculation of TF-IDF scores.</p>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+
+documents = [
+    &quot;The cat sat on the mat.&quot;,
+    &quot;The dog sat on the rug.&quot;,
+    &quot;The cat and dog played.&quot;
+]
+
+# Create a TfidfVectorizer object
+vectorizer = TfidfVectorizer()
+
+# Fit and transform the documents
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+# Get the feature names (terms)
+feature_names = vectorizer.get_feature_names_out()
+
+# Convert the TF-IDF matrix to a dense array
+tfidf_array = tfidf_matrix.toarray()
+
+# Print the TF-IDF scores for each term in each document
+for i, doc in enumerate(documents):
+    print(f&quot;Document {i+1}: {doc}&quot;)
+    for j, term in enumerate(feature_names):
+        print(f&quot;  {term}: {tfidf_array[i][j]:.4f}&quot;)  #Formatting output to 4 decimal places
+
+# Example: Get the TF-IDF score for the term &quot;cat&quot; in the first document
+term_index = feature_names.tolist().index(&quot;cat&quot;)
+tfidf_score = tfidf_array[0][term_index]
+print(f&quot;\nTF-IDF score for 'cat' in Document 1: {tfidf_score:.4f}&quot;)
+</code></pre>
+
+<p>This code:</p>
+<ol>
+<li><strong>Imports <code>TfidfVectorizer</code>:</strong> From the <code>sklearn.feature_extraction.text</code> module.</li>
+<li><strong>Defines the documents:</strong> As a list of strings.</li>
+<li><strong>Creates a <code>TfidfVectorizer</code> object:</strong>  This object will handle the TF-IDF calculation. By default, it performs lowercasing, removes punctuation, and tokenizes the text.</li>
+<li><strong>Fits and transforms the documents:</strong>  <code>fit_transform()</code> learns the vocabulary from the documents and calculates the TF-IDF matrix. The result is a sparse matrix.</li>
+<li><strong>Gets the feature names:</strong> <code>get_feature_names_out()</code> returns a list of the terms (words) that were extracted from the documents.</li>
+<li><strong>Converts the matrix to a dense array:</strong>  The <code>toarray()</code> method converts the sparse TF-IDF matrix into a dense NumPy array. This allows for easier access to individual TF-IDF scores.</li>
+<li><strong>Prints the TF-IDF scores:</strong>  Iterates through the documents and terms, printing the TF-IDF score for each term in each document.</li>
+<li><strong>Demonstrates how to retrieve a specific TF-IDF score:</strong> Locates the index of "cat" and uses that to print the value for document 1.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different normalization techniques (e.g., L1, L2) applied to the TF-IDF vectors affect the performance of a document classification model?  Why might one normalization technique be more suitable than another for a particular dataset or problem?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
