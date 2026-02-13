@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doubly Robust Estimation (AIPW / DR Learners)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-doubly-robust-estimation-aipw-dr-learners">Topic: Doubly Robust Estimation (AIPW / DR Learners)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Doubly Robust (DR) estimation, often implemented using Augmented Inverse Propensity Weighting (AIPW), is a technique for estimating causal effects that leverages both a propensity score model (modeling treatment assignment) and an outcome model (modeling the potential outcome).  The key property of DR estimators is that they provide consistent estimates of the Average Treatment Effect (ATE) or other causal quantities if <em>either</em> the propensity score model <em>or</em> the outcome model is correctly specified.  This "double robustness" is a significant advantage over methods like inverse propensity weighting (IPW) or outcome regression, which require both models to be correct to avoid bias.</p>
+<p>Formally, let:</p>
+<ul>
+<li><code>Y</code> be the observed outcome.</li>
+<li><code>A</code> be the binary treatment indicator (1 for treated, 0 for control).</li>
+<li><code>X</code> be the set of observed confounders.</li>
+<li><code>E[Y|A=a, X]</code> represent the conditional expectation of Y given A=a and X.</li>
+<li><code>e(X) = P(A=1|X)</code> be the propensity score, i.e., the probability of receiving treatment given X.</li>
+<li><code>Y(a)</code> denote the potential outcome if everyone was treated with treatment <code>a</code>.</li>
+</ul>
+<p>The ATE is defined as <code>E[Y(1) - Y(0)]</code>.  The AIPW estimator for the ATE can be expressed as:</p>
+<pre class="codehilite"><code>ATE_AIPW = (1/n) * Σ [ (Y_i * (A_i / e(X_i)) - E[Y|A=1, X_i] * (A_i - e(X_i)) / e(X_i)) - (Y_i * ((1 - A_i) / (1 - e(X_i))) - E[Y|A=0, X_i] * (A_i - e(X_i)) / (1 - e(X_i))) ]
+</code></pre>
+
+<p>Where:</p>
+<ul>
+<li>The summation is over all <code>i</code> from 1 to <code>n</code> (the number of observations).</li>
+<li><code>Y_i</code>, <code>A_i</code>, and <code>X_i</code> are the observed values for the <code>i</code>-th individual.</li>
+<li><code>e(X_i)</code> is the estimated propensity score for the <code>i</code>-th individual.</li>
+<li><code>E[Y|A=1, X_i]</code> and <code>E[Y|A=0, X_i]</code> are the estimated conditional expectations for the <code>i</code>-th individual under treatment and control, respectively.</li>
+</ul>
+<p>The terms <code>E[Y|A=1, X]</code> and <code>E[Y|A=0, X]</code> are often estimated using separate regression models. The term  <code>Y_i * (A_i / e(X_i)) - E[Y|A=1, X_i] * (A_i - e(X_i)) / e(X_i)</code> is the AIPW estimator for the outcome under treatment, and similarly for the outcome under control. These terms include both an IPW component and an adjustment based on the outcome model.  The subtraction calculates the difference in these estimated outcomes to estimate the ATE.</p>
+<p>How can we use it?  We use it to estimate causal effects, such as the ATE, in observational studies where treatment assignment is not randomized and confounding is present.  We need to specify two models: one to predict the probability of treatment and another to predict the outcome, conditional on treatment and covariates.  If <em>either</em> of these models is correctly specified, the AIPW estimator will be consistent.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a healthcare scenario where we want to estimate the effect of a new medication on reducing hospital readmission rates.  We have observational data collected from a hospital system.  Patients were not randomly assigned to the medication; doctors made treatment decisions based on patient characteristics such as age, pre-existing conditions, and severity of illness.  Therefore, simply comparing readmission rates between patients who received the medication and those who didn't would likely be biased due to confounding.</p>
+<p>We can use Doubly Robust Estimation (AIPW) to estimate the treatment effect.  We would:</p>
+<ol>
+<li><strong>Propensity Score Model:</strong> Build a model (e.g., logistic regression) to predict the probability of a patient receiving the medication based on their age, pre-existing conditions, and illness severity (<code>X</code>). This estimates <code>e(X)</code>.</li>
+<li><strong>Outcome Model:</strong> Build two separate models (e.g., regression) to predict readmission rates: one for patients who received the medication and one for patients who did not, both using age, pre-existing conditions, and illness severity (<code>X</code>) as predictors. These estimate <code>E[Y|A=1, X]</code> and <code>E[Y|A=0, X]</code>.</li>
+<li><strong>AIPW Estimation:</strong> Plug the predicted propensity scores and outcome model predictions into the AIPW formula to calculate the estimated ATE.</li>
+</ol>
+<p>Even if our propensity score model is slightly mis-specified (e.g., we've missed some subtle factor influencing treatment decisions), the AIPW estimator will still provide a consistent estimate of the treatment effect if our outcome model is correctly specified. Conversely, if our outcome model is mis-specified but our propensity score model is accurate, the AIPW estimator will still be consistent. This makes it a robust method for handling confounding in observational data.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import pandas as pd
+
+def aipw_estimation(df, treatment, outcome, confounders):
+    &quot;&quot;&quot;
+    Estimates the Average Treatment Effect (ATE) using Augmented Inverse Propensity Weighting (AIPW).
+
+    Args:
+        df (pd.DataFrame): DataFrame containing treatment, outcome, and confounders.
+        treatment (str): Name of the treatment column.
+        outcome (str): Name of the outcome column.
+        confounders (list): List of column names representing confounders.
+
+    Returns:
+        float: Estimated ATE using AIPW.
+    &quot;&quot;&quot;
+
+    # 1. Propensity Score Model
+    propensity_formula = f&quot;{treatment} ~ &quot; + &quot; + &quot;.join(confounders)
+    propensity_model = smf.glm(formula=propensity_formula, data=df, family=sm.families.Binomial()).fit()
+    propensity_scores = propensity_model.predict(df)
+
+    # 2. Outcome Models
+    outcome_formula = f&quot;{outcome} ~ {treatment} + &quot; + &quot; + &quot;.join(confounders)
+    outcome_model = smf.ols(formula=outcome_formula, data=df).fit()
+    # Alternatively, fit two separate models
+    outcome_model_treated = smf.ols(formula=f&quot;{outcome} ~ &quot; + &quot; + &quot;.join(confounders), data=df[df[treatment]==1]).fit()
+    outcome_model_untreated = smf.ols(formula=f&quot;{outcome} ~ &quot; + &quot; + &quot;.join(confounders), data=df[df[treatment]==0]).fit()
+
+
+    # Predict outcomes under treatment and control
+    df_treated = df.copy()
+    df_treated[treatment] = 1
+    outcome_predictions_treated = outcome_model_treated.predict(df_treated) if outcome_model_treated is not None else outcome_model.predict(df_treated)
+
+    df_untreated = df.copy()
+    df_untreated[treatment] = 0
+    outcome_predictions_untreated = outcome_model_untreated.predict(df_untreated) if outcome_model_untreated is not None else outcome_model.predict(df_untreated)
+
+
+    # 3. AIPW Estimator
+    aipw_values = (
+        (df[treatment] * (df[outcome] - outcome_predictions_treated) / propensity_scores)
+        - ((1 - df[treatment]) * (df[outcome] - outcome_predictions_untreated) / (1 - propensity_scores))
+        + outcome_predictions_treated
+        - outcome_predictions_untreated
+    )
+
+    ate_aipw = np.mean(aipw_values)
+    return ate_aipw
+
+# Example usage:
+if __name__ == '__main__':
+    # Create a sample DataFrame
+    data = {
+        'treatment': np.random.binomial(1, 0.5, 100),
+        'outcome': np.random.normal(0, 1, 100),
+        'confounder1': np.random.normal(0, 1, 100),
+        'confounder2': np.random.normal(0, 1, 100)
+    }
+    df = pd.DataFrame(data)
+
+    # Define variables
+    treatment_col = 'treatment'
+    outcome_col = 'outcome'
+    confounder_cols = ['confounder1', 'confounder2']
+
+    # Estimate the ATE using AIPW
+    ate = aipw_estimation(df, treatment_col, outcome_col, confounder_cols)
+    print(f&quot;Estimated ATE using AIPW: {ate}&quot;)
+</code></pre>
+
+<p>This code:</p>
+<ol>
+<li>Defines a function <code>aipw_estimation</code> that takes a DataFrame, treatment column name, outcome column name, and a list of confounders as input.</li>
+<li>Fits a logistic regression model for the propensity score using <code>statsmodels</code>.</li>
+<li>Fits an OLS regression model (or two separate models) for the outcome, depending on the specification.</li>
+<li>Calculates the AIPW estimate using the formula mentioned earlier, using predicted propensity scores and outcomes.</li>
+<li>Returns the estimated ATE.</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>The code assumes binary treatment and continuous outcome. The models can be adjusted for different outcome types (e.g., logistic regression for binary outcomes).</li>
+<li>The function uses <code>statsmodels</code> for model fitting.</li>
+<li>This is a basic implementation.  In a real-world scenario, you would want to include cross-validation to prevent overfitting and potentially explore different model specifications.</li>
+<li>Ensure sufficient overlap between treatment and control groups for each value of the confounders (positivity assumption).  If propensity scores are too close to 0 or 1, IP weighting can become unstable.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you assess the sensitivity of the AIPW estimate to violations of the unconfoundedness (ignorability) assumption? Specifically, what methods can be used to explore the potential impact of unobserved confounders on the estimated causal effect when using Doubly Robust estimation?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
