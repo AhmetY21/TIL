@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deterministic Equivalent for multistage SP (scenario tree + NAC)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-deterministic-equivalent-for-multistage-sp-scenario-tree-nac">Topic: Deterministic Equivalent for multistage SP (scenario tree + NAC)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The deterministic equivalent of a multistage stochastic program with a scenario tree and non-anticipativity constraints (NACs) is a large-scale, deterministic optimization problem that, when solved, yields the optimal decisions for each stage and scenario of the original stochastic program. It effectively "unravels" the uncertainty by explicitly modeling all possible scenario outcomes and imposing constraints that ensure decisions made before the realization of uncertainty are consistent across all scenarios that share the same history up to that point.</p>
+<p><strong>Here's a breakdown:</strong></p>
+<ul>
+<li>
+<p><strong>Scenario Tree:</strong> A scenario tree represents the evolution of uncertainty over time.  Nodes in the tree represent states of the world at different time stages.  Edges represent the realization of uncertain events that lead from one state to the next. Each path from the root node (time 0) to a leaf node represents a unique scenario.</p>
+</li>
+<li>
+<p><strong>Multistage Stochastic Program:</strong> A stochastic program where decisions are made sequentially over time, with uncertainty revealed between decision stages.  Decisions at each stage must account for the possible future outcomes.</p>
+</li>
+<li>
+<p><strong>Non-Anticipativity Constraints (NACs):</strong> These are crucial.  They enforce the requirement that decisions made in early stages <em>must be the same</em> across all scenarios that share the same history up to that stage. In other words, you can't use information about the future (which you don't have yet) when making decisions in the present. NACs are typically formulated as equality constraints, forcing decision variables corresponding to the same history to have the same value.  Formally: <code>x_t(s1) = x_t(s2)</code> if scenarios <code>s1</code> and <code>s2</code> have the same history up to time <code>t</code>.  <code>x_t(s)</code> is the decision variable at time <code>t</code> in scenario <code>s</code>.</p>
+</li>
+<li>
+<p><strong>Deterministic Equivalent:</strong> The resulting deterministic optimization problem is formed by:</p>
+<ol>
+<li>Defining decision variables for each stage and scenario.</li>
+<li>Writing out the objective function, which is a weighted sum of the objective function values for each scenario (weighted by the scenario probability). This typically involves expected cost minimization or expected profit maximization.</li>
+<li>Writing out the constraints of the original stochastic program for each scenario. These constraints might involve resource limitations, demand satisfaction, or physical laws.</li>
+<li>Adding the non-anticipativity constraints.</li>
+</ol>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>The deterministic equivalent allows us to solve a stochastic program using standard deterministic optimization solvers (e.g., linear programming solvers, mixed-integer programming solvers). By formulating the problem as a large deterministic optimization problem, we can leverage efficient algorithms and software to find the optimal solution. However, the size of the deterministic equivalent grows exponentially with the number of stages and scenarios, potentially leading to computational challenges for large-scale problems.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Example: Supply Chain Planning under Demand Uncertainty</strong></p>
+<p>Imagine a company needs to plan its production and distribution of goods over three time periods (months).  The demand for the product is uncertain and is represented by a scenario tree.</p>
+<ul>
+<li><strong>Stage 1 (Month 1):</strong> The company must decide how much to produce and where to ship it <em>before</em> knowing the actual demand.</li>
+<li><strong>Uncertainty Revealed:</strong> At the end of Month 1, the demand for the product in Months 2 and 3 is revealed, leading to different possible scenarios.</li>
+<li><strong>Stage 2 (Month 2):</strong> Based on the realized demand for Month 2 and the remaining demand forecast for Month 3, the company adjusts its production and distribution plan.</li>
+<li><strong>Uncertainty Revealed:</strong> At the end of Month 2, the demand for Month 3 is revealed.</li>
+<li><strong>Stage 3 (Month 3):</strong> The company makes final production and distribution decisions to meet the realized demand in Month 3.</li>
+</ul>
+<p><strong>Scenario Tree:</strong>  A simple scenario tree might have 3 stages and, say, 4 scenarios.
+    *   Stage 0 (root): Initial state
+    *   Stage 1: Decisions about production levels for the first month are made.
+    *   Stage 2: Uncertainty is revealed. Two branches: High demand, Low demand.
+    *   Stage 3: Uncertainty further revealed. High/High, High/Low, Low/High, Low/Low. Now we have 4 branches.</p>
+<p><strong>Deterministic Equivalent Formulation:</strong></p>
+<ul>
+<li>
+<p><strong>Variables:</strong></p>
+<ul>
+<li><code>x_t(s)</code>: Production quantity at stage <code>t</code> in scenario <code>s</code>.</li>
+<li><code>y_t(s)</code>: Distribution quantity from plant to customer at stage <code>t</code> in scenario <code>s</code>.</li>
+<li><code>I_t(s)</code>: Inventory level at stage <code>t</code> in scenario <code>s</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Objective Function:</strong> Minimize the expected total cost, including production costs, inventory holding costs, and transportation costs, across all scenarios:  <code>Minimize SUM_s (probability(s) * (cost_production(x(s)) + cost_inventory(I(s)) + cost_transport(y(s))))</code></p>
+</li>
+<li>
+<p><strong>Constraints:</strong></p>
+<ul>
+<li><strong>Production Capacity Constraints:</strong> <code>x_t(s) &lt;= capacity_t</code> for all <code>t</code>, <code>s</code>.</li>
+<li><strong>Demand Satisfaction Constraints:</strong> <code>SUM_plant y_t(s) = demand_t(s)</code> for all <code>t</code>, <code>s</code>.  <code>demand_t(s)</code> is the realized demand in scenario <code>s</code> at time <code>t</code>.</li>
+<li><strong>Inventory Balance Constraints:</strong> <code>I_t(s) = I_{t-1}(s) + x_t(s) - SUM_customer y_t(s)</code> for all <code>t</code>, <code>s</code>.</li>
+<li><strong>Non-Negativity Constraints:</strong> <code>x_t(s) &gt;= 0</code>, <code>y_t(s) &gt;= 0</code>, <code>I_t(s) &gt;= 0</code> for all <code>t</code>, <code>s</code>.</li>
+<li><strong>Non-Anticipativity Constraints:</strong> For example, <code>x_1(s1) = x_1(s2)</code> for all scenarios <code>s1</code> and <code>s2</code> because decisions at time 1 must be the same regardless of the future demand.  Specifically, all scenarios that branch from stage 0 must have the same first-stage decision. Similar NACs apply to the distribution variables <code>y</code> at the appropriate stages.</li>
+</ul>
+</li>
+</ul>
+<p>Solving this deterministic equivalent problem will provide the optimal production and distribution plan for each stage and scenario, while respecting the non-anticipativity constraints.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+
+def create_deterministic_equivalent(scenario_tree, model_callback):
+    &quot;&quot;&quot;
+    Creates a deterministic equivalent of a multistage stochastic program.
+
+    Args:
+        scenario_tree (dict): A dictionary representing the scenario tree.
+                              Keys are node names. Values are dictionaries containing:
+                              - 'stage': The stage number (0, 1, 2, ...).
+                              - 'probability': The probability of the scenario (for leaf nodes).
+                              - 'children': A list of child node names (for non-leaf nodes).
+
+        model_callback (function): A function that takes a scenario node and a Pyomo model
+                                   as input and defines the variables, objective, and
+                                   stage-specific constraints for that scenario.
+
+    Returns:
+        pyo.ConcreteModel: A Pyomo ConcreteModel representing the deterministic equivalent.
+    &quot;&quot;&quot;
+
+    model = pyo.ConcreteModel()
+
+    # Create a set of all scenario nodes
+    model.SCENARIOS = pyo.Set(initialize=scenario_tree.keys())
+
+    # Scenario probability parameter (only for leaf nodes)
+    def scenario_probability_init(model, s):
+        return scenario_tree[s].get('probability', 1.0) if 'probability' in scenario_tree[s] else 1.0
+    model.scenario_probability = pyo.Param(model.SCENARIOS, initialize=scenario_probability_init, mutable=False)
+
+
+    # Create scenario-specific variables and constraints
+    for s in model.SCENARIOS:
+        model_callback(scenario_tree[s], model, s) # Pass scenario name
+
+    # Non-Anticipativity Constraints (NACs)
+    def create_nacs(model, stage):
+      scenarios_in_stage = [s for s in model.SCENARIOS if scenario_tree[s]['stage'] == stage]
+      if not scenarios_in_stage:
+        return pyo.Constraint.Skip
+
+      #Assuming all variables in stage have the same prefix e.g x_1_high, x_1_low, x_2_high etc.
+      #this example assumes variables begin with x
+
+      # Find variables for comparison, assuming they are named x_stage_scenario
+      first_scenario = scenarios_in_stage[0]
+      variables_to_compare = [var_name for var_name in model.component_map(pyo.Var).keys()
+                               if var_name.startswith(f'x_{stage}_{first_scenario}')]
+
+      for var_name_prefix in variables_to_compare:
+          # Get base name without scenario suffix
+          #base_var_name = var_name_prefix[:-len(first_scenario) - 1] # Strip stage and scenario suffix
+          base_var_name = var_name_prefix.split('_') # split name
+          base_var_name = '_'.join(base_var_name[:-1]) #remove scenario identifier
+          base_var_name = base_var_name.split('_') # split name
+          base_var_name = '_'.join(base_var_name[:-1]) #remove stage identifier
+
+
+
+          for i in range(1, len(scenarios_in_stage)):
+              scenario1 = scenarios_in_stage[0]
+              scenario2 = scenarios_in_stage[i]
+              # Construct variable names for both scenarios
+              var1_name = f&quot;{base_var_name}_{stage}_{scenario1}&quot;
+              var2_name = f&quot;{base_var_name}_{stage}_{scenario2}&quot;
+
+              # Check if the variables exist in the model
+              if hasattr(model, var1_name) and hasattr(model, var2_name):
+                  var1 = getattr(model, var1_name)
+                  var2 = getattr(model, var2_name)
+
+                  # Create non-anticipativity constraint
+                  nac_name = f&quot;NAC_{var1_name}_{var2_name}&quot;
+                  setattr(model, nac_name, pyo.Constraint(expr=var1 == var2))
+
+
+    # Apply non-anticipativity constraints for all stages (except the last)
+    max_stage = max(scenario_tree[s]['stage'] for s in scenario_tree)
+    for stage in range(max_stage):
+      create_nacs(model, stage+1)
+
+
+    return model
+
+
+# Example usage (replace with your specific model and data):
+if __name__ == '__main__':
+
+    # Define a simple scenario tree
+    scenario_tree = {
+        'root': {'stage': 0, 'children': ['high', 'low']},
+        'high': {'stage': 1, 'probability': 0.6, 'children': []},
+        'low': {'stage': 1, 'probability': 0.4, 'children': []},
+    }
+
+    def model_callback(scenario_node, model, scenario_name): #take scenario name as input
+        stage = scenario_node['stage']
+        # Define variables for each scenario
+        # Scenario 0 and 1 in the stage.
+        setattr(model, f&quot;x_{stage}_{scenario_name}&quot;, pyo.Var(within=pyo.NonNegativeReals)) #create scenario specific variables, and set var names
+        setattr(model, f&quot;demand_{stage}_{scenario_name}&quot;, pyo.Param(initialize=10 if scenario_name == 'high' else 5))
+
+        # Define a dummy objective (replace with your actual objective)
+        if not hasattr(model, 'objective'): #avoid multiple calls
+            model.objective = pyo.Objective(
+                expr=sum(model.scenario_probability[s] * getattr(model, f&quot;x_{scenario_tree[s]['stage']}_{s}&quot;) for s in model.SCENARIOS),
+                sense=pyo.minimize
+            )
+
+        # Define dummy constraints
+        def demand_constraint_rule(model):
+            return getattr(model, f&quot;x_{stage}_{scenario_name}&quot;) &gt;= getattr(model, f&quot;demand_{stage}_{scenario_name}&quot;)
+        setattr(model, f&quot;demand_constraint_{scenario_name}&quot;, pyo.Constraint(rule=demand_constraint_rule))
+
+    # Create the deterministic equivalent
+    deterministic_model = create_deterministic_equivalent(scenario_tree, model_callback)
+
+    # Solve the model
+    solver = pyo.SolverFactory('glpk') # or any other solver
+    solver.solve(deterministic_model)
+
+    # Print the solution
+    for v in deterministic_model.component_objects(pyo.Var):
+        print(f&quot;{v.name}: {v.get_values()}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>create_deterministic_equivalent(scenario_tree, model_callback)</code> function:</strong></p>
+<ul>
+<li>Takes the scenario tree (dictionary) and a <code>model_callback</code> function as input.</li>
+<li>Creates a Pyomo <code>ConcreteModel</code>.</li>
+<li>Defines a <code>SCENARIOS</code> set based on the keys in the <code>scenario_tree</code>.</li>
+<li>The <code>model_callback</code> function is called for <em>each</em> scenario node in the tree.  This function should add scenario-specific variables, constraints, and contribute to the overall objective function.</li>
+<li>Implements the non-anticipativity constraints, by looping through all the variables that have the same prefix. This code also allows you to easily change/alter the non-anticipativity contraints.</li>
+<li>Returns the deterministic equivalent Pyomo model.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>model_callback(scenario_node, model, scenario_name)</code> function:</strong></p>
+<ul>
+<li>This is the <em>crucial</em> part where you define your specific stochastic program's components <em>for each scenario</em>.</li>
+<li>It receives the scenario node's data, the Pyomo model, and the scenario name.</li>
+<li>Inside this function:<ul>
+<li>Define your decision variables (e.g., production levels, inventory levels) for that specific scenario.  <em>Important</em>: Give them unique names that include the scenario name (e.g., <code>production_high</code>, <code>production_low</code>). I have named the variables as <code>x_stage_scenario</code>.</li>
+<li>Define any constraints that apply <em>specifically</em> to that scenario (e.g., demand satisfaction constraints, resource limitations).</li>
+<li>Update/append to the objective function.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Example Usage:</strong></p>
+<ul>
+<li>A simple scenario tree is defined.</li>
+<li>The <code>model_callback</code> function is implemented (replace the dummy objective and constraints with your actual model).</li>
+<li><code>create_deterministic_equivalent()</code> is called to create the deterministic model.</li>
+<li>The deterministic model is solved using a solver (GLPK in this example).</li>
+<li>The solution is printed.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Variable Naming:</strong> The variable naming convention in the <code>model_callback</code> is very important.  It must be consistent and allow the non-anticipativity constraints to be correctly identified and applied. The above python code shows an example, where the naming convention is: <code>x_stage_scenario</code></li>
+<li><strong>Solver Choice:</strong> The size of the deterministic equivalent can become very large. Choose a solver appropriate for the size and type (linear, integer, etc.) of your problem.</li>
+<li><strong>Scaling:</strong> For large-scale problems, decomposition techniques (e.g., Benders decomposition, progressive hedging) might be necessary to solve the stochastic program more efficiently than solving the full deterministic equivalent directly.</li>
+<li><strong>Adaptation:</strong> The <code>model_callback</code> and <code>create_deterministic_equivalent</code> functions will need to be adapted to your specific stochastic program's structure and data.  The example provided is a starting point.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can decomposition methods, like Benders Decomposition or Progressive Hedging, be integrated with this deterministic equivalent framework to solve larger stochastic programming problems that are computationally intractable to solve directly?  Specifically, how would the non-anticipativity constraints be handled within these decomposition algorithms?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
