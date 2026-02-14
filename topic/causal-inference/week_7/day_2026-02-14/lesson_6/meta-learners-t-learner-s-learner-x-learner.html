@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta-Learners: T-Learner, S-Learner, X-Learner</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-meta-learners-t-learner-s-learner-x-learner">Topic: Meta-Learners: T-Learner, S-Learner, X-Learner</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Meta-learners are a class of causal inference methods that leverage machine learning algorithms to estimate the Conditional Average Treatment Effect (CATE). They "learn how to learn" the treatment effect by using off-the-shelf machine learning models in specific ways. The core idea is to estimate the treatment effect <em>heterogeneously</em> – that is, allowing the effect to vary across individuals based on their observed characteristics (covariates). They all aim to estimate τ(x) = E[Y(1) - Y(0) | X = x], where:</p>
+<ul>
+<li>Y(1) is the potential outcome under treatment.</li>
+<li>Y(0) is the potential outcome under control.</li>
+<li>X is the vector of observed covariates.</li>
+<li>x is a specific value of X.</li>
+</ul>
+<p>Here's a breakdown of the three meta-learners:</p>
+<ul>
+<li>
+<p><strong>T-Learner (Two-Learner):</strong> The T-Learner is the simplest meta-learner. It trains <em>two</em> independent machine learning models: one to predict the outcome for the treated group (Y|T=1, X) and another to predict the outcome for the control group (Y|T=0, X).  The CATE is then estimated as the difference between the predictions of these two models:</p>
+<p>τ(x) =  Ŷ(1)(x) - Ŷ(0)(x)</p>
+<p>Where Ŷ(1)(x) is the prediction of the model trained on the treated group at covariate value x, and Ŷ(0)(x) is the prediction of the model trained on the control group at covariate value x.</p>
+</li>
+<li>
+<p><strong>S-Learner (Single-Learner):</strong> The S-Learner trains a <em>single</em> machine learning model to predict the outcome Y, using both the treatment indicator T and the covariates X as predictors (Y | T, X).  It effectively learns the function f(T,X) = E[Y|T,X]. The CATE is then estimated as the difference between the model's prediction when T=1 and when T=0, holding the covariates X constant:</p>
+<p>τ(x) =  f(1, x) - f(0, x)</p>
+<p>A key advantage is using a single model which may better handle smoothness assumptions across treatment assignments, but this comes at the cost of potential bias as any modeling misspecification will directly influence the estimate of the treatment effect.</p>
+</li>
+<li>
+<p><strong>X-Learner (Cross-Learner):</strong> The X-Learner is more sophisticated and attempts to address some of the biases of the T-Learner, particularly when treatment and control groups have significantly different sizes.  It involves multiple steps:</p>
+<ol>
+<li>
+<p><strong>Estimate individual treatment effects:</strong> First, two models are trained just like the T-Learner: Ŷ(1)(x) and Ŷ(0)(x).  Then, we estimate individual treatment effects for both the treated and control groups:</p>
+<ul>
+<li>D₁(i) = Yᵢ - Ŷ(0)(xᵢ) for treated individuals (Tᵢ = 1)</li>
+<li>D₀(i) = Ŷ(1)(xᵢ) - Yᵢ for control individuals (Tᵢ = 0)</li>
+</ul>
+</li>
+<li>
+<p><strong>Estimate treatment effect models:</strong>  Then, two more models are trained to predict these individual treatment effects based on the covariates: g₁(x) is trained to predict D₁ from covariates X for the treated group, and g₀(x) is trained to predict D₀ from covariates X for the control group.</p>
+</li>
+<li>
+<p><strong>Aggregate the treatment effect:</strong> Finally, the overall CATE is estimated as a weighted average of these two models:</p>
+<p>τ(x) = g₁(x) * P(T=0 | X=x) + g₀(x) * P(T=1 | X=x)</p>
+<p>Often, P(T=0 | X=x) and P(T=1 | X=x) are simplified to P(T=0) and P(T=1) and thus calculated as proportions from the sample. The weighting helps to account for the differing sizes of the treated and control groups.</p>
+</li>
+</ol>
+</li>
+</ul>
+<p>We can use these meta-learners to:</p>
+<ul>
+<li><strong>Estimate individualized treatment effects:</strong>  Understand how the treatment effect varies across different individuals or subgroups.</li>
+<li><strong>Inform treatment decisions:</strong>  Identify individuals who are most likely to benefit (or be harmed) by a treatment.</li>
+<li><strong>Evaluate treatment heterogeneity:</strong>  Quantify the extent to which the treatment effect varies in the population.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's say we are analyzing the effectiveness of a new online advertising campaign aimed at increasing sales of a product. We have data on customers' demographics (age, location, income), past purchase history, and whether they were exposed to the ad (treatment). We want to understand:</p>
+<ul>
+<li><strong>Does the ad campaign work on average?</strong>  (ATE - Average Treatment Effect)</li>
+<li><strong>Does the ad campaign work differently for different types of customers?</strong> (CATE - Conditional Average Treatment Effect)</li>
+</ul>
+<p>We can use meta-learners to answer these questions. For example:</p>
+<ul>
+<li><strong>T-Learner:</strong> We could train one model to predict sales for customers who saw the ad and another model to predict sales for customers who didn't see the ad, based on their demographics and purchase history. The difference between the predictions would estimate the CATE for each customer.</li>
+<li><strong>S-Learner:</strong> We could train a single model to predict sales based on both the customer's characteristics <em>and</em> whether they saw the ad. The difference in predictions for a customer seeing the ad versus not seeing the ad would estimate the CATE.</li>
+<li><strong>X-Learner:</strong> This would be particularly useful if the number of people who saw the ad was much smaller than the number who didn't (a common scenario). The X-Learner would try to correct for this imbalance by first estimating the individual treatment effects and then weighting the models trained on the treated and control groups.</li>
+</ul>
+<p>By estimating CATEs, we can identify which customer segments are most responsive to the ad campaign (e.g., younger customers, customers with a history of buying similar products). This information can be used to target the ad campaign more effectively, potentially increasing sales and ROI.  For instance, if the CATE is negative for older customers, we might exclude them from the ad campaign to avoid wasting resources and potentially annoying them.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>EconML</code> library in Python provides implementations of these meta-learners and other causal inference techniques.</p>
+<pre class="codehilite"><code class="language-python">from econml.metalearners import TLearner, SLearner, XLearner
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+import numpy as np
+import pandas as pd
+
+# Generate synthetic data (replace with your actual data)
+np.random.seed(42)
+n_samples = 1000
+X = np.random.rand(n_samples, 5)  # Covariates
+T = np.random.randint(0, 2, n_samples)  # Treatment (0 or 1)
+Y = 2 * X[:, 0] + T + np.random.randn(n_samples) * 0.5  # Outcome
+
+# Convert to Pandas DataFrames for easier handling (optional)
+X = pd.DataFrame(X, columns=['X1', 'X2', 'X3', 'X4', 'X5'])
+data = {'treatment':T, 'outcome':Y}
+df = pd.DataFrame(data)
+# Define the base learner (e.g., RandomForestRegressor)
+model_Y = RandomForestRegressor(random_state=42)
+model_T = RandomForestClassifier(random_state=42) #Required for X-learner weighting
+
+
+# T-Learner
+t_learner = TLearner(models=model_Y)
+t_learner.fit(Y, T, X=X)
+te_t_learner = t_learner.effect(X)  # Estimate treatment effects
+
+
+# S-Learner
+s_learner = SLearner(overall_model=model_Y)
+s_learner.fit(Y, T, X=X)
+te_s_learner = s_learner.effect(X)  # Estimate treatment effects
+
+
+# X-Learner
+x_learner = XLearner(models=model_Y, model_t = model_T) # model_t is required by XLearner to make weights
+x_learner.fit(Y, T, X=X)
+te_x_learner = x_learner.effect(X)  # Estimate treatment effects
+
+# Print the first 5 estimated treatment effects for each learner
+print(&quot;T-Learner Treatment Effects (first 5):&quot;, te_t_learner[:5])
+print(&quot;S-Learner Treatment Effects (first 5):&quot;, te_s_learner[:5])
+print(&quot;X-Learner Treatment Effects (first 5):&quot;, te_x_learner[:5])
+
+# You can now analyze the treatment effects, e.g., by plotting them against covariates
+
+# Estimate CATE for a particular covariate setting:
+x_test = np.array([[0.5, 0.3, 0.7, 0.1, 0.9]])  # Example covariate values
+te_t_learner_point = t_learner.effect(x_test)
+te_s_learner_point = s_learner.effect(x_test)
+te_x_learner_point = x_learner.effect(x_test)
+print(&quot;T-Learner Treatment Effect at x_test:&quot;, te_t_learner_point)
+print(&quot;S-Learner Treatment Effect at x_test:&quot;, te_s_learner_point)
+print(&quot;X-Learner Treatment Effect at x_test:&quot;, te_x_learner_point)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import necessary libraries:</strong> <code>EconML</code>, <code>sklearn</code> (for the base learner), <code>numpy</code>, and <code>pandas</code>.</li>
+<li><strong>Generate or load data:</strong>  Replace the synthetic data generation with your actual dataset.  Ensure you have an outcome variable (Y), a treatment variable (T), and covariates (X).</li>
+<li><strong>Define the base learner:</strong>  Choose a machine learning model to use for prediction (e.g., <code>RandomForestRegressor</code>, <code>GradientBoostingRegressor</code>).  This model will be used internally by the meta-learners.</li>
+<li><strong>Instantiate the meta-learner:</strong>  Create instances of <code>TLearner</code>, <code>SLearner</code>, and <code>XLearner</code>, passing in the base learner.  The XLearner requires both a model_y (the outcome model) and model_t (to predict the probability of treatment).</li>
+<li><strong>Fit the meta-learner:</strong>  Use the <code>fit</code> method to train the meta-learner on your data.</li>
+<li><strong>Estimate treatment effects:</strong>  Use the <code>effect</code> method to estimate the treatment effects for each observation.  You can also pass in new covariate values to estimate the treatment effect for specific individuals or scenarios.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Model Selection:</strong> The choice of the base learner can significantly impact the performance of the meta-learner. Experiment with different models and hyperparameter tuning.</li>
+<li><strong>Confounding:</strong> These methods rely on the assumption of <em>conditional ignorability</em> (also known as unconfoundedness or no unmeasured confounders). This means that, conditional on the observed covariates, the treatment assignment is random. If there are unobserved confounders, the estimated treatment effects may be biased. Sensitivity analysis techniques can be used to assess the potential impact of unobserved confounders.</li>
+<li><strong>Overlap:</strong> Sufficient overlap (or common support) is needed in the covariate space between the treated and control groups.  If there are regions of the covariate space where only treated or only control observations exist, the meta-learners may extrapolate poorly.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do the assumptions of conditional ignorability and overlap affect the validity and reliability of estimates from meta-learners, and what can be done to address violations of these assumptions?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
