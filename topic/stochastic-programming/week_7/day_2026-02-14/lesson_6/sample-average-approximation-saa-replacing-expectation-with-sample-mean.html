@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample Average Approximation (SAA): replacing expectation with sample mean</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-sample-average-approximation-saa-replacing-expectation-with-sample-mean">Topic: Sample Average Approximation (SAA): replacing expectation with sample mean</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Sample Average Approximation (SAA) is a technique used to approximate stochastic programming problems where the objective function or constraints involve expectations. The core idea is to replace the intractable expectation operator with a sample average calculated from a finite number of independent and identically distributed (i.i.d.) samples of the random variables.</p>
+<p>Formally, consider a stochastic program of the form:</p>
+<pre class="codehilite"><code>min  f(x) = E[F(x, ξ)]
+s.t.  x ∈ X
+       G(x, ξ) ≤ 0  (or potentially other constraint forms),
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><code>x</code> is the decision variable.</li>
+<li><code>ξ</code> is a random variable (or a vector of random variables) with a known probability distribution.</li>
+<li><code>E[F(x, ξ)]</code> represents the expected value of the function <code>F(x, ξ)</code> with respect to the random variable <code>ξ</code>. This is often the "true" objective function we want to minimize.</li>
+<li><code>X</code> is a feasible set (e.g., box constraints, linear constraints).</li>
+<li><code>G(x, ξ) ≤ 0</code> represents stochastic constraints, which must be satisfied for all (or most) realizations of <code>ξ</code>.</li>
+</ul>
+<p>The expectation <code>E[F(x, ξ)]</code> is typically difficult or impossible to compute analytically. SAA approximates this expectation by generating a sample of <code>N</code> independent realizations of the random variable <code>ξ</code>, denoted by <code>ξ₁, ξ₂, ..., ξN</code>. We then replace the expectation with the sample average:</p>
+<pre class="codehilite"><code>E[F(x, ξ)] ≈ (1/N) * Σᵢ F(x, ξᵢ)  (for i = 1 to N)
+</code></pre>
+
+<p>The SAA problem becomes:</p>
+<pre class="codehilite"><code>min  f_N(x) = (1/N) * Σᵢ F(x, ξᵢ)
+s.t.  x ∈ X
+       G(x, ξᵢ) ≤ 0  for all i = 1 to N
+</code></pre>
+
+<p>where <code>f_N(x)</code> is the sample average objective function.</p>
+<p><strong>How to use it:</strong></p>
+<ol>
+<li><strong>Identify the stochastic program:</strong> Define the objective function, constraints, decision variables, and the random variable(s) with their distributions.</li>
+<li><strong>Generate a sample:</strong> Draw <code>N</code> i.i.d. samples <code>ξ₁, ξ₂, ..., ξN</code> from the distribution of <code>ξ</code>.  The choice of <code>N</code> is critical and depends on the problem's characteristics and desired accuracy. Larger <code>N</code> generally leads to better approximations but higher computational cost.</li>
+<li><strong>Formulate the SAA problem:</strong> Replace the expectation in the original stochastic program with the sample average, creating a deterministic optimization problem.</li>
+<li><strong>Solve the SAA problem:</strong> Use standard optimization algorithms (e.g., linear programming, mixed-integer programming, nonlinear programming solvers) to find the optimal solution <code>x_N</code> of the SAA problem.</li>
+<li><strong>Assess the solution:</strong> Validate the solution <code>x_N</code> by, for example, evaluating its performance with another independent sample or using statistical tests to estimate the optimality gap. Increasing the sample size N and re-solving can often improve solution quality.</li>
+</ol>
+<p>SAA transforms a computationally challenging stochastic problem into a solvable deterministic one, albeit an approximation.  The quality of the approximation depends on the sample size <code>N</code> and the properties of the function <code>F(x, ξ)</code> and <code>G(x, ξ)</code>.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a portfolio optimization problem where an investor wants to minimize the risk (e.g., variance or conditional value-at-risk) of their portfolio subject to a target expected return.  The returns of the assets are uncertain and are modeled as random variables.</p>
+<p><strong>Original stochastic program:</strong></p>
+<pre class="codehilite"><code>min  CVaR_α(x, ξ)  (Conditional Value-at-Risk at level α)
+s.t.  E[r'x] &gt;= R_target (Expected return constraint)
+       Σᵢ xᵢ = 1        (Budget constraint: sum of weights equals 1)
+       xᵢ &gt;= 0          (Non-negativity: no short selling)
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><code>x</code> is the vector of portfolio weights (decision variables).</li>
+<li><code>ξ</code> represents the random asset returns (a vector of random variables, <code>r</code>).</li>
+<li><code>CVaR_α</code> is the Conditional Value-at-Risk at level <code>α</code>, measuring the expected loss exceeding the Value-at-Risk. The calculation involves an expectation over scenarios.  <code>r'x</code> is the portfolio return.</li>
+<li><code>E[r'x]</code> is the expected return of the portfolio.</li>
+<li><code>R_target</code> is the target expected return.</li>
+</ul>
+<p><strong>SAA application:</strong></p>
+<ol>
+<li>We generate <code>N</code> scenarios of asset returns <code>r₁, r₂, ..., rN</code> from a suitable distribution (e.g., multivariate normal distribution fit to historical data, or simulated using Monte Carlo methods).</li>
+<li>We replace the expectation in the expected return constraint and the CVaR calculation with sample averages:</li>
+</ol>
+<pre class="codehilite"><code>min  CVaR_α_N(x) ≈ (1/N) * Σᵢ indicator_function(rᵢ'x &lt;= VaR_α) * (VaR_α - rᵢ'x) (SAA approximation of CVaR)
+s.t.  (1/N) * Σᵢ rᵢ'x &gt;= R_target (SAA approximation of expected return constraint)
+       Σᵢ xᵢ = 1
+       xᵢ &gt;= 0
+</code></pre>
+
+<p>Where <code>CVaR_α_N</code> is the sample average approximation of the CVaR.  The indicator function in the CVaR approximation can be handled with auxiliary variables, and the resulting problem is often a linear program or a mixed-integer program depending on the chosen CVaR implementation.</p>
+<p>By solving this SAA problem, we obtain an approximate optimal portfolio <code>x_N</code>. This approach allows us to handle the uncertainty in asset returns by using a set of plausible scenarios to drive the optimization process. The quality of the portfolio depends on the chosen sample size N.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import cvxpy as cp
+
+def saa_portfolio_optimization(returns, R_target, alpha=0.05):
+  &quot;&quot;&quot;
+  Performs portfolio optimization using Sample Average Approximation (SAA).
+
+  Args:
+    returns: A numpy array of shape (N, M) representing asset returns, where N is the number of scenarios and M is the number of assets.
+    R_target: The target expected return.
+    alpha: The confidence level for CVaR (e.g., 0.05 for 95% confidence).
+
+  Returns:
+    A numpy array of portfolio weights.
+  &quot;&quot;&quot;
+
+  N, M = returns.shape
+
+  # Define decision variables
+  x = cp.Variable(M)  # Portfolio weights
+  z = cp.Variable()  # Value-at-Risk (VaR)
+
+  # Define auxiliary variables for CVaR approximation
+  y = cp.Variable(N, nonneg=True)
+
+  # Define the objective function (SAA of CVaR)
+  cvar = z + (1 / (alpha * N)) * cp.sum(y)
+
+  # Define constraints
+  constraints = [
+      cp.sum(returns @ x) / N &gt;= R_target,  # SAA of expected return constraint
+      cp.sum(x) == 1,                       # Budget constraint
+      x &gt;= 0,                                 # Non-negativity constraint
+      returns @ x &lt;= z + y,                  # CVaR auxiliary constraints
+      y &gt;= 0
+  ]
+
+  # Define the problem
+  problem = cp.Problem(cp.Minimize(cvar), constraints)
+
+  # Solve the problem
+  problem.solve()
+
+  # Return the optimal portfolio weights
+  if problem.status == cp.OPTIMAL:
+    return x.value
+  else:
+    print(&quot;Optimization failed:&quot;, problem.status)
+    return None
+
+
+# Example usage
+if __name__ == '__main__':
+  # Generate some random return data (replace with your actual data)
+  np.random.seed(42)
+  N = 100  # Number of scenarios
+  M = 5    # Number of assets
+  returns = np.random.normal(0.1, 0.2, size=(N, M))  # Mean 0.1, std dev 0.2
+
+  R_target = 0.15  # Target expected return
+
+  # Perform portfolio optimization using SAA
+  optimal_weights = saa_portfolio_optimization(returns, R_target)
+
+  if optimal_weights is not None:
+    print(&quot;Optimal portfolio weights:&quot;, optimal_weights)
+    print(&quot;Sum of weights:&quot;, np.sum(optimal_weights)) # should be close to 1
+    portfolio_return = np.mean(returns @ optimal_weights)
+    print(f&quot;Estimated portfolio return using SAA: {portfolio_return}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>saa_portfolio_optimization(returns, R_target, alpha)</code>:</strong>  This function takes asset returns (a NumPy array), the target return, and the CVaR confidence level as input.</li>
+<li><strong>Decision Variables:</strong> <code>x</code> represents the portfolio weights, <code>z</code> represents VaR and <code>y</code> contains auxiliary variables for CVaR calculation.</li>
+<li><strong>Objective Function:</strong> The objective is to minimize CVaR (approximated using SAA).</li>
+<li><strong>Constraints:</strong><ul>
+<li><code>cp.sum(returns @ x) / N &gt;= R_target</code>: The sample average of the portfolio return must be greater than or equal to the target return.</li>
+<li><code>cp.sum(x) == 1</code>: The portfolio weights must sum to 1 (budget constraint).</li>
+<li><code>x &gt;= 0</code>: No short-selling allowed (non-negativity constraint).</li>
+<li><code>returns @ x &lt;= z + y</code>: This is one standard way to express the CVaR constraints, which along with <code>y &gt;= 0</code> ensures we penalize values exceeding VaR.</li>
+</ul>
+</li>
+<li><strong>CVXPY:</strong>  This example uses the <code>cvxpy</code> library for convex optimization in Python. It's a user-friendly library for formulating and solving optimization problems.</li>
+<li><strong>Example Usage:</strong> The <code>if __name__ == '__main__':</code> block provides a basic example of how to use the function.  It generates random return data, sets a target return, and calls <code>saa_portfolio_optimization</code>. It then prints the optimal portfolio weights and verifies that they sum to 1.</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>This is a simplified example. In a real-world application, you would use actual historical return data or more sophisticated models for generating scenarios.</li>
+<li>The quality of the SAA solution depends on the sample size (<code>N</code>). You should experiment with different values of <code>N</code> to find a balance between accuracy and computational cost.</li>
+<li>The <code>cvxpy</code> library needs to be installed (<code>pip install cvxpy</code>).</li>
+<li>This example uses the CVaR approximation.  You could also use other risk measures or different formulations.</li>
+<li>The example uses a mixed integer approach to address the CVaR, but alternative linear programming approaches also exist</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of sample size <em>N</em> in SAA impact the solution's quality and the computational cost, and what strategies can be used to determine a suitable value for <em>N</em> for a given problem?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
