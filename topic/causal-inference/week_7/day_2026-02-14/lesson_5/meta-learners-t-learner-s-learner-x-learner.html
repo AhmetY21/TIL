@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta-Learners: T-Learner, S-Learner, X-Learner</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-meta-learners-t-learner-s-learner-x-learner">Topic: Meta-Learners: T-Learner, S-Learner, X-Learner</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Meta-learners are a class of algorithms designed to estimate individual treatment effects (ITE) or conditional average treatment effects (CATE) from observational data by leveraging machine learning models. They don't make strong assumptions about the form of the treatment effect, but instead rely on flexible machine learning algorithms to learn the underlying relationships. The core idea is to decompose the problem of estimating treatment effects into multiple prediction problems that can be solved using standard supervised learning techniques. Three common types of meta-learners are:</p>
+<ul>
+<li>
+<p><strong>T-Learner (Two-Learner):</strong></p>
+<ul>
+<li><strong>Definition:</strong>  The T-Learner trains <em>two</em> separate machine learning models. One model predicts the outcome <code>Y</code> for the treated group (where treatment <code>T=1</code>), and the other model predicts the outcome <code>Y</code> for the control group (where treatment <code>T=0</code>).  The individual treatment effect (ITE) is then estimated as the difference between the predictions of these two models for the same individual.</li>
+<li><strong>Formal representation:</strong><ul>
+<li>Model 1:  <code>Y_1 = f_1(X)</code>, where <code>f_1</code> is trained on data where <code>T=1</code>.</li>
+<li>Model 0:  <code>Y_0 = f_0(X)</code>, where <code>f_0</code> is trained on data where <code>T=0</code>.</li>
+<li>ITE(X) = <code>f_1(X) - f_0(X)</code></li>
+</ul>
+</li>
+<li><strong>How to use it:</strong> Train the two models on the respective treatment and control groups.  To predict the ITE for a new observation <code>X</code>, feed <code>X</code> to both models and subtract the predictions.</li>
+</ul>
+</li>
+<li>
+<p><strong>S-Learner (Single-Learner):</strong></p>
+<ul>
+<li><strong>Definition:</strong> The S-Learner trains a <em>single</em> machine learning model to predict the outcome <code>Y</code> as a function of both the covariates <code>X</code> and the treatment <code>T</code>.  The ITE is estimated by predicting the outcome under treatment (<code>T=1</code>) and under control (<code>T=0</code>) for the same individual and taking the difference.</li>
+<li><strong>Formal representation:</strong><ul>
+<li>Model: <code>Y = f(X, T)</code></li>
+<li>ITE(X) = <code>f(X, T=1) - f(X, T=0)</code></li>
+</ul>
+</li>
+<li><strong>How to use it:</strong> Train the model on the entire dataset, including both covariates and treatment assignment.  To predict the ITE for a new observation <code>X</code>, feed <code>(X, T=1)</code> and <code>(X, T=0)</code> to the model and subtract the predictions.</li>
+</ul>
+</li>
+<li>
+<p><strong>X-Learner (Cross-Learner):</strong></p>
+<ul>
+<li><strong>Definition:</strong> The X-Learner is a more sophisticated approach that attempts to correct for the biases inherent in the T-Learner and S-Learner, particularly when the treatment and control groups have vastly different sizes.  It operates in two stages:<ol>
+<li><strong>Stage 1 (Similar to T-Learner):</strong> Train two models, <code>f_1(X)</code> (treated) and <code>f_0(X)</code> (control), to predict the outcome <code>Y</code> in each group.</li>
+<li><strong>Stage 2:</strong><ul>
+<li>Impute the <em>individual treatment effects</em> on both groups:<ul>
+<li>Treated group:  <code>D_0i = Y_i - f_0(X_i)</code> (the difference between the observed outcome and the predicted outcome under control, based on the control model).</li>
+<li>Control group: <code>D_1i = f_1(X_i) - Y_i</code> (the difference between the predicted outcome under treatment and the observed outcome, based on the treated model).</li>
+</ul>
+</li>
+<li>Train two new models to predict these <em>imputed treatment effects</em> (not the outcome directly):<ul>
+<li>Model for <code>D_0i</code>: <code>g_0(X)</code> trained on the treated group (<code>T=1</code>).</li>
+<li>Model for <code>D_1i</code>: <code>g_1(X)</code> trained on the control group (<code>T=0</code>).</li>
+</ul>
+</li>
+<li>Estimate the ITE as a weighted average of the two models trained on imputed treatment effects. The weights are often the propensity score (probability of treatment) and its complement.</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><strong>Formal representation:</strong><ul>
+<li>Stage 1: Same as T-learner: <code>Y_1 = f_1(X)</code> (T=1), <code>Y_0 = f_0(X)</code> (T=0)</li>
+<li>Stage 2:<ul>
+<li><code>D_0 = Y - f_0(X)</code> for T=1</li>
+<li><code>D_1 = f_1(X) - Y</code> for T=0</li>
+<li><code>g_0(X)</code> trained to predict <code>D_0</code></li>
+<li><code>g_1(X)</code> trained to predict <code>D_1</code></li>
+<li><code>e(X) = P(T=1 | X)</code> (Propensity score)</li>
+<li><code>ITE(X) = e(X) * g_1(X) + (1 - e(X)) * g_0(X)</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>How to use it:</strong>  Implement the two stages as described above. Requires careful consideration of model choices and propensity score estimation.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a marketing campaign where customers were randomly assigned to receive a promotional offer (treatment) or not (control). We want to estimate the individual-level impact of the offer on purchase amount.</p>
+<ul>
+<li><strong>T-Learner:</strong> Would train one model to predict purchase amount for those who received the offer and another for those who didn't.  The difference between these two predictions for a given customer would be their estimated treatment effect.  Potentially useful if the response to marketing significantly differs between customer segments.</li>
+<li><strong>S-Learner:</strong> Would train a single model to predict purchase amount using customer features and whether they received the offer as inputs. This approach assumes that the impact of customer features on purchase behavior is similar regardless of treatment assignment. A simpler model to implement but potentially less accurate than a T-learner if treatment effects strongly vary across customer types.</li>
+<li><strong>X-Learner:</strong> Would first train models predicting purchase amount separately for treated and control groups. Then, it would calculate the difference between observed and predicted outcomes for each customer to impute individual treatment effects. Finally, it would train models predicting these imputed effects based on customer features, weighted by the propensity score (e.g., the probability of receiving the offer based on customer features). This would be particularly useful if some customers are much more likely to receive the offer than others (i.e., there is substantial confounding). X-Learner can provide more robust estimates, especially when treatment and control groups are highly imbalanced or when treatment effects are heterogeneous.</li>
+</ul>
+<p>Another scenario:</p>
+<p>Imagine estimating the effect of a job training program on individuals' income. We have data on participants and non-participants, along with various demographic and economic features.  The goal is to estimate the impact of the training on each person's income. The X-Learner might perform best here, especially if the treatment and control groups have significantly different characteristics and the effect of the training is expected to vary across individuals.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>EconML</code> library in Python provides implementations of these meta-learners.  Here's a basic example demonstrating how to use the <code>TLearner</code>, <code>SLearner</code>, and <code>XLearner</code> for CATE estimation:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from sklearn.linear_model import Lasso
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from econml.metalearners import TLearner, SLearner, XLearner
+from econml.dml import DML
+from econml.cate_interpreters import explain_model_with_shap
+
+# Generate some sample data
+np.random.seed(0)
+n_samples = 1000
+X = np.random.rand(n_samples, 5)  # Covariates
+T = np.random.randint(0, 2, n_samples)  # Treatment (0 or 1)
+Y = 2 * X[:, 0] + 3 * X[:, 1] + 1 * T + np.random.randn(n_samples)  # Outcome
+
+# Split data into train and test sets
+X_train, X_test, T_train, T_test, Y_train, Y_test = train_test_split(
+    X, T, Y, test_size=0.2, random_state=42
+)
+
+
+# Define base learners
+est = RandomForestRegressor(random_state=42, n_estimators=20)
+mod = RandomForestRegressor(random_state=42, n_estimators=20)
+clf = RandomForestClassifier(random_state=42) # for propensity score in XLearner when treatment is not randomized. In this example, random treatment is provided, no need to supply a classifier. If treatment wasn't randomized, then a classifier should be provided.
+
+# T-Learner
+t_learner = TLearner(models=est)
+t_learner.fit(Y_train, T_train, X=X_train)
+t_te = t_learner.effect(X_test)
+
+# S-Learner
+s_learner = SLearner(overall_model=est)
+s_learner.fit(Y_train, T_train, X=X_train)
+s_te = s_learner.effect(X_test)
+
+# X-Learner
+x_learner = XLearner(models=est, propensity_model=clf) # You need a propensity model if the treatment isn't randomized
+x_learner.fit(Y_train, T_train, X=X_train)
+x_te = x_learner.effect(X_test)
+
+print(&quot;T-Learner ITE estimates:&quot;, t_te[:5])
+print(&quot;S-Learner ITE estimates:&quot;, s_te[:5])
+print(&quot;X-Learner ITE estimates:&quot;, x_te[:5])
+
+# Example using DML
+dml = DML(model_y=est, model_t=est, model_final=est)  #Double Machine Learning
+dml.fit(Y_train, T_train, X=X_train)
+dml_te = dml.effect(X_test)
+
+print(&quot;DML ITE estimates:&quot;, dml_te[:5])
+
+# Example with SHAP interpretation for DML:
+# This requires that you have shap installed.
+
+try:
+    from econml.cate_interpreters import explain_model_with_shap
+    # Explain the model
+    te_interpreter = explain_model_with_shap(dml)
+    te_values = te_interpreter.explain(X_test)
+
+    print(&quot;DML SHAP values:&quot;, te_values.shape)  # Output: (number of samples, number of features)
+except ImportError:
+    print(&quot;SHAP is not installed.  Install it to use explainer functionality.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The code generates synthetic data with a known treatment effect.</li>
+<li>It splits the data into training and testing sets.</li>
+<li>It initializes base machine learning models (RandomForestRegressor and RandomForestClassifier). The classifiers are used for the propensity score if treatment is not randomised.</li>
+<li>It creates instances of <code>TLearner</code>, <code>SLearner</code>, and <code>XLearner</code>, specifying the base learners.</li>
+<li>It fits each meta-learner to the training data.</li>
+<li>It estimates the individual treatment effects (ITEs) using the fitted models.</li>
+<li>It prints the first few ITE estimates from each learner.</li>
+<li>Also adds a basic example using the double machine learning (DML) method.</li>
+<li>Demonstrates using SHAP to get feature importance.  This only works on models that are compatible with <code>shap</code> (e.g., tree-based models and deep neural networks).</li>
+</ul>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>The choice of base learner can significantly impact the performance of meta-learners. Experiment with different algorithms (e.g., linear models, tree-based models, neural networks) and hyperparameter tuning.</li>
+<li>For X-Learner, accurately estimating the propensity score is crucial. If the treatment assignment is not randomized, you'll need to use a propensity score model to correct for confounding.</li>
+<li>Model selection and validation are essential to avoid overfitting and ensure reliable ITE estimates.</li>
+<li>The quality of the data directly impacts the accuracy of the ITE estimates. Address missing data, outliers, and potential biases.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do these meta-learners relate to and differ from other methods for causal inference, such as propensity score matching or instrumental variables? What are the trade-offs involved in choosing a meta-learner approach versus these other methods?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
