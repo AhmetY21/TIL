@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feasibility and Penalty Modeling (slack, feasibility recourse)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-feasibility-and-penalty-modeling-slack-feasibility-recourse">Topic: Feasibility and Penalty Modeling (slack, feasibility recourse)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Feasibility and Penalty Modeling, particularly using slack variables and feasibility recourse, addresses situations in Stochastic Programming where obtaining a feasible solution for <em>every</em> realization of the uncertain parameters might be impossible or prohibitively expensive. Instead of insisting on absolute feasibility, we relax constraints and penalize infeasibility using either slack variables or feasibility recourse functions in the objective function.</p>
+<p><strong>Slack Variables:</strong></p>
+<ul>
+<li><strong>What it is:</strong>  We introduce artificial non-negative variables (slack variables) to transform hard constraints into soft constraints. These variables represent the amount by which a constraint can be violated.</li>
+<li><strong>How we use it:</strong>  We add the slack variables to the constraints, effectively allowing them to be violated.  Then, we add a penalty term to the objective function that is proportional to the magnitude of the slack variables.  This penalty discourages infeasibility but allows it if the cost of violating the constraint is less than the penalty.  This trade-off allows the model to find solutions even when some constraints cannot be strictly satisfied across all scenarios. Let's say we have a constraint <code>Ax &lt;= b</code>.  We can introduce a slack variable <code>s &gt;= 0</code> and transform it into <code>Ax - s &lt;= b</code>. If <code>s</code> is positive, it indicates a violation of the original constraint <code>Ax &lt;= b</code>.  In the objective function, we would then add a term like <code>rho * s</code>, where <code>rho</code> is a penalty coefficient.</li>
+</ul>
+<p><strong>Feasibility Recourse (Penalty Function):</strong></p>
+<ul>
+<li><strong>What it is:</strong> Instead of slack variables, we directly add a penalty function to the objective, which represents the cost of violating the constraints. This penalty function depends on the magnitude of the constraint violation.  It quantifies the cost associated with infeasibility in a specific scenario. The penalty function is defined <em>after</em> observing the realization of the uncertain parameters.</li>
+<li><strong>How we use it:</strong> The penalty function is usually a function of the constraint violations and can take various forms, such as linear, quadratic, or more complex forms.  A common example is to penalize the sum of the violations. The penalty function is added to the original objective function. The goal is to minimize the original objective plus the expected penalty for constraint violations across all possible scenarios.  For example, if we have a constraint <code>g(x, \omega) &lt;= 0</code>, where <code>\omega</code> is the uncertain parameter, a penalty function could be <code>P(x, \omega) = \rho * max(0, g(x, \omega))</code>, where <code>\rho</code> is the penalty coefficient. The stochastic program would then aim to minimize <code>E[f(x, \omega) + P(x, \omega)]</code>.</li>
+</ul>
+<p><strong>Key Differences:</strong></p>
+<ul>
+<li>Slack variables modify the constraints themselves, turning them into soft constraints.</li>
+<li>Feasibility recourse leaves the constraints as they are but introduces a penalty <em>only</em> in the objective function.</li>
+<li>The choice depends on the specific problem and how naturally the infeasibility can be expressed (and penalized) within the context of the constraints or the objective.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario: Production Planning under Uncertain Demand</strong></p>
+<p>A manufacturing company needs to determine the optimal production plan for a product, but the demand is uncertain. The company has limited production capacity and must satisfy demand, or face penalties.</p>
+<ul>
+<li><strong>Problem:</strong> The company wants to minimize production costs while meeting uncertain demand. If the demand exceeds the production capacity, the company incurs a shortage cost due to lost sales and potential customer dissatisfaction.</li>
+<li>
+<p><strong>Solution using Slack Variables:</strong> Let <code>x</code> be the production quantity and <code>d_ω</code> be the demand in scenario <code>ω</code>. The constraint to satisfy demand is <code>x &gt;= d_ω</code>. Introducing a slack variable <code>s_ω &gt;= 0</code> (shortage) transforms the constraint into <code>x + s_ω &gt;= d_ω</code>.  The objective function would then be <code>min  c*x + rho * E[s_ω]</code>, where <code>c</code> is the unit production cost, <code>rho</code> is the penalty for each unit of unmet demand, and <code>E[s_ω]</code> is the expected shortage.</p>
+</li>
+<li>
+<p><strong>Solution using Feasibility Recourse:</strong> The constraint remains <code>x &gt;= d_ω</code>. The penalty function would be <code>P(x, d_ω) = rho * max(0, d_ω - x)</code>. The objective function becomes <code>min c*x + E[P(x, d_ω)]</code>, which minimizes the production cost plus the expected penalty for unmet demand.</p>
+</li>
+</ul>
+<p>In both approaches, the stochastic program aims to find the optimal production level <code>x</code> that balances production costs with the cost of potential unmet demand under uncertain scenarios. If <code>rho</code> is sufficiently high, the model will prioritize fulfilling demand as much as possible.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using Pyomo with slack variables:</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+# Define the model
+model = ConcreteModel()
+
+# Parameters
+model.num_scenarios = Param(initialize=3)  # Number of scenarios
+scenarios = range(model.num_scenarios())
+model.production_cost = Param(initialize=2)  # Cost per unit of production
+model.shortage_penalty = Param(initialize=5)  # Penalty per unit of shortage
+
+# Uncertain demand data (replace with your actual data)
+demand_data = {0: 10, 1: 15, 2: 12}
+
+# Variables
+model.x = Var(domain=NonNegativeReals)  # Production quantity
+model.s = Var(scenarios, domain=NonNegativeReals)  # Shortage in each scenario
+
+# Constraints
+def demand_rule(model, s):
+    return model.x + model.s[s] &gt;= demand_data[s]
+model.demand_constraints = Constraint(scenarios, rule=demand_rule)
+
+
+# Objective Function (Minimize production cost + expected shortage penalty)
+def objective_rule(model):
+    return model.production_cost * model.x + sum(model.shortage_penalty * model.s[s] for s in scenarios) / model.num_scenarios
+
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+# Solve the model
+solver = SolverFactory('glpk') # or another solver like 'gurobi', 'cplex'
+solver.solve(model)
+
+# Print results
+print(&quot;Optimal Production Quantity:&quot;, value(model.x))
+for s in scenarios:
+    print(f&quot;Shortage in scenario {s}:&quot;, value(model.s[s]))
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>We define the Pyomo model, parameters (production cost, shortage penalty, number of scenarios), and uncertain demand data.</li>
+<li><code>model.x</code> represents the production quantity, and <code>model.s</code> represents the shortage in each scenario (slack variables).</li>
+<li><code>model.demand_constraints</code> ensures that production plus shortage is greater than or equal to demand in each scenario.</li>
+<li><code>model.objective</code> minimizes the production cost plus the <em>expected</em> shortage penalty.  Dividing by <code>model.num_scenarios</code> calculates the average penalty across all scenarios.</li>
+<li>A solver is used to find the optimal solution.</li>
+</ul>
+<p><strong>Note:</strong>  For feasibility recourse, you would define the penalty function directly within the objective function, without adding slack variables to the constraints. You'd likely need an <code>if</code> statement (or <code>max</code> function) within the objective function to calculate the penalty based on whether <code>x</code> is less than <code>demand_data[s]</code>.  The core difference is that the constraint remains <code>x &gt;= demand_data[s]</code> and no slack variables are used; the "softness" comes entirely from the penalty in the objective function.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of penalty coefficient (e.g., <code>rho</code> in the examples above) impact the optimal solution, and what methods can be used to determine an appropriate value for it? What are the trade-offs to consider when choosing between a very high penalty versus a relatively small one?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
