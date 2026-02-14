@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refutation Tests (Placebo, Subset, Random Common Cause)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-refutation-tests-placebo-subset-random-common-cause">Topic: Refutation Tests (Placebo, Subset, Random Common Cause)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Refutation tests are methods used in causal inference to assess the robustness of an estimated causal effect. They don't "prove" causality, but they provide evidence that the estimated effect is <em>likely</em> causal and not simply due to some other confounding factor or artifact of the data or methodology. The core idea is to create a <em>counterfactual</em> scenario where we'd expect the estimated causal effect to disappear if our original estimate is genuinely causal.  If the estimated effect <em>doesn't</em> disappear under these refutation scenarios, it raises serious questions about the validity of our initial causal inference.</p>
+<p>Here's a breakdown of the specific refutation tests mentioned:</p>
+<ul>
+<li>
+<p><strong>Placebo Treatment Refuter:</strong>  This test substitutes the actual treatment variable with a "placebo" treatment. The placebo treatment should be something that is unrelated to the outcome <em>except</em> if there's some other confounder at play. If the original causal effect estimate is robust, we should <em>not</em> find a significant effect when using the placebo treatment.  Finding a significant effect with the placebo suggests a hidden confounder or some other source of bias.  We can use this to check if our effect is spurious.</p>
+</li>
+<li>
+<p><strong>Subset Treatment Refuter:</strong>  This test estimates the causal effect on a <em>subset</em> of the data where we <em>expect</em> the treatment effect to be smaller or non-existent <em>based on our understanding of the causal mechanism</em>. If the original causal effect estimate is truly causal, the effect should be substantially smaller or absent in this subset. The subset needs to be chosen based on some prior knowledge about the causal mechanism.  This can help reveal if the effect is only present for certain populations or situations.</p>
+</li>
+<li>
+<p><strong>Random Common Cause Refuter:</strong> This test adds a randomly generated variable (a "random common cause") as a potential confounder in our model. The random variable is, by definition, independent of the true causal relationship between treatment and outcome. If the original effect estimate is robust, controlling for this random common cause should <em>not</em> substantially change the estimate. A large change suggests that the original estimate was very sensitive to the inclusion of spurious confounders. This allows us to test sensitivity to overfitting.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider an example: We're studying the effect of a new job training program (treatment) on income (outcome). We estimate a positive causal effect of the training program on income.</p>
+<ul>
+<li>
+<p><strong>Placebo Treatment Refuter:</strong> We could replace the actual training program with a "placebo program" – say, receiving a brochure about career advice. If the estimated effect of the brochure on income is also significant, it suggests that the original effect we observed might be due to some other factor correlated with <em>receiving any kind of help</em>, and not the specific content of the training program itself (e.g., more motivated people seek out both types of help).</p>
+</li>
+<li>
+<p><strong>Subset Treatment Refuter:</strong>  We might hypothesize that the training program is only effective for people with less than a high-school education. We could estimate the effect of the program <em>only</em> on people with a high-school degree or higher. If we still find a substantial positive effect on this subset, it raises doubts about our understanding of the causal mechanism and suggests that the program might benefit a wider range of people or, more worryingly, that the initial estimate was confounded.</p>
+</li>
+<li>
+<p><strong>Random Common Cause Refuter:</strong> We create a random variable (e.g., drawn from a uniform distribution) and include it as a potential confounder in our causal model. If the estimated effect of the training program on income changes significantly after controlling for this random variable, it suggests that our model is sensitive to including irrelevant variables and might be overfitting, or that our effect is weak and heavily influenced by random fluctuations.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's how you can implement these refutation tests using the <code>dowhy</code> library:</p>
+<pre class="codehilite"><code class="language-python">import dowhy
+from dowhy import CausalModel
+import pandas as pd
+import numpy as np
+
+# Sample data (replace with your actual data)
+data = pd.DataFrame({
+    'treatment': np.random.choice([0, 1], size=1000),
+    'outcome': np.random.normal(loc=5 + 2*np.random.choice([0, 1], size=1000), scale=1), # Outcome depends on treatment
+    'confounder': np.random.normal(loc=0, scale=1, size=1000),
+    'subset_variable': np.random.choice([0, 1], size=1000, p=[0.7, 0.3]) #70% 0s, 30% 1s, this is used to create the subset to test the effect on
+})
+
+# Create a causal model
+model = CausalModel(
+    data=data,
+    treatment='treatment',
+    outcome='outcome',
+    common_causes=['confounder']
+)
+
+# Identify the causal effect
+identified_estimand = model.identify_effect()
+
+# Estimate the causal effect
+estimate = model.estimate_effect(identified_estimand,
+                                 method_name=&quot;backdoor.linear_regression&quot;)
+print(&quot;Original Estimate:&quot;, estimate)
+
+# Refutation Tests
+
+# 1. Placebo Treatment Refuter
+res_placebo = model.refute_estimate(estimate,
+                                     method_name=&quot;placebo_treatment_refuter&quot;,
+                                     placebo_type=&quot;permute&quot;)  # Or &quot;add_unobserved_common_cause&quot; for a different kind of placebo
+print(&quot;\nPlacebo Treatment Refuter:&quot;, res_placebo)
+
+# 2. Subset Treatment Refuter
+subset_condition = &quot;subset_variable==1&quot;  # Adjust to your specific subset
+res_subset = model.refute_estimate(estimate,
+                                    method_name=&quot;subset_refuter&quot;,
+                                    subset_expression=subset_condition)
+print(&quot;\nSubset Treatment Refuter:&quot;, res_subset)
+
+# 3. Random Common Cause Refuter
+res_random = model.refute_estimate(estimate,
+                                     method_name=&quot;random_common_cause&quot;,
+                                     num_common_causes=1)
+print(&quot;\nRandom Common Cause Refuter:&quot;, res_random)
+</code></pre>
+
+<p>Key points about the code:</p>
+<ul>
+<li>We create a <code>CausalModel</code> using <code>dowhy</code>.</li>
+<li>We use <code>identify_effect</code> and <code>estimate_effect</code> to obtain our initial causal estimate.</li>
+<li>The <code>refute_estimate</code> function applies each of the refutation tests.  The <code>method_name</code> parameter specifies the type of refutation test to use.</li>
+<li>For the "placebo_treatment_refuter", the <code>placebo_type="permute"</code> option shuffles the treatment values. "add_unobserved_common_cause" adds a new, unrelated confounder.</li>
+<li>For the "subset_refuter", you specify the <code>subset_expression</code> to define the subset of the data to use.</li>
+<li>For the "random_common_cause",  <code>num_common_causes</code> controls the number of random common causes to add.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How should I interpret the results of a refutation test that fails (i.e., the refutation test finds a significant effect where it shouldn't or significantly changes the original estimate)? What steps should I take next?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
