@@ -413,6 +413,30 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th, .dark td {{ border-color: #334155; }}
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
+
+    /* Copy Button */
+    pre {{ position: relative; }}
+    .copy-button {{
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }}
+    pre:hover .copy-button, .copy-button:focus {{
+      opacity: 1;
+    }}
+    .copy-button:hover {{
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }}
   </style>
 </head>
 <body>
@@ -438,6 +462,32 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
         localStorage.theme = 'dark';
       }}
       updateIcon();
+    }});
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {{
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {{
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {{
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {{
+            button.textContent = 'Copy';
+          }}, 2000);
+        }} catch (err) {{
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }}
+      }});
     }});
   </script>
 </body>
