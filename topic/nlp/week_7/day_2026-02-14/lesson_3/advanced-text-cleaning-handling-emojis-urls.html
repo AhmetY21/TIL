@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Text Cleaning (Handling Emojis, URLs)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-advanced-text-cleaning-handling-emojis-urls">Topic: Advanced Text Cleaning (Handling Emojis, URLs)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Advanced text cleaning, specifically concerning emojis and URLs, refers to the process of identifying and appropriately handling (e.g., removing, replacing, or transforming) these elements within text data. Unlike basic cleaning (e.g., removing punctuation or stop words), emojis and URLs pose unique challenges due to their non-standard characters, complex encoding, and the potential information they represent.</p>
+<ul>
+<li>
+<p><strong>Emojis:</strong> These are pictorial representations of emotions, objects, or concepts. They are often encoded using Unicode, which can lead to inconsistencies across different platforms and encodings. Handling them involves tasks like:</p>
+<ul>
+<li><strong>Removal:</strong>  Removing emojis entirely to avoid interference with downstream tasks like sentiment analysis (where naive algorithms might misinterpret them).</li>
+<li><strong>Replacement:</strong> Replacing emojis with their textual descriptions (e.g., replacing "😊" with "smiling face") to maintain semantic meaning.</li>
+<li><strong>Transformation:</strong> Converting emojis into numerical representations (e.g., using embedding vectors) for machine learning models.</li>
+</ul>
+</li>
+<li>
+<p><strong>URLs:</strong> These are web addresses and can contain valuable information (e.g., domain name, path, query parameters) or simply act as noise in the text.  Handling them involves:</p>
+<ul>
+<li><strong>Removal:</strong> Removing URLs to focus on the textual content if the link itself is irrelevant.</li>
+<li><strong>Replacement:</strong> Replacing URLs with a placeholder string (e.g., "[URL]") to maintain sentence structure.</li>
+<li><strong>Extraction:</strong> Extracting the domain name or other parts of the URL for further analysis (e.g., identifying the source of a news article).</li>
+</ul>
+</li>
+</ul>
+<p>We can use advanced text cleaning to improve the quality and performance of various NLP tasks. For example:</p>
+<ul>
+<li><strong>Sentiment Analysis:</strong>  Removing emojis or replacing them with textual equivalents can prevent misinterpretations and improve the accuracy of sentiment classifiers.</li>
+<li><strong>Topic Modeling:</strong> Removing URLs can reduce noise and allow topic models to focus on the core textual content.</li>
+<li><strong>Text Summarization:</strong> Properly handling emojis and URLs ensures that summaries are coherent and informative.</li>
+<li><strong>Machine Translation:</strong> The way emojis and URLs are handled can affect the accuracy and naturalness of translated text.</li>
+<li><strong>Spam Detection:</strong> The presence and format of URLs can be strong indicators of spam.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Analyzing Twitter data to understand public sentiment towards a new product.  The tweets contain a mix of text, emojis, and URLs linking to product reviews or related articles.</p>
+<p><strong>Challenge:</strong></p>
+<ul>
+<li>Emojis like 👍 or 👎 might influence sentiment scores if not handled correctly. A simple bag-of-words model might assign arbitrary weights to these characters.</li>
+<li>URLs to negative reviews could skew the overall sentiment analysis if not considered. Simply removing the URLs removes potentially important contextual information.</li>
+<li>URLs might point to competitors or unrelated content, introducing noise.</li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol>
+<li><strong>Emoji handling:</strong> Replace emojis with their textual equivalents (e.g., 👍 -&gt; "thumbs up") or remove them entirely, depending on the desired outcome.</li>
+<li><strong>URL handling:</strong><ul>
+<li>Extract the domain name from the URLs and analyze the sentiment of the content on those domains.  This helps identify if external sources are contributing to positive or negative sentiment.</li>
+<li>Replace all URLs with a placeholder (e.g., "[URL]") if the linked content is not readily available for sentiment analysis.  This prevents the URLs from being treated as arbitrary words.</li>
+</ul>
+</li>
+<li>Combine the sentiment derived from the tweet text and the sentiment associated with the linked domains to get a more comprehensive understanding of public opinion.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import re
+import emoji
+from urllib.parse import urlparse
+
+def clean_text(text):
+  &quot;&quot;&quot;
+  Cleans text by removing URLs and handling emojis.
+
+  Args:
+    text: The input text string.
+
+  Returns:
+    The cleaned text string.
+  &quot;&quot;&quot;
+
+  # Remove URLs
+  text = re.sub(r'http\S+|www\S+|https\S+', '[URL]', text, flags=re.MULTILINE)
+
+  # Replace emojis with their descriptions
+  text = emoji.demojize(text, delimiters=(&quot;&quot;, &quot;&quot;))
+
+  # Remove remaining emojis (if desired, after demojizing some might remain)
+  text = ''.join(c for c in text if c not in emoji.EMOJI_DATA)
+
+  # Replace multiple spaces with single space
+  text = re.sub(' +', ' ', text)
+
+  return text.strip()
+
+def extract_domain(url):
+  &quot;&quot;&quot;
+  Extracts the domain name from a URL.
+
+  Args:
+    url: The URL string.
+
+  Returns:
+    The domain name, or None if the URL is invalid.
+  &quot;&quot;&quot;
+  try:
+    parsed_uri = urlparse(url)
+    domain = '{uri.netloc}'.format(uri=parsed_uri)
+    return domain
+  except:
+    return None
+
+# Example usage:
+text = &quot;This is a great product! 👍 Check it out here: https://www.example.com/product 😊&quot;
+cleaned_text = clean_text(text)
+print(f&quot;Original text: {text}&quot;)
+print(f&quot;Cleaned text: {cleaned_text}&quot;)
+
+url = &quot;https://www.example.com/product&quot;
+domain = extract_domain(url)
+print(f&quot;Domain from URL: {domain}&quot;)
+
+text_with_emoji = &quot;I love pizza 🍕!&quot;
+cleaned_emoji_text = clean_text(text_with_emoji)
+print(f&quot;Original emoji text: {text_with_emoji}&quot;)
+print(f&quot;Cleaned emoji text: {cleaned_emoji_text}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>clean_text(text)</code>:</strong> This function performs the core text cleaning.<ul>
+<li>It uses regular expressions (<code>re.sub</code>) to remove URLs, replacing them with "[URL]". The <code>r'http\S+|www\S+|https\S+'</code> regular expression matches various URL patterns. The <code>flags=re.MULTILINE</code> ensures it works correctly across multiple lines.</li>
+<li>It uses the <code>emoji</code> library's <code>demojize</code> function to replace emojis with their textual descriptions (e.g., "👍" becomes "thumbs up"). The <code>delimiters=("", "")</code> removes colons that would normally surround the description (e.g., ":thumbs_up:").  Removing any left over emojis that could not be demojized.</li>
+<li>Removes any multiple spaces and trims whitespace to ensure clean output.</li>
+</ul>
+</li>
+<li><strong><code>extract_domain(url)</code>:</strong> This function extracts the domain name from a URL using <code>urllib.parse.urlparse</code>. This is useful if you want to analyze the source of the link.  Includes error handling to prevent crashes due to invalid URLs.</li>
+<li>The example usage demonstrates how to use the functions. The cleaned text will have the URLs removed and emojis replaced with their textual descriptions.</li>
+</ul>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Install the <code>emoji</code> library: <code>pip install emoji</code></li>
+<li>The URL removal regex might need to be adjusted based on the specific URL patterns in your data.</li>
+<li>Consider using more sophisticated techniques for handling URLs, such as following redirects and analyzing the HTML content of the linked pages.</li>
+<li>The decision to remove, replace, or transform emojis and URLs depends on the specific NLP task.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How would the approach to handling emojis and URLs differ when dealing with data in languages other than English? For instance, would the <code>emoji.demojize()</code> function still be effective, and what considerations need to be made regarding the linguistic context of the URLs?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
