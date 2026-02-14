@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recourse Function Properties: convexity, piecewise linearity (linear recourse)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-recourse-function-properties-convexity-piecewise-linearity-linear-recourse">Topic: Recourse Function Properties: convexity, piecewise linearity (linear recourse)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In two-stage (or multi-stage) stochastic programming, the <em>recourse function</em> (also known as the second-stage value function) describes the optimal value of the second-stage problem given a particular realization of the uncertainty (i.e., a particular scenario) and a first-stage decision. Let's define it formally for a two-stage linear stochastic program:</p>
+<p>Consider the following problem:</p>
+<p>Minimize:  <code>c'x + E[Q(x, ω)]</code></p>
+<p>Subject to:  <code>Ax = b</code>
+           <code>x &gt;= 0</code></p>
+<p>Where:</p>
+<ul>
+<li><code>x</code> is the first-stage decision vector.</li>
+<li><code>ω</code> represents the random parameters (uncertainty).</li>
+<li><code>c</code> and <code>A</code> are cost and constraint matrices for the first stage.</li>
+<li><code>b</code> is the right-hand side vector for the first stage.</li>
+<li><code>E[Q(x, ω)]</code> is the expected recourse function, which represents the expected cost of taking corrective actions in the second stage after observing the realization of the uncertainty <code>ω</code>.</li>
+</ul>
+<p>The recourse function, <code>Q(x, ω)</code>, is defined as:</p>
+<p><code>Q(x, ω) = min q(ω)'y</code></p>
+<p>Subject to:  <code>Wy = h(ω) - Tx</code>
+           <code>y &gt;= 0</code></p>
+<p>Where:</p>
+<ul>
+<li><code>y</code> is the second-stage decision vector (recourse action).</li>
+<li><code>q(ω)</code> is the cost vector for the second stage, dependent on the scenario <code>ω</code>.</li>
+<li><code>W</code> is the recourse matrix.</li>
+<li><code>T</code> is the technology matrix linking the first-stage and second-stage decisions.</li>
+<li><code>h(ω)</code> is the right-hand side vector for the second stage, dependent on the scenario <code>ω</code>.</li>
+</ul>
+<p><strong>Convexity:</strong> If the recourse problem is a linear program (as defined above, with linear objective and constraints), and the right-hand side, <code>h(ω) - Tx</code>, varies linearly with <code>x</code>, then the recourse function <code>Q(x, ω)</code> is a <em>convex</em> function of <code>x</code> for each fixed realization of <code>ω</code>.  This is a direct consequence of the optimality properties of linear programs. The minimum of a linear function subject to linear constraints is a convex function of parameters appearing in the constraints. Consequently, if <code>Q(x, ω)</code> is convex for each <code>ω</code>, then <code>E[Q(x, ω)]</code> is also convex (because the expectation operator preserves convexity). This is extremely useful, as it ensures that the overall stochastic programming problem maintains convexity if the first-stage problem is also convex.</p>
+<p><strong>Piecewise Linearity (Linear Recourse):</strong>  If <code>h(ω) - Tx</code> is a linear function of <code>x</code>, and <code>q(ω)</code>, <code>W</code> are independent of <code>x</code>, then <code>Q(x, ω)</code> is a <em>piecewise linear</em> function of <code>x</code>. This is because the feasible region of the second-stage problem can be partitioned into polyhedral regions, within each of which a particular set of basic variables remains optimal.  The optimal objective value <code>Q(x, ω)</code> is then a linear function of <code>x</code> within each of these polyhedral regions. This property is crucial for algorithms that exploit piecewise linearity, such as Benders decomposition and its variants. <em>Linear recourse</em> specifically refers to the situation where the second-stage problem is a linear program.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Algorithm Design:</strong>  Convexity and piecewise linearity are essential properties for designing efficient solution algorithms for stochastic programs. Algorithms like Benders decomposition rely heavily on the piecewise linear nature of the recourse function.</li>
+<li><strong>Approximation:</strong>  If the recourse function is known to be convex and/or piecewise linear, we can use approximation techniques (e.g., cutting-plane methods) to efficiently approximate the expected recourse function <code>E[Q(x, ω)]</code>.</li>
+<li><strong>Optimality Verification:</strong> Knowing these properties can help in verifying the optimality of solutions obtained by different algorithms.</li>
+<li><strong>Model Formulation:</strong> Understanding these properties can guide the formulation of the stochastic programming model to ensure that desired properties like convexity are preserved, leading to more tractable problems.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain management problem where a company needs to decide on the initial inventory level (<code>x</code>) of a product before knowing the exact demand (<code>ω</code>).  After observing the demand, the company can take recourse actions:</p>
+<ul>
+<li>If demand exceeds inventory, they can order additional products at a higher cost (<code>q(ω)</code>) to satisfy the unmet demand.</li>
+<li>If inventory exceeds demand, they can sell the excess inventory at a discounted price.</li>
+</ul>
+<p>Here, the second-stage problem is to decide how much to order or sell based on the observed demand and the initial inventory level. The recourse function <code>Q(x, ω)</code> represents the cost associated with these recourse actions, which depends on the initial inventory level <code>x</code> and the realized demand <code>ω</code>.</p>
+<p>Specifically:</p>
+<ul>
+<li><code>x</code>: Initial inventory level (first-stage decision).</li>
+<li><code>ω</code>: Random demand.</li>
+<li><code>y</code>: Second-stage decisions: <code>y1</code> = quantity ordered, <code>y2</code> = quantity sold.</li>
+<li><code>q(ω)</code>: Cost vector [cost of ordering, negative of salvage value].</li>
+<li>The constraint is <code>x + y1 - y2 = ω</code>, which can be rewritten in the form <code>Wy = h(ω) - Tx</code> with appropriate definition of <code>W</code>, <code>h(ω)</code>, and <code>T</code>.</li>
+</ul>
+<p>Because the second-stage decision is modeled as a linear program (minimizing cost of ordering/selling subject to demand constraints), the recourse function <code>Q(x, ω)</code> is convex and piecewise linear in <code>x</code> for each realization of <code>ω</code>.  This allows us to use efficient algorithms like Benders decomposition to find the optimal initial inventory level <code>x</code> that minimizes the total cost (initial inventory cost plus expected recourse cost).</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single, readily available function in a standard library to <em>directly</em> compute the recourse function <code>Q(x, ω)</code>, we can use optimization libraries like <code>cvxpy</code> or <code>gurobipy</code> to solve the second-stage problem for a given <code>x</code> and <code>ω</code>, thereby effectively evaluating the recourse function at that point. This can be incorporated into a broader stochastic programming solver.</p>
+<p>Here's an example using <code>cvxpy</code> to evaluate the recourse function for a single scenario:</p>
+<pre class="codehilite"><code class="language-python">import cvxpy as cp
+import numpy as np
+
+def evaluate_recourse_function(x_val, omega_val, q, W, T, h):
+    &quot;&quot;&quot;
+    Evaluates the recourse function Q(x, omega) for a given x and omega.
+
+    Args:
+        x_val: Value of the first-stage decision variable x.
+        omega_val: Realization of the random parameter omega.
+        q: Cost vector for the second stage.
+        W: Recourse matrix.
+        T: Technology matrix.
+        h: Right-hand side vector for the second stage (as a function of omega).
+
+    Returns:
+        The value of the recourse function Q(x, omega).
+    &quot;&quot;&quot;
+
+    y = cp.Variable(W.shape[1], nonneg=True)  # Second-stage decision variable
+    objective = q @ y
+    constraints = [W @ y == h(omega_val) - T @ x_val]
+
+    problem = cp.Problem(cp.Minimize(objective), constraints)
+    problem.solve()
+
+    if problem.status == cp.OPTIMAL:
+        return problem.value
+    else:
+        print(&quot;Second-stage problem is infeasible or unbounded.&quot;)
+        return np.inf  # or some large value to indicate infeasibility
+
+
+# Example usage:  Supply chain problem from the previous section.
+# x: initial inventory level.  y = [y1, y2], where y1 = quantity ordered, y2 = quantity sold
+# omega: demand
+
+# Scenario parameters
+omega_val = 10  # Demand
+
+# First-stage decision (example)
+x_val = np.array([7])
+
+# Second-stage problem parameters
+q = np.array([5, 0])  # Cost of ordering, salvage value is 0
+W = np.array([[1, -1]])
+T = np.array([1])  # Tx = x
+h = lambda omega: np.array([omega])  # h(omega) = omega
+
+
+# Evaluate the recourse function
+Q_x_omega = evaluate_recourse_function(x_val, omega_val, q, W, T, h)
+print(f&quot;Recourse function value Q({x_val}, {omega_val}): {Q_x_omega}&quot;)
+
+# To approximate E[Q(x, omega)], you would repeat this for multiple scenarios
+# and average the results.
+</code></pre>
+
+<p>This code provides a way to numerically evaluate the recourse function <code>Q(x, ω)</code> for a given realization <code>ω</code> and first-stage decision <code>x</code>.  This allows for the calculation of the expected recourse cost, E[Q(x,ω)].</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the presence of integer variables in the second-stage (e.g., you can only order in whole units) impact the convexity and piecewise linearity properties of the recourse function? What algorithmic challenges arise from this, and what solution approaches can be used?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
