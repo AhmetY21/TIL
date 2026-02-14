@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature Engineering for Text Data</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-feature-engineering-for-text-data">Topic: Feature Engineering for Text Data</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Feature engineering for text data involves transforming raw textual data into numerical or categorical representations that machine learning models can understand and utilize.  Essentially, it's the process of creating meaningful, informative features from text that capture its underlying structure, semantics, and context.  Raw text is inherently unstructured and complex, making it unsuitable for direct input into most machine learning algorithms.</p>
+<p>We use feature engineering in NLP to:</p>
+<ul>
+<li><strong>Represent textual information numerically:</strong>  Machine learning models predominantly work with numerical data. Feature engineering converts text into numbers or vectors, allowing models to perform tasks like classification, regression, or clustering.</li>
+<li><strong>Capture semantic meaning:</strong>  Moving beyond simple word counts, feature engineering can capture relationships between words, sentiments expressed in the text, and the overall topic or theme.</li>
+<li><strong>Improve model performance:</strong>  Well-engineered features can significantly boost the accuracy and efficiency of machine learning models by providing them with relevant and discriminative information.</li>
+<li><strong>Reduce dimensionality:</strong> Raw text often has a very high dimensionality (i.e., a large vocabulary). Feature engineering techniques can reduce this dimensionality while retaining the most important information.</li>
+<li><strong>Handle different text properties:</strong> Different feature engineering methods are suitable for handling various text properties, such as character-level information, word-level information, document-level information, and sequential information.</li>
+</ul>
+<p>Common feature engineering techniques include:</p>
+<ul>
+<li><strong>Bag of Words (BoW):</strong> Representing a document by the frequency of its words, ignoring grammar and word order.</li>
+<li><strong>TF-IDF (Term Frequency-Inverse Document Frequency):</strong> Weighing words based on their frequency in a document and their rarity across the entire corpus.</li>
+<li><strong>N-grams:</strong>  Sequences of <em>n</em> words that capture some context.</li>
+<li><strong>Word Embeddings (Word2Vec, GloVe, FastText):</strong> Dense vector representations of words that capture semantic relationships.</li>
+<li><strong>Character-level features:</strong>  Using the frequency or presence of specific characters or character sequences.</li>
+<li><strong>Sentiment scores:</strong> Numerical representation of the sentiment (positive, negative, neutral) expressed in the text.</li>
+<li><strong>Part-of-Speech (POS) tagging:</strong> Identifying the grammatical role of each word (e.g., noun, verb, adjective) and using these tags as features.</li>
+<li><strong>Document length and complexity:</strong>  Number of words, sentences, average word length, etc.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a spam email detection scenario. We want to build a machine learning model that can classify emails as either "spam" or "not spam" (ham).</p>
+<p><strong>Without Feature Engineering:</strong></p>
+<p>We could theoretically feed the raw text of the emails directly into a deep learning model (like a Transformer), but this would require a significant amount of data and computational resources.  Even then, simpler models might perform better with properly engineered features.</p>
+<p><strong>With Feature Engineering:</strong></p>
+<p>We can use feature engineering to extract meaningful features from the email text:</p>
+<ol>
+<li><strong>TF-IDF:</strong> Calculate the TF-IDF scores for each word in each email.  Words like "free," "discount," and "urgent" are likely to have higher TF-IDF scores in spam emails.</li>
+<li><strong>N-grams:</strong>  Consider bi-grams (pairs of words) like "limited time," which are common in spam messages.</li>
+<li><strong>Sentiment Analysis:</strong> Calculate a sentiment score for each email. Spam emails might use manipulative language that results in a higher negative sentiment score.</li>
+<li><strong>Email Metadata:</strong> Extract features from the email headers, such as the sender's domain, whether the email contains attachments, and the number of recipients.</li>
+<li><strong>Presence of URLS:</strong> The number of URLS and whether they are obfuscated (e.g., shortened links).</li>
+<li><strong>Punctuation Frequency:</strong> Spam emails often contain a higher frequency of exclamation marks and other excessive punctuation.</li>
+</ol>
+<p>These features can then be used as input to a simpler machine learning model like a Logistic Regression or Support Vector Machine. The feature engineering process would help the model to better discriminate between spam and non-spam emails, leading to improved accuracy and faster training times.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using scikit-learn to create TF-IDF features:</p>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+
+# Sample email data (replace with your actual data)
+emails = [
+    &quot;This is a normal email.&quot;,
+    &quot;Get free money now!&quot;,
+    &quot;Urgent: Claim your prize!&quot;,
+    &quot;Meeting scheduled for tomorrow.&quot;
+]
+
+# Create a TfidfVectorizer object
+vectorizer = TfidfVectorizer(stop_words='english', max_df=0.8, min_df=2)
+# stop_words removes common words like &quot;the&quot;, &quot;a&quot;, &quot;is&quot;
+# max_df ignores terms that appear in more than 80% of the documents
+# min_df ignores terms that appear in less than 2 documents.
+
+# Fit the vectorizer to the email data and transform the data
+tfidf_matrix = vectorizer.fit_transform(emails)
+
+# Convert the TF-IDF matrix to a pandas DataFrame for easier inspection
+tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+
+print(tfidf_df)
+</code></pre>
+
+<p>This code snippet performs the following:</p>
+<ol>
+<li><strong>Imports necessary libraries:</strong> <code>TfidfVectorizer</code> from scikit-learn and <code>pandas</code> for data handling.</li>
+<li><strong>Defines sample email data:</strong>  A list of strings representing emails.  You would replace this with your actual data.</li>
+<li><strong>Creates a <code>TfidfVectorizer</code>:</strong> Configures the vectorizer to remove common English stop words, ignore words that appear in more than 80% of the documents, and ignore words that appear in less than 2 documents.</li>
+<li><strong>Fits and transforms the data:</strong>  <code>fit_transform</code> learns the vocabulary from the email data and transforms each email into a TF-IDF vector.</li>
+<li><strong>Converts to a DataFrame:</strong>  The TF-IDF matrix is converted into a pandas DataFrame for easier visualization and analysis. The columns represent the terms (words) in the vocabulary, and the rows represent the emails. The values in the DataFrame are the TF-IDF scores for each word in each email.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given the advancements in pre-trained language models like BERT and GPT, how does the importance of traditional feature engineering techniques like TF-IDF compare to fine-tuning these pre-trained models for text classification tasks? When would you choose one approach over the other?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
