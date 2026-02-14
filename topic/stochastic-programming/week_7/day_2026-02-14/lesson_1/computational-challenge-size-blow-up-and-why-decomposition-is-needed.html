@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Computational Challenge: size blow-up and why decomposition is needed</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-computational-challenge-size-blow-up-and-why-decomposition-is-needed">Topic: Computational Challenge: size blow-up and why decomposition is needed</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In stochastic programming, we deal with optimization problems where some parameters are uncertain and represented by probability distributions.  A common approach is to discretize the uncertainty, creating a <em>scenario tree</em> or <em>scenario set</em>. Each scenario represents a possible realization of the uncertain parameters.  Solving the problem directly involves creating a deterministic equivalent model that incorporates all possible scenarios.</p>
+<p>The "size blow-up" refers to the exponential increase in the size (number of variables and constraints) of the deterministic equivalent model as the number of scenarios and/or the number of stages in the stochastic program grows. Imagine we have a stochastic program with <em>T</em> stages (time periods) and <em>S</em> scenarios per stage. In a scenario tree, the total number of scenarios at the final stage <em>T</em> is <em>S<sup>T</sup></em>. If each scenario requires storing a decision vector of size <em>n</em>, the total size of the decision variables can become prohibitively large even for moderate values of <em>S</em> and <em>T</em>.</p>
+<p>Formally, if we have a multi-stage stochastic program with recourse, the deterministic equivalent formulation links decisions across all stages and scenarios. A typical formulation might look something like this conceptually (without explicitly writing out the complex matrices):</p>
+<p>Minimize:  Expected cost over all scenarios</p>
+<p>Subject to:
+*   First-stage decisions
+*   Constraints linking first-stage decisions to second-stage decisions under each scenario
+*   Constraints linking second-stage decisions to third-stage decisions under each scenario, and so on.</p>
+<p>The key here is that the constraints at later stages <em>replicate</em> for each scenario. This replication leads to the exponential growth in the size of the model.</p>
+<p><strong>Why is decomposition needed?</strong> Because the size blow-up makes solving the deterministic equivalent model intractable for many realistic problems. Decomposition methods aim to break down the large problem into smaller, more manageable subproblems that can be solved iteratively.  They leverage the structure of the problem, such as the separability of scenarios and the link between stages, to reduce the computational burden.  Common decomposition techniques include:</p>
+<ul>
+<li><strong>Benders Decomposition (L-Shaped Method):</strong> Iteratively adds cuts (linear approximations) to the master problem based on information from solving subproblems (typically scenarios or stages).</li>
+<li><strong>Stochastic Dual Dynamic Programming (SDDP):</strong> Extends Benders decomposition to multi-stage problems, using backward recursion to approximate the cost-to-go function (future costs) at each stage.</li>
+<li><strong>Progressive Hedging (PH):</strong> Encourages scenarios to converge towards a common first-stage decision by introducing penalty terms for deviation.</li>
+</ul>
+<p>By employing these decomposition strategies, we can solve much larger stochastic programming problems than would be possible with a direct deterministic equivalent approach. The "use" comes from enabling the practical application of stochastic programming in real-world scenarios where uncertainty and complex dependencies over time are prevalent.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain management problem for a company selling a product with uncertain demand.</p>
+<ul>
+<li><strong>Stages:</strong> The problem spans multiple time periods (e.g., months).</li>
+<li><strong>Decisions:</strong>  In each period, the company needs to decide how much to order, how much to produce, and how much to ship to various distribution centers.</li>
+<li><strong>Uncertainty:</strong>  The demand at each distribution center is uncertain and follows a probability distribution. We can discretize the demand into a set of possible demand scenarios.</li>
+<li><strong>Size Blow-up:</strong>  If we have, say, 5 distribution centers, each with 3 possible demand scenarios per month, and we are planning over 12 months, the number of scenarios at the end is potentially 3<sup>(5*12)</sup> which is astronomically large. Even with fewer scenarios, the size grows rapidly.  The deterministic equivalent model would have a huge number of variables representing the decisions in each period under each scenario.  It would be computationally impossible to solve directly.</li>
+</ul>
+<p><strong>Decomposition Solution:</strong> We can use Benders decomposition or SDDP.</p>
+<ul>
+<li>Benders: The master problem would determine the first-stage decisions (e.g., initial production plan). The subproblems would represent the supply chain operations in subsequent periods under each demand scenario.  The subproblems would generate cuts that are added to the master problem, refining the first-stage decisions to minimize expected costs while accounting for the uncertainty in demand.</li>
+<li>SDDP: Solves the problem backward in time.  At each stage, it approximates the cost-to-go function (future expected costs) based on sampling scenarios and using cutting plane methods.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While implementing decomposition methods from scratch can be complex, several Python libraries provide tools and interfaces to work with stochastic programming and implement decomposition algorithms. Examples:</p>
+<ul>
+<li>
+<p><strong>Pyomo:</strong>  A powerful algebraic modeling language in Python that can be used to formulate stochastic programming models.  While it doesn't have built-in decomposition solvers <em>directly</em>, it provides the framework to <em>implement</em> decomposition algorithms like Benders decomposition yourself by leveraging its modeling capabilities and solver interfaces.</p>
+</li>
+<li>
+<p><strong>Scikit-Stoch:</strong> A Python package specifically designed for stochastic optimization, although its development seems to have stalled. It provides implementations for some decomposition algorithms.</p>
+</li>
+</ul>
+<p>Here's a simple example using Pyomo to <em>illustrate</em> how you <em>might start</em> to structure a stochastic program and indicate where decomposition might be applied. Note this <em>does not</em> implement the decomposition <em>itself</em>; it's a basic model formulation to <em>demonstrate the setup</em>:</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+
+# Model parameters (Simplified)
+num_scenarios = 3  # Discretized demand scenarios
+num_periods = 2     # Two time periods
+demand = {
+    (1,1): 10,  # Period 1, Scenario 1: Demand 10
+    (1,2): 12,
+    (1,3): 15,
+    (2,1): 15,  # Period 2, Scenario 1: Demand 15
+    (2,2): 18,
+    (2,3): 20
+}
+production_cost = 2
+holding_cost = 1
+
+# Create a concrete Pyomo model
+model = ConcreteModel()
+
+# Sets
+model.PERIODS = RangeSet(num_periods)
+model.SCENARIOS = RangeSet(num_scenarios)
+
+# Variables
+model.production = Var(model.PERIODS, within=NonNegativeReals)
+model.inventory = Var(model.PERIODS, model.SCENARIOS, within=NonNegativeReals)
+model.demand_met = Var(model.PERIODS, model.SCENARIOS, within=NonNegativeReals) #Amount of demand met
+
+# Objective Function
+def objective_rule(model):
+    # Assumes scenarios are equally likely
+    scenario_probability = 1.0 / num_scenarios
+    return sum(scenario_probability * (
+               sum(production_cost * model.production[t] + holding_cost * model.inventory[t, s]
+                   for t in model.PERIODS)
+            ) for s in model.SCENARIOS)
+
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+
+# Constraints
+
+# Inventory balance
+def inventory_balance_rule(model, t, s):
+    if t == 1:
+        return model.inventory[t,s] == model.production[t] - demand[t,s]
+    else:
+        return model.inventory[t,s] == model.inventory[t-1,s] + model.production[t] - demand[t,s]
+model.inventory_balance = Constraint(model.PERIODS, model.SCENARIOS, rule=inventory_balance_rule)
+
+def demand_met_rule(model, t, s):
+    return model.demand_met[t,s] &lt;= demand[t,s]
+
+model.demand_met_con = Constraint(model.PERIODS, model.SCENARIOS, rule=demand_met_rule)
+
+def production_positivity_rule(model,t):
+    return model.production[t] &gt;= 0
+model.production_positive = Constraint(model.PERIODS,rule = production_positivity_rule)
+# Solve the model (using a solver like GLPK or CPLEX or Gurobi)
+solver = SolverFactory('glpk')  # Or 'cplex', 'gurobi' (if installed)
+solver.solve(model)
+
+# Decomposition strategy would involve:
+# 1. Identifying stages (e.g., time periods) and/or scenarios that can be separated.
+# 2. Formulating a master problem (e.g., for first-stage decisions).
+# 3. Formulating subproblems for each scenario or stage.
+# 4. Iteratively solving the master problem and subproblems, exchanging information (e.g., cuts).
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The Pyomo model sets up a basic inventory management problem under demand uncertainty.</li>
+<li>The <code>model.SCENARIOS</code> set represents the discretized demand scenarios.</li>
+<li>The <code>model.objective</code> calculates the expected cost across all scenarios.</li>
+<li>The <code>model.inventory_balance</code> constraint links decisions and inventory levels across periods for each scenario.</li>
+</ul>
+<p><em>Important Note:</em> This code only creates the <em>deterministic equivalent model</em>. To <em>implement</em> a decomposition strategy (like Benders), you would need to add code to:</p>
+<ol>
+<li>Separate the problem into a master problem and subproblems.</li>
+<li>Solve the subproblems.</li>
+<li>Generate cuts (linear constraints) from the subproblem solutions.</li>
+<li>Add the cuts to the master problem.</li>
+<li>Iterate until convergence.</li>
+<li>Handle the "non-anticipativity constraint" in general which requires first-stage decisions to be equal across all scenarios.</li>
+</ol>
+<p>Implementing the decomposition logic within Pyomo requires significant programming effort.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Beyond Benders, SDDP, and Progressive Hedging, are there other important decomposition or approximation techniques used in stochastic programming to address the size blow-up issue, and what are their key strengths and weaknesses? For example, what about Sample Average Approximation (SAA) or scenario aggregation techniques? How do they compare to the methods discussed?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
