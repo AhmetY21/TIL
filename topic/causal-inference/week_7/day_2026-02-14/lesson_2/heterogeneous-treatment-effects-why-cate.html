@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heterogeneous Treatment Effects (Why CATE?)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-heterogeneous-treatment-effects-why-cate">Topic: Heterogeneous Treatment Effects (Why CATE?)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Heterogeneous Treatment Effects (HTE) refer to the fact that the effect of a treatment (or intervention) varies across different individuals or subgroups within a population. Instead of assuming a single, uniform treatment effect for everyone (the Average Treatment Effect, or ATE), HTE acknowledges that some individuals benefit more, some benefit less, and some might even be harmed by the same treatment.</p>
+<p>Formally, we can define the Conditional Average Treatment Effect (CATE) as:</p>
+<p>CATE(x) = E[Y(1) - Y(0) | X = x]</p>
+<p>Where:</p>
+<ul>
+<li>Y(1) is the potential outcome if an individual receives the treatment.</li>
+<li>Y(0) is the potential outcome if an individual does <em>not</em> receive the treatment.</li>
+<li>X is a vector of pre-treatment covariates or characteristics of the individual.</li>
+<li>x is a specific value of the covariate vector X.</li>
+<li>E[ . | . ] denotes the conditional expectation.</li>
+</ul>
+<p>In simpler terms, CATE(x) represents the <em>average</em> difference in outcomes between treated and untreated individuals <em>who share the same characteristics X = x</em>.</p>
+<p><strong>Why use CATE instead of just ATE?</strong></p>
+<ul>
+<li>
+<p><strong>Personalized interventions:</strong> CATE allows for tailoring interventions to specific individuals or subgroups. Knowing that a treatment is beneficial <em>on average</em> might be misleading if it harms a substantial portion of the population. CATE allows us to identify <em>who</em> benefits and <em>who</em> doesn't.</p>
+</li>
+<li>
+<p><strong>Improved resource allocation:</strong> If resources are limited, we can target the treatment to those who are most likely to benefit, maximizing the overall impact of the intervention.</p>
+</li>
+<li>
+<p><strong>Understanding treatment mechanisms:</strong> Exploring how the treatment effect varies across different characteristics can provide insights into the underlying mechanisms driving the treatment effect.  Why does the treatment work better for certain people?  This can lead to refinement of the treatment or the identification of other important factors.</p>
+</li>
+<li>
+<p><strong>Addressing ethical concerns:</strong>  If a treatment harms certain subgroups, even if it benefits the average person, there may be ethical implications that need to be considered.  CATE helps to identify those potentially harmed.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> A pharmaceutical company has developed a new drug to lower blood pressure.  The ATE shows that the drug lowers blood pressure by an average of 5 mmHg.  However, the company suspects that the drug may not be equally effective for all patients.</p>
+<p><strong>Applying CATE:</strong></p>
+<ul>
+<li>
+<p>They collect data on patients who participated in the clinical trial, including age, sex, pre-existing conditions (e.g., diabetes, kidney disease), and lifestyle factors (e.g., smoking, diet).  These are the covariates (X).</p>
+</li>
+<li>
+<p>They use CATE estimation techniques to estimate the treatment effect (blood pressure reduction) <em>conditional</em> on these covariates.</p>
+</li>
+<li>
+<p><strong>Possible findings:</strong> They might discover that the drug is highly effective for younger patients without pre-existing conditions but has little effect or even increases blood pressure for older patients with kidney disease.</p>
+</li>
+</ul>
+<p><strong>Benefits of knowing CATE in this scenario:</strong></p>
+<ul>
+<li>
+<p><strong>Personalized medicine:</strong> Doctors can prescribe the drug to patients who are most likely to benefit and consider alternative treatments for those who are unlikely to benefit or may be harmed.</p>
+</li>
+<li>
+<p><strong>Targeted marketing:</strong> The company can focus its marketing efforts on the patients who are most likely to benefit from the drug.</p>
+</li>
+<li>
+<p><strong>Further research:</strong> The company can conduct further research to understand why the drug is less effective or harmful for certain patient groups, potentially leading to improved drug formulations or treatment strategies.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Several Python libraries can be used to estimate CATE, including:</p>
+<ul>
+<li>
+<p><strong>EconML:</strong> A powerful library specifically designed for causal inference, including CATE estimation using various methods like meta-learners (T-Learner, S-Learner, X-Learner), instrumental variables, and policy learning.</p>
+</li>
+<li>
+<p><strong>CausalML:</strong> Another library focused on causal machine learning, offering implementations of various CATE estimation methods, especially meta-learners.</p>
+</li>
+<li>
+<p><strong>Scikit-learn:</strong> Although not specifically for causal inference, Scikit-learn can be used as a building block for implementing meta-learners.</p>
+</li>
+</ul>
+<p>Here's a simple example using EconML's T-Learner:</p>
+<pre class="codehilite"><code class="language-python">from econml.metalearners import TLearner
+from sklearn.ensemble import RandomForestRegressor
+import numpy as np
+import pandas as pd
+
+# Simulate data (replace with your actual data)
+np.random.seed(42)
+n_samples = 500
+X = np.random.rand(n_samples, 5) # Covariates
+T = np.random.randint(0, 2, n_samples) # Treatment (0 or 1)
+e = np.random.normal(0, 0.5, n_samples) # Noise
+
+# Simulate the true CATE function
+def true_cate(x):
+  return 2 * x[0] - x[1] # Example: CATE depends on the first two covariates
+
+# Simulate potential outcomes
+Y0 = np.dot(X, np.array([1, 2, 3, 4, 5])) + e
+Y1 = Y0 + np.array([true_cate(x) for x in X]) + e
+
+Y = np.where(T == 1, Y1, Y0)
+
+# Convert to Pandas DataFrames
+X = pd.DataFrame(X)
+T = pd.Series(T)
+Y = pd.Series(Y)
+
+
+# Create a T-Learner model
+model_t = TLearner(models=RandomForestRegressor(random_state=42))
+
+# Fit the model
+model_t.fit(Y, T, X=X)
+
+# Estimate CATE for a new set of covariates
+X_new = np.random.rand(10, 5)
+cate_estimates = model_t.effect(X_new)
+
+print(cate_estimates)
+</code></pre>
+
+<p>This code snippet demonstrates:</p>
+<ol>
+<li>
+<p><strong>Data Simulation:</strong> Creates synthetic data with covariates (X), treatment indicators (T), and outcomes (Y), including a pre-defined, heterogeneous treatment effect function <code>true_cate</code>.</p>
+</li>
+<li>
+<p><strong>Model Training:</strong> Initializes and trains a T-Learner model using <code>RandomForestRegressor</code> as the base learner.  The T-Learner fits separate models for the treated and control groups.</p>
+</li>
+<li>
+<p><strong>CATE Estimation:</strong> Predicts CATE values for new data points (X_new) using the trained model.</p>
+</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>The choice of CATE estimation method (e.g., T-Learner, S-Learner, X-Learner, causal forests) depends on the specific problem and the assumptions you are willing to make.</li>
+<li>Estimating CATE accurately requires sufficient data and careful consideration of potential confounding variables.</li>
+<li>Always evaluate the performance of your CATE estimation model using appropriate metrics and validation techniques.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you evaluate the performance of a CATE estimation model when you don't have access to the true treatment effects for each individual?  What metrics can be used, and what are their limitations?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+  </script>
+</body>
+</html>
