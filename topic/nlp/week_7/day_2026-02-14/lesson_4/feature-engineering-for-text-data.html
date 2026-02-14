@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature Engineering for Text Data</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-feature-engineering-for-text-data">Topic: Feature Engineering for Text Data</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Feature engineering for text data is the process of transforming raw text into numerical features that can be used by machine learning algorithms. Since most machine learning models require numerical input, text must be converted into a numerical representation that captures its semantic meaning or statistical properties.  This involves extracting relevant characteristics from text data, selecting the most informative features, and transforming them into a suitable format for model training.</p>
+<p>How can we use it?</p>
+<ul>
+<li><strong>Improved Model Accuracy:</strong> By selecting and engineering features that are most relevant to the task, we can significantly improve the accuracy and performance of our models.</li>
+<li><strong>Reduced Model Complexity:</strong> Feature selection can help reduce the dimensionality of the data, leading to simpler and faster models.</li>
+<li><strong>Enhanced Interpretability:</strong> Carefully engineered features can provide insights into the underlying patterns and relationships in the text data, making the model more interpretable.</li>
+<li><strong>Task-Specific Optimization:</strong> Feature engineering allows us to tailor the features to the specific requirements of the task at hand, whether it's sentiment analysis, topic classification, or machine translation.</li>
+</ul>
+<p>Common feature engineering techniques include:</p>
+<ul>
+<li><strong>Bag of Words (BoW):</strong> Represents text as a collection of individual words, ignoring grammar and word order. The frequency of each word is often used as a feature.</li>
+<li><strong>Term Frequency-Inverse Document Frequency (TF-IDF):</strong>  Weights words based on their frequency in a document and their rarity across the entire corpus. This helps to downweight common words (like "the", "a", "is") that are less informative.</li>
+<li><strong>N-grams:</strong> Sequences of N consecutive words in a text. This captures some context information by considering word combinations.</li>
+<li><strong>Word Embeddings (Word2Vec, GloVe, FastText):</strong>  Represent words as dense vectors in a high-dimensional space, capturing semantic relationships between words. Words with similar meanings are located closer together in the vector space.</li>
+<li><strong>Character-level Features:</strong> Features based on individual characters or character sequences, such as character n-grams.  Useful for tasks like language identification or spelling correction.</li>
+<li><strong>Syntactic Features:</strong> Features derived from the grammatical structure of the text, such as part-of-speech (POS) tags, dependency parsing, and phrase structure.</li>
+<li><strong>Sentiment Scores:</strong> Numerical values indicating the sentiment (positive, negative, or neutral) expressed in the text.</li>
+<li><strong>Readability Scores:</strong> Metrics that quantify the readability of the text, such as the Flesch Reading Ease score.</li>
+<li><strong>Metadata Features:</strong> Features extracted from the metadata associated with the text, such as the author, publication date, or source.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Sentiment Analysis of Customer Reviews</p>
+<p>Imagine an e-commerce company wants to automatically analyze customer reviews to identify which products are receiving positive and negative feedback. The company collects thousands of reviews daily and needs a way to quickly gauge customer sentiment.</p>
+<p><strong>Feature Engineering:</strong></p>
+<ol>
+<li><strong>Text Preprocessing:</strong> Clean the text by removing irrelevant characters, HTML tags, and converting text to lowercase. Apply stemming or lemmatization to reduce words to their base form.</li>
+<li><strong>TF-IDF:</strong> Use TF-IDF to create features that represent the importance of words in each review relative to the entire dataset of reviews.  This will highlight words that are particularly indicative of positive or negative sentiment.</li>
+<li><strong>Sentiment Lexicon Scores:</strong>  Calculate sentiment scores for each review using a pre-built sentiment lexicon (e.g., VADER sentiment analyzer). This provides a numerical indication of the review's overall sentiment.</li>
+<li><strong>N-grams:</strong> Include bigrams (sequences of two words) to capture phrases that express sentiment, such as "highly recommended" or "very disappointing".</li>
+<li><strong>Word Embeddings:</strong> Use pre-trained word embeddings (e.g., GloVe or Word2Vec) to represent words and phrases as vectors. This allows the model to understand semantic relationships between words and capture nuances in sentiment.</li>
+</ol>
+<p><strong>Model Training:</strong></p>
+<p>A machine learning model (e.g., logistic regression, support vector machine, or a neural network) can then be trained on these engineered features to predict the sentiment of each review. The model can then be used to automatically classify new reviews as positive, negative, or neutral.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+nltk.download('vader_lexicon') # Download the lexicon data
+
+# Sample reviews
+reviews = [
+    &quot;This product is amazing! I highly recommend it.&quot;,
+    &quot;The product was okay, but nothing special.&quot;,
+    &quot;I am extremely disappointed with this purchase. It's terrible!&quot;,
+    &quot;Great value for the price. I'm very happy with it.&quot;,
+    &quot;It broke after only one use. Complete waste of money.&quot;
+]
+
+# 1. TF-IDF Vectorization
+tfidf_vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2)) #Include unigrams and bigrams
+tfidf_matrix = tfidf_vectorizer.fit_transform(reviews)
+tfidf_feature_names = tfidf_vectorizer.get_feature_names_out() #Correct method to get feature names
+print(&quot;TF-IDF Feature Names:&quot;, tfidf_feature_names)
+print(&quot;TF-IDF Matrix Shape:&quot;, tfidf_matrix.shape)
+
+
+# 2. Sentiment Analysis with VADER
+sid = SentimentIntensityAnalyzer()
+sentiment_scores = [sid.polarity_scores(review)[&quot;compound&quot;] for review in reviews] #Extract the compound score
+print(&quot;Sentiment Scores:&quot;, sentiment_scores)
+
+
+#Combining TF-IDF and Sentiment Feature (for demonstration purposes - often requires scaling)
+#In reality this would be incorporated into a pipeline. This is a simplistic example.
+
+import numpy as np
+from scipy.sparse import hstack
+
+#Convert sentiment scores to a sparse matrix
+sentiment_matrix = np.array(sentiment_scores).reshape(-1, 1) #Needs to be an array not a list
+sentiment_sparse = np.array(sentiment_matrix) #convert to numpy array to enable hstack
+
+#Stack the TF-IDF and sentiment features
+combined_features = hstack((tfidf_matrix, sentiment_sparse))
+
+print(&quot;Combined Feature Shape:&quot;, combined_features.shape)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we handle out-of-vocabulary (OOV) words when using pre-trained word embeddings, and what are the trade-offs of different approaches? For example, what are the advantages and disadvantages of using random initialization versus learning new embeddings for OOV words?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
