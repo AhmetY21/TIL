@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation Metrics: Precision, Recall, F1-Score</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-evaluation-metrics-precision-recall-f1-score">Topic: Evaluation Metrics: Precision, Recall, F1-Score</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Precision, Recall, and F1-Score are crucial evaluation metrics used in various Natural Language Processing (NLP) tasks, particularly in classification and information retrieval. They assess the performance of a model by comparing its predictions against the actual ground truth labels. Understanding them allows us to choose the best model for a specific problem based on its strengths and weaknesses.</p>
+<p>Let's define the key terms first:</p>
+<ul>
+<li><strong>True Positive (TP):</strong> The model correctly predicted the positive class.</li>
+<li><strong>True Negative (TN):</strong> The model correctly predicted the negative class.</li>
+<li><strong>False Positive (FP):</strong> The model incorrectly predicted the positive class (also known as Type I error).</li>
+<li><strong>False Negative (FN):</strong> The model incorrectly predicted the negative class (also known as Type II error).</li>
+</ul>
+<p>Now, we can define the metrics:</p>
+<ul>
+<li>
+<p><strong>Precision:</strong>  Represents the accuracy of positive predictions.  It answers the question: "Of all the instances the model predicted as positive, how many were actually positive?"</p>
+<ul>
+<li>
+<p>Formula:  <code>Precision = TP / (TP + FP)</code></p>
+</li>
+<li>
+<p>High precision means the model makes very few false positive errors.  It's "precise" in its positive predictions.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Recall (Sensitivity or True Positive Rate):</strong>  Represents the ability of the model to find all the positive instances.  It answers the question: "Of all the actual positive instances, how many did the model correctly identify?"</p>
+<ul>
+<li>
+<p>Formula: <code>Recall = TP / (TP + FN)</code></p>
+</li>
+<li>
+<p>High recall means the model misses very few actual positive instances. It's good at "recalling" the positives.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>F1-Score:</strong>  The harmonic mean of precision and recall. It provides a single score that balances both precision and recall. It's especially useful when you want to find a balance between the two metrics.</p>
+<ul>
+<li>
+<p>Formula: <code>F1-Score = 2 * (Precision * Recall) / (Precision + Recall)</code></p>
+</li>
+<li>
+<p>A high F1-Score indicates a good balance between precision and recall.  The harmonic mean gives more weight to lower values. Thus, a model with high precision and low recall (or vice-versa) will have a lower F1-Score than a model with relatively balanced precision and recall.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>We use these metrics to:</p>
+<ul>
+<li><strong>Evaluate model performance:</strong>  Quantify how well a model is performing on a specific task.</li>
+<li><strong>Compare different models:</strong> Determine which model is best suited for a given task.</li>
+<li><strong>Tune model parameters:</strong>  Optimize model performance by adjusting parameters based on the evaluation metrics.</li>
+<li><strong>Understand model biases:</strong> Identify potential biases in the model's predictions based on imbalances in precision and recall.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a spam email classifier.</p>
+<ul>
+<li>
+<p><strong>Scenario 1:</strong> High Precision, Low Recall: The classifier is very conservative and only flags emails as spam if it's absolutely certain. It correctly identifies almost all emails it flags as spam (high precision), but it misses a lot of actual spam emails (low recall).  This is preferable if you absolutely cannot afford to mark a legitimate email as spam.</p>
+</li>
+<li>
+<p><strong>Scenario 2:</strong> Low Precision, High Recall: The classifier is very aggressive and flags any suspicious email as spam. It catches almost all spam emails (high recall), but it also incorrectly flags some legitimate emails as spam (low precision).  This is preferable if you want to ensure you catch all spam, even if it means some legitimate emails are filtered.</p>
+</li>
+<li>
+<p><strong>Scenario 3:</strong> Balanced Precision and Recall: The classifier strikes a balance between catching spam and avoiding false positives. This provides a generally good performance and is often the goal.</p>
+</li>
+</ul>
+<p>In a medical diagnosis scenario (e.g., detecting a rare disease), high recall is often more important than high precision. Missing a case of the disease (false negative) is much more dangerous than incorrectly diagnosing someone who is healthy (false positive). Therefore, you'd prioritize a model with high recall, even if it comes at the expense of lower precision.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.metrics import precision_score, recall_score, f1_score
+
+# Example usage:
+y_true = [0, 1, 0, 0, 1, 1, 0, 1]  # Actual labels
+y_pred = [0, 1, 1, 0, 0, 1, 0, 1]  # Predicted labels
+
+precision = precision_score(y_true, y_pred)
+recall = recall_score(y_true, y_pred)
+f1 = f1_score(y_true, y_pred)
+
+print(f&quot;Precision: {precision}&quot;)
+print(f&quot;Recall: {recall}&quot;)
+print(f&quot;F1-Score: {f1}&quot;)
+
+# Calculating these metrics with custom labels requires specifying the `pos_label` parameter
+# e.g. if 'yes' represents the positive class
+y_true_str = ['no', 'yes', 'no', 'no', 'yes', 'yes', 'no', 'yes']
+y_pred_str = ['no', 'yes', 'yes', 'no', 'no', 'yes', 'no', 'yes']
+
+precision_str = precision_score(y_true_str, y_pred_str, pos_label='yes')
+recall_str = recall_score(y_true_str, y_pred_str, pos_label='yes')
+f1_str = f1_score(y_true_str, y_pred_str, pos_label='yes')
+
+print(f&quot;Precision (String Labels): {precision_str}&quot;)
+print(f&quot;Recall (String Labels): {recall_str}&quot;)
+print(f&quot;F1-Score (String Labels): {f1_str}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do these metrics behave when dealing with imbalanced datasets (where one class has significantly more instances than the other)?  What are some strategies to address the challenges posed by imbalanced datasets in the context of these evaluation metrics?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
