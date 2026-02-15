@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAA Practice: replication, confidence intervals, and solution validation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-saa-practice-replication-confidence-intervals-and-solution-validation">Topic: SAA Practice: replication, confidence intervals, and solution validation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Sample Average Approximation (SAA) is a method for approximating the solution to stochastic optimization problems.  These problems involve decision variables and parameters that are random variables.  Since we cannot directly solve problems with infinite possibilities, SAA approximates the true problem by replacing the probability distributions of the random parameters with a finite sample of those parameters.</p>
+<ul>
+<li>
+<p><strong>Replication:</strong>  SAA involves generating <em>multiple independent</em> samples of the random parameters.  Each sample produces a solution to the deterministic approximation of the stochastic problem.  Running the optimization for each sample is a <em>replication</em>. Replication is essential because the solution quality (optimality) of a single SAA run can vary significantly due to the randomness of the single sample used.</p>
+</li>
+<li>
+<p><strong>Confidence Intervals:</strong> Since the SAA solution is an approximation, we need to estimate the quality of the obtained solution. Confidence intervals provide a range within which the true optimal value is likely to lie, given a specified confidence level (e.g., 95%). This involves estimating the statistical properties (mean and variance) of the estimated optimal objective values obtained across multiple replications. Narrower confidence intervals indicate more reliable solutions. Computing confidence intervals relies on statistical assumptions, often normality (which might need validation) of the average objective function values across replicates.</p>
+</li>
+<li>
+<p><strong>Solution Validation:</strong>  After obtaining a candidate solution from SAA, it is crucial to validate its performance on a separate, independent test sample.  This <em>out-of-sample</em> validation provides an unbiased estimate of the true cost or reward associated with implementing the proposed decision in the real, uncertain environment.  The performance on the test sample is typically worse than on the training sample used in the SAA, due to overfitting on the specific training sample. Solution validation allows us to quantify the degree of overfitting and assess the robustness of the proposed solution. This typically involves evaluating the objective function value (or a relevant metric like risk) for the chosen solution, using the test sample. This metric should be comparable to the approximated objective function value derived from the SAA runs.</p>
+</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<ol>
+<li><strong>Obtain multiple SAA solutions:</strong> Generate several independent samples, and solve the deterministic equivalent problem for each.</li>
+<li><strong>Estimate the optimal objective value:</strong> Calculate the average objective function value across all SAA solutions.</li>
+<li><strong>Calculate confidence intervals:</strong> Compute a confidence interval for the true optimal objective value using the SAA solutions.</li>
+<li><strong>Validate the solution:</strong> Evaluate the performance of the selected solution (e.g., the solution that yields the lowest average cost across all replications) on an independent test sample. This means fixing the decision variables to the optimal values obtained from the SAA runs and then computing the expected cost using the test data.</li>
+<li><strong>Compare with benchmarks:</strong>  Compare the validation performance with benchmark solutions (e.g., a simple heuristic or the optimal solution for a deterministic version of the problem).</li>
+<li><strong>Iterate and refine:</strong> If the confidence intervals are too wide or the out-of-sample performance is poor, increase the sample size or refine the optimization model.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain management problem where a company needs to decide how much inventory to order for a product at multiple warehouses. The demand at each warehouse is uncertain.  We want to minimize the total cost, which includes ordering costs, holding costs, and shortage costs.</p>
+<ol>
+<li><strong>Stochastic Problem:</strong> The demand at each warehouse is a random variable with a known probability distribution (e.g., Normal, Poisson).</li>
+<li><strong>SAA:</strong> We can use SAA to approximate the stochastic problem by generating samples of demand scenarios.</li>
+<li><strong>Replication:</strong> Generate, say, 50 independent samples of the demand scenarios. For each sample, solve the deterministic inventory optimization problem (e.g., using linear programming). This gives us 50 different inventory ordering policies (SAA solutions).</li>
+<li><strong>Confidence Intervals:</strong> Compute a 95% confidence interval for the expected total cost. If the confidence interval is wide, it suggests that more samples are needed to obtain a more reliable estimate.</li>
+<li><strong>Solution Validation:</strong> Select the inventory policy that yields the lowest average cost across the 50 samples.  Then, evaluate this policy on a separate, independent test sample (e.g., 1000 demand scenarios). This out-of-sample test gives us an unbiased estimate of the true cost associated with implementing the chosen inventory policy.  We compare this cost with the average cost obtained in the SAA replications, to see the difference. We could also compare this policy with a simple rule-of-thumb policy.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from scipy.stats import norm, t
+from scipy.optimize import minimize
+
+# Example stochastic problem (simplified): Single warehouse inventory control
+def cost_function(x, demand):
+    &quot;&quot;&quot;
+    Calculates the total cost (ordering, holding, shortage) for a given order quantity and demand.
+    &quot;&quot;&quot;
+    order_quantity = x[0] # Scalar order quantity
+    holding_cost = 1
+    shortage_cost = 5
+    ordering_cost = 2
+
+    holding = max(order_quantity - demand, 0)
+    shortage = max(demand - order_quantity, 0)
+
+    total_cost = ordering_cost + holding_cost * holding + shortage_cost * shortage
+    return total_cost
+
+
+def saa_replication(num_samples, demand_mean, demand_std):
+    &quot;&quot;&quot;
+    Performs SAA replication for the inventory control problem.
+    &quot;&quot;&quot;
+    solutions = []
+    objective_values = []
+
+    for _ in range(num_samples):
+        # Generate random demand samples
+        demand_samples = np.random.normal(demand_mean, demand_std, size=100) # Simulate demand 100 times
+
+        # Define objective function for a single sample
+        def objective_function(x):
+            avg_cost = np.mean([cost_function(x, d) for d in demand_samples])
+            return avg_cost
+
+        # Solve optimization problem for this sample
+        result = minimize(objective_function, x0=[demand_mean], bounds=[(0, None)]) # Start at mean
+        solutions.append(result.x[0])  # Optimal order quantity
+        objective_values.append(result.fun) # Optimal objective value for this sample
+
+    return solutions, objective_values
+
+
+def calculate_confidence_interval(objective_values, confidence_level=0.95):
+    &quot;&quot;&quot;
+    Calculates a confidence interval for the true expected cost.
+    &quot;&quot;&quot;
+    n = len(objective_values)
+    mean = np.mean(objective_values)
+    std_err = np.std(objective_values) / np.sqrt(n)
+    alpha = 1 - confidence_level
+
+    # Using t-distribution for more accurate CIs with smaller sample sizes.
+    t_critical = t.ppf(1 - alpha/2, n-1)
+    margin_of_error = t_critical * std_err
+
+    lower_bound = mean - margin_of_error
+    upper_bound = mean + margin_of_error
+
+    return lower_bound, upper_bound
+
+
+def validate_solution(solution, demand_mean, demand_std, num_test_samples=1000):
+    &quot;&quot;&quot;
+    Validates the SAA solution on an independent test sample.
+    &quot;&quot;&quot;
+    test_demand_samples = np.random.normal(demand_mean, demand_std, size=num_test_samples)
+    total_cost = np.mean([cost_function([solution], d) for d in test_demand_samples])
+    return total_cost
+
+
+# Example usage
+if __name__ == '__main__':
+    num_replications = 30
+    demand_mean = 50
+    demand_std = 10
+
+    # Perform SAA replications
+    solutions, objective_values = saa_replication(num_replications, demand_mean, demand_std)
+
+    # Calculate confidence interval
+    lower_bound, upper_bound = calculate_confidence_interval(objective_values)
+    print(f&quot;Confidence Interval: ({lower_bound:.2f}, {upper_bound:.2f})&quot;)
+
+    # Select the best solution (lowest average cost)
+    best_solution = solutions[np.argmin(objective_values)]
+    print(f&quot;Best Solution (Order Quantity): {best_solution:.2f}&quot;)
+
+    # Validate the solution
+    validation_cost = validate_solution(best_solution, demand_mean, demand_std)
+    print(f&quot;Validation Cost: {validation_cost:.2f}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the number of samples in SAA (both for training and validation) impact the accuracy of the solution and the computational cost? What strategies can be used to determine an appropriate sample size for a given problem?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
