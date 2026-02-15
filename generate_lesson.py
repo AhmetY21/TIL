@@ -15,6 +15,7 @@ import glob
 import json
 import argparse
 import datetime
+import math
 from dataclasses import dataclass
 from typing import Optional, Tuple, List, Dict, Any
 
@@ -312,6 +313,17 @@ def add_front_matter(md: str, *, title: str, date_str: str, week_num: int, lesso
 def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] = None) -> str:
     html_body = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
 
+    # Calculate reading time
+    word_count = len(md_text.split())
+    minutes = math.ceil(word_count / 200)
+    reading_time_html = f'<div class="reading-time">⏱️ {minutes} min read</div>'
+
+    # Inject reading time after the first h1
+    if "</h1>" in html_body:
+        html_body = html_body.replace("</h1>", f"</h1>{reading_time_html}", 1)
+    else:
+        html_body = reading_time_html + html_body
+
     header_html = ""
     if meta:
         # Assuming fixed directory structure: topic/{slug}/week_N/day_Y/lesson_N/slug.html
@@ -413,6 +425,19 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th, .dark td {{ border-color: #334155; }}
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
+
+    .reading-time {{
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 24px;
+      margin-top: -12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }}
+    .dark .reading-time {{
+      color: #94a3b8;
+    }}
 
     /* Copy Button */
     pre {{ position: relative; }}
