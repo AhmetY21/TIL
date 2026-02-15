@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uplift Modeling vs CATE (Practical Differences)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-uplift-modeling-vs-cate-practical-differences">Topic: Uplift Modeling vs CATE (Practical Differences)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Uplift Modeling:</strong></p>
+<ul>
+<li>
+<p><strong>What it is:</strong> Uplift modeling, also known as true lift modeling or incremental response modeling, aims to predict the <em>incremental</em> effect of a treatment (e.g., marketing campaign, intervention) on an individual's behavior. Unlike traditional predictive modeling that focuses on predicting the absolute outcome, uplift modeling focuses on predicting the <em>difference</em> in outcome caused by receiving the treatment versus not receiving it.  It directly estimates the Conditional Average Treatment Effect (CATE) for each individual. However, it typically approaches this with a more explicit focus on application to targeting and intervention decisions.</p>
+</li>
+<li>
+<p><strong>Mathematical Definition:</strong> Uplift = E[Y | T=1, X] - E[Y | T=0, X], where:</p>
+<ul>
+<li>Y is the outcome variable (e.g., purchase, conversion).</li>
+<li>T is the treatment variable (1 = treatment received, 0 = treatment not received).</li>
+<li>X is a set of covariates or features describing the individual.</li>
+<li>E denotes the expected value.</li>
+</ul>
+</li>
+<li>
+<p><strong>How we can use it:</strong> The primary use case is to identify individuals who are most likely to be positively influenced by a treatment. This allows for targeted interventions, maximizing the overall effectiveness of the treatment while minimizing costs (by avoiding treating individuals who wouldn't respond or who might respond negatively). Common applications include:</p>
+<ul>
+<li>Marketing: Identifying customers most likely to purchase as a result of a promotion.</li>
+<li>Healthcare: Identifying patients most likely to benefit from a specific treatment.</li>
+<li>Politics: Identifying voters most likely to be swayed by a campaign message.</li>
+</ul>
+</li>
+</ul>
+<p><strong>CATE (Conditional Average Treatment Effect) Estimation:</strong></p>
+<ul>
+<li>
+<p><strong>What it is:</strong> CATE estimation aims to estimate the average treatment effect for individuals with specific characteristics. It is essentially the <em>same</em> mathematical quantity as uplift.  The difference lies primarily in the framing and typical application.  CATE estimation focuses on understanding <em>how</em> treatment effects vary across different subgroups of the population, identified by their covariates (X). It provides a more nuanced understanding of treatment heterogeneity.</p>
+</li>
+<li>
+<p><strong>Mathematical Definition:</strong> CATE(X) = E[Y | T=1, X] - E[Y | T=0, X], identical to the uplift definition.</p>
+</li>
+<li>
+<p><strong>How we can use it:</strong> CATE estimation serves a broader purpose than just targeting. It can be used for:</p>
+<ul>
+<li>Understanding treatment effect heterogeneity: Identifying subgroups for whom a treatment is particularly effective or ineffective.</li>
+<li>Personalized treatment recommendations: Tailoring treatments based on individual characteristics to maximize benefit.  This is similar to uplift, but the focus might be more on individual optimization than just targeting a segment.</li>
+<li>Policy evaluation: Assessing the impact of a policy on different demographic groups.</li>
+<li>Scientific discovery: Uncovering mechanisms by which treatments exert their effects.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Practical Differences Summarized:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Uplift Modeling</th>
+<th>CATE Estimation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primary Goal</strong></td>
+<td>Targeted intervention, maximizing treatment impact</td>
+<td>Understanding treatment heterogeneity across subgroups</td>
+</tr>
+<tr>
+<td><strong>Emphasis</strong></td>
+<td>Identifying who to treat to maximize net effect</td>
+<td>Understanding <em>why</em> and <em>how much</em> treatment effects vary</td>
+</tr>
+<tr>
+<td><strong>Application</strong></td>
+<td>Marketing campaigns, personalized promotions</td>
+<td>Policy analysis, scientific research, personalized medicine</td>
+</tr>
+<tr>
+<td><strong>Focus</strong></td>
+<td>Actionability, return on investment</td>
+<td>Insight generation, scientific understanding</td>
+</tr>
+</tbody>
+</table>
+<p>In practice, the algorithms and methods used to estimate uplift and CATE are often the same. The distinction is more about the <em>question being asked</em> and the <em>use of the results</em>.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Uplift Modeling Scenario (Marketing):</strong></p>
+<p>A telecommunications company wants to run a targeted marketing campaign to encourage customers to upgrade to a faster internet plan.  They have a limited budget and want to target only the customers who are most likely to upgrade <em>because</em> of the campaign. Uplift modeling can be used to identify these customers. The outcome variable (Y) is whether the customer upgrades their internet plan (1=yes, 0=no). The treatment variable (T) is whether the customer received the marketing campaign (1=yes, 0=no). The covariates (X) could include demographics, internet usage patterns, and customer tenure. The company would use the uplift model to predict the incremental probability of upgrade for each customer and then target only those with the highest predicted uplift scores. This strategy aims to maximize the number of upgrades achieved within the limited budget by focusing on those "persuadables."</p>
+<p><strong>CATE Estimation Scenario (Healthcare):</strong></p>
+<p>Researchers are investigating the effectiveness of a new drug for treating a chronic disease. They want to understand how the drug's effectiveness varies across different patient subgroups. CATE estimation can be used to identify factors that predict treatment response. The outcome variable (Y) is a measure of disease severity. The treatment variable (T) is whether the patient received the new drug (1=yes, 0=no). The covariates (X) could include patient demographics, medical history, genetic markers, and lifestyle factors. The researchers would use CATE estimation to identify which patient subgroups benefit most from the drug (e.g., patients with a specific genetic marker show a much larger improvement when treated with the drug). This information can be used to personalize treatment recommendations and guide future research. The focus here is not just on who to treat, but on <em>understanding</em> the factors that drive treatment response.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python"># Using scikit-uplift library for uplift modeling
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklift.models import ClassTransformation
+from sklift.metrics import uplift_at_k
+from sklift.datasets import fetch_x5
+
+# Load example data (use your own data!)
+data = fetch_x5()
+X = data.data
+y = data.target
+treatment = data.treatment
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test, treatment_train, treatment_test = train_test_split(
+    X, y, treatment, test_size=0.3, random_state=42
+)
+
+# Create uplift model (Class Transformation is a common technique)
+# Can also use models like UpliftTreeClassifier, UpliftRandomForestClassifier, or SLearner
+model = ClassTransformation(RandomForestClassifier(random_state=42))
+
+# Train the model
+model.fit(X_train, y_train, treatment_train)
+
+# Predict uplift scores
+uplift_predictions = model.predict(X_test)
+
+# Evaluate the model (uplift@k is a common metric)
+uplift_at_30 = uplift_at_k(y_test, uplift_predictions, treatment_test, strategy='by_group', k=0.3)
+print(f&quot;Uplift@30%: {uplift_at_30:.4f}&quot;)
+
+
+# Alternatively, for CATE estimation, one might use EconML
+
+#Example with EconML's LinearDML (Double Machine Learning)
+try:
+    from econml.dml import LinearDML
+    from sklearn.linear_model import LassoCV, RidgeCV
+    from sklearn.ensemble import GradientBoostingRegressor
+
+    #Define Learners
+    est = LinearDML(model_y=GradientBoostingRegressor(random_state=42),
+                    model_t=GradientBoostingRegressor(random_state=42),
+                    model_final=LassoCV(),
+                    random_state=42)
+
+    #Fit the model
+    est.fit(y_train, treatment_train, X=X_train)
+
+    #Estimate the CATE
+    cate_est = est.effect(X_test) #This is the estimated CATE for each sample
+
+    #You can examine the CATE estimate for a specific sample
+    print(f&quot;Estimated CATE for first sample: {cate_est[0]:.4f}&quot;)
+
+except ImportError:
+    print(&quot;EconML library not found. Please install it using: pip install econml&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>scikit-uplift:</strong> The code snippet demonstrates uplift modeling using the <code>scikit-uplift</code> library. It uses the <code>ClassTransformation</code> approach which trains separate models for the treated and control groups and predicts uplift as the difference in predicted probabilities.  It then calculates uplift@k, which measures the uplift achieved by targeting the top k% of individuals with the highest predicted uplift scores.</li>
+<li><strong>EconML:</strong> The second section shows an example using EconML's <code>LinearDML</code> estimator, a popular method for CATE estimation.  It leverages machine learning algorithms (GradientBoostingRegressor, LassoCV) to handle complex relationships between covariates and outcomes. The <code>.effect()</code> method provides CATE estimates for each individual in the test set.  The <code>try...except</code> block is to ensure that the code doesn't crash if EconML is not installed.</li>
+</ul>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>These are just basic examples.  Real-world uplift modeling and CATE estimation often involve more sophisticated techniques and careful feature engineering.</li>
+<li>The choice of algorithm depends on the specific characteristics of the data and the research question.</li>
+<li>Causal inference requires strong assumptions, such as no unobserved confounding.  Sensitivity analysis should be performed to assess the robustness of the results to violations of these assumptions.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we practically evaluate the performance of an uplift model or CATE estimator when we only have observational data (i.e., we don't have a randomized controlled trial)?  What are some of the common challenges, and how can we address them?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
