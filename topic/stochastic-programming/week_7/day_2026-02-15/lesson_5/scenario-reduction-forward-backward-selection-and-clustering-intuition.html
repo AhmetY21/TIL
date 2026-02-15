@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scenario Reduction: forward/backward selection and clustering intuition</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-scenario-reduction-forwardbackward-selection-and-clustering-intuition">Topic: Scenario Reduction: forward/backward selection and clustering intuition</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Scenario reduction in stochastic programming is the process of simplifying a large, complex set of possible future scenarios (representing uncertainty) into a smaller, more manageable set. These scenarios are typically used to model uncertain parameters within an optimization problem. A high number of scenarios can lead to computationally intractable problems, while an inadequate number can lead to poor decisions. Scenario reduction aims to strike a balance between computational tractability and solution accuracy.</p>
+<p><strong>Forward Selection:</strong> Starts with an empty scenario set and iteratively adds the scenario that, when added to the current set, minimizes some distance measure (e.g., Wasserstein distance or Kantorovich distance) between the original scenario distribution and the reduced scenario distribution.</p>
+<p><strong>Backward Selection:</strong> Starts with the full scenario set and iteratively removes the scenario that, when removed from the current set, minimizes the increase in the distance measure between the original scenario distribution and the reduced scenario distribution.</p>
+<p><strong>Clustering:</strong> Groups similar scenarios into clusters and represents each cluster by a single representative scenario (e.g., the centroid of the cluster).  This reduces the number of scenarios while attempting to preserve the overall distribution of uncertainty. Common clustering algorithms include k-means and hierarchical clustering.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Computational Tractability:</strong>  Reduces the size of stochastic programming problems, making them solvable within reasonable time and resource constraints.</li>
+<li><strong>Model Simplification:</strong> Makes the problem easier to understand and analyze.</li>
+<li><strong>Robustness:</strong> Selecting a representative subset of scenarios can help ensure that the solution is robust to a range of possible outcomes.</li>
+<li><strong>Improved Solution Quality:</strong> In some cases, scenario reduction can even lead to <em>better</em> solutions. This may seem counterintuitive, but sometimes, the noise introduced by a large number of closely similar scenarios can obscure the true optimal solution.</li>
+<li><strong>Risk management:</strong> Helps understand the range of possible outcomes and the potential risks associated with different decisions.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain planning problem where the demand for a product is uncertain. We have historical data that represents 1000 possible demand scenarios for the next month. Directly incorporating all 1000 scenarios into a stochastic programming model to determine the optimal production and inventory levels would be computationally expensive.</p>
+<p>Applying scenario reduction techniques, we can reduce the number of scenarios to a more manageable set, say 10 or 20, while preserving the essential characteristics of the demand uncertainty.</p>
+<ul>
+<li><strong>Forward Selection:</strong> We could start with an empty set and iteratively add the scenario that best represents the remaining scenarios based on a distance measure.</li>
+<li><strong>Backward Selection:</strong> We could start with all 1000 scenarios and iteratively remove the least important one, based on the chosen distance measure, until we have 10 or 20 scenarios remaining.</li>
+<li><strong>Clustering (e.g., k-means):</strong> We could group the 1000 scenarios into 10 clusters and represent each cluster by its centroid. The centroids would become the reduced set of scenarios, each representing a group of similar demand patterns.</li>
+</ul>
+<p>The resulting stochastic programming model, using the reduced set of scenarios, would be much faster to solve. We can then use the solution (production and inventory levels) obtained from the simplified model to make real-world decisions. The choice of reduction method and number of scenarios involves a tradeoff between computational cost and solution quality (approximation error).</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
+
+def kmeans_scenario_reduction(scenarios, num_clusters):
+    &quot;&quot;&quot;
+    Reduces a set of scenarios using k-means clustering.
+
+    Args:
+        scenarios (np.ndarray): A numpy array where each row represents a scenario.
+        num_clusters (int): The desired number of clusters (reduced scenarios).
+
+    Returns:
+        np.ndarray: A numpy array containing the centroids of the clusters,
+                    representing the reduced set of scenarios.
+        np.ndarray: An array of weights, with each weight corresponding to a scenario
+                   and reflecting the proportion of original scenarios represented
+                   by the reduced scenario.
+    &quot;&quot;&quot;
+    kmeans = KMeans(n_clusters=num_clusters, random_state=0, n_init='auto')  # n_init added
+    kmeans.fit(scenarios)
+    cluster_labels = kmeans.labels_ #Scenario to cluster assignment
+    centroids = kmeans.cluster_centers_
+
+    #Determine the weights of the reduced scenarios based on the number of elements in each cluster.
+    weights = np.zeros(num_clusters)
+    for i in range(num_clusters):
+        weights[i] = np.sum(cluster_labels == i) / len(scenarios)
+
+    return centroids, weights
+
+# Example Usage:
+if __name__ == '__main__':
+    # Generate some sample scenarios (replace with your actual data)
+    num_scenarios = 100
+    scenario_dimension = 5
+    scenarios = np.random.rand(num_scenarios, scenario_dimension)
+
+    # Reduce the number of scenarios to 10 using k-means
+    num_reduced_scenarios = 10
+    reduced_scenarios, weights = kmeans_scenario_reduction(scenarios, num_reduced_scenarios)
+
+    print(&quot;Original number of scenarios:&quot;, num_scenarios)
+    print(&quot;Reduced number of scenarios:&quot;, num_reduced_scenarios)
+    print(&quot;Shape of reduced scenarios:&quot;, reduced_scenarios.shape)  # Should be (10, 5)
+    print(&quot;Weights:&quot;, weights)  # Sum should be 1
+    print(&quot;Sum of weights:&quot;, np.sum(weights))
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>kmeans_scenario_reduction(scenarios, num_clusters)</code> Function:</strong></p>
+<ul>
+<li>Takes the original scenarios (as a NumPy array) and the desired number of reduced scenarios as input.</li>
+<li>Uses the <code>KMeans</code> algorithm from <code>sklearn.cluster</code> to cluster the scenarios. <code>n_init='auto'</code> addresses a warning in newer versions of scikit-learn regarding the default value of <code>n_init</code>.</li>
+<li>Returns the cluster centroids (representing the reduced scenarios) and weights for each cluster (proportion of original scenarios represented).</li>
+</ul>
+</li>
+<li>
+<p><strong>Example Usage:</strong></p>
+<ul>
+<li>Generates sample scenarios using <code>np.random.rand()</code>.  <strong>Replace this with your actual scenario data.</strong></li>
+<li>Calls the <code>kmeans_scenario_reduction</code> function to reduce the scenarios.</li>
+<li>Prints the shape of the reduced scenarios and their weights to verify the result.  The sum of weights should be close to 1.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Install <code>scikit-learn</code> and <code>numpy</code>:</strong>  If you don't have them already, install them using <code>pip install scikit-learn numpy scipy</code>.</li>
+<li><strong>Data Preprocessing:</strong>  Consider scaling your scenario data (e.g., using <code>StandardScaler</code> from <code>sklearn.preprocessing</code>) if the different dimensions have vastly different scales.  This can improve the performance of k-means.</li>
+<li><strong>Other Clustering Algorithms:</strong> You can easily adapt this code to use other clustering algorithms (e.g., hierarchical clustering) by replacing the <code>KMeans</code> part with the appropriate code.</li>
+<li><strong>Distance Measures:</strong> The performance of scenario reduction methods heavily depends on the choice of the distance measure. The Euclidean distance, implicitly used by K-means, is a common choice, but other measures, such as the Wasserstein distance (also known as Earth Mover's Distance), may be more appropriate depending on the application. <code>scipy.stats</code> contains distance functions. You can use these with hierarchical clustering, for example.</li>
+<li><strong>Forward and Backward Selection:</strong> Implementing forward and backward selection would require defining an appropriate distance metric between distributions of scenarios, and then iteratively adding or removing scenarios until the desired number is achieved. Libraries like <code>POT</code> (Python Optimal Transport) can facilitate calculation of Wasserstein distances, making the implementation of these methods more feasible.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of distance metric (e.g., Euclidean distance vs. Wasserstein distance) impact the performance and results of scenario reduction, and under what circumstances would one be preferred over the other? What are the computational complexities of each distance calculation and its effect on overall performance?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
