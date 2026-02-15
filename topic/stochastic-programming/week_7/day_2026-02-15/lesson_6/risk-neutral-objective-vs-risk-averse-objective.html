@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk-Neutral Objective vs Risk-Averse Objective</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-risk-neutral-objective-vs-risk-averse-objective">Topic: Risk-Neutral Objective vs Risk-Averse Objective</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In stochastic programming, we deal with optimization problems where some parameters are uncertain. This uncertainty is typically represented by a probability distribution.  The choice of the objective function reflects the decision-maker's attitude towards this uncertainty, ranging from indifference to active avoidance of potential losses.</p>
+<ul>
+<li>
+<p><strong>Risk-Neutral Objective:</strong> A risk-neutral objective aims to optimize solely based on the <em>expected value</em> of the outcome. It doesn't consider the variability or potential downside risk of the solutions. Mathematically, it often involves maximizing or minimizing the expected value of a cost or profit function.  Formally, if <code>f(x, ξ)</code> is the objective function (e.g., profit) depending on the decision variable <code>x</code> and the random variable <code>ξ</code>, then the risk-neutral objective is to:</p>
+<p><code>Maximize  E[f(x, ξ)]
+Subject to x ∈ X</code></p>
+<p>where <code>E[]</code> denotes the expectation operator and <code>X</code> represents the feasible region.  The decision-maker is indifferent to the spread or dispersion of the outcomes, only caring about the average result.</p>
+</li>
+<li>
+<p><strong>Risk-Averse Objective:</strong> A risk-averse objective, on the other hand, explicitly incorporates the decision-maker's aversion to risk. It penalizes solutions that have a high probability of leading to poor outcomes, even if they also have the potential for very good outcomes.  This is achieved by using risk measures in the objective function.  Common risk measures include:</p>
+<ul>
+<li>
+<p><strong>Conditional Value-at-Risk (CVaR):</strong> Also known as Expected Shortfall, CVaR measures the expected loss exceeding a certain quantile (Value-at-Risk or VaR). The CVaR at level <code>α</code> (e.g., α=0.95 means 95% confidence level) focuses on the average loss in the worst <code>1-α</code> percent of scenarios.</p>
+</li>
+<li>
+<p><strong>Value-at-Risk (VaR):</strong> VaR at level <code>α</code> represents the maximum loss that is not exceeded with probability <code>α</code>. It is the α-quantile of the loss distribution.</p>
+</li>
+<li>
+<p><strong>Mean-Variance Optimization:</strong> Minimizes a combination of the expected cost (mean) and the variance of the cost. The variance acts as a proxy for risk.</p>
+</li>
+<li>
+<p><strong>Utility Functions:</strong>  Maximize the expected utility of the outcome, where the utility function <code>u(x)</code> is concave to represent risk aversion (e.g., logarithmic or power utility).</p>
+</li>
+</ul>
+<p>Formally, examples of risk-averse objective functions include:</p>
+<ul>
+<li>Maximize  <code>E[f(x, ξ)] - λ * RiskMeasure(f(x, ξ))</code> (e.g., <code>RiskMeasure</code> can be CVaR or variance). <code>λ</code> is a risk aversion parameter.</li>
+<li>Maximize  <code>E[u(f(x, ξ))]</code> where <code>u()</code> is a concave utility function.</li>
+</ul>
+</li>
+</ul>
+<p>How can we use it?  We select the appropriate objective based on the context and the decision-maker's risk preference.  Risk-neutrality is simpler to model but may lead to unacceptable outcomes if the downside risks are significant. Risk aversion provides robustness against adverse scenarios but might sacrifice potential upside gains.  The choice depends on the stakeholders.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Example: Portfolio Optimization</strong></p>
+<p>Suppose you're managing an investment portfolio. You have several assets to choose from, and their returns are uncertain.</p>
+<ul>
+<li>
+<p><strong>Risk-Neutral Approach:</strong> A risk-neutral investor would only consider the expected return of each asset and allocate their capital to maximize the overall expected portfolio return, without regard to the volatility of those returns. This could lead to a portfolio highly concentrated in a few high-risk assets, which could result in substantial losses if those assets perform poorly.</p>
+</li>
+<li>
+<p><strong>Risk-Averse Approach:</strong> A risk-averse investor would consider both the expected return <em>and</em> the risk (volatility or potential downside) of each asset.  They might use techniques like Mean-Variance Optimization to find a portfolio that balances expected return with risk, or they might use CVaR to limit the potential for extreme losses.  For instance, they might minimize a combination of negative expected return and the CVaR of losses, leading to a more diversified and conservative portfolio. This reduces the chance of catastrophic losses at the expense of potentially lower gains.</p>
+</li>
+</ul>
+<p>Another application scenario would be supply chain optimization under uncertain demand. A risk-neutral company would optimize its inventory levels based on average demand, potentially leading to stockouts if demand is higher than expected. A risk-averse company would build in safety stock based on quantiles of the demand distribution (e.g., using CVaR), avoiding stockouts but incurring higher holding costs.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simple example using <code>pyomo</code> and a risk-averse objective (CVaR):</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+def cvar_model(num_scenarios=100, alpha=0.95, risk_aversion=0.5):
+    &quot;&quot;&quot;
+    Creates a Pyomo model for a simple stochastic problem with CVaR.
+
+    Args:
+        num_scenarios: Number of scenarios to sample.
+        alpha: Confidence level for CVaR.
+        risk_aversion: Weighting factor for the CVaR term in the objective.
+    &quot;&quot;&quot;
+
+    model = pyo.ConcreteModel()
+
+    # Decision Variable (e.g., production quantity)
+    model.x = pyo.Var(domain=pyo.NonNegativeReals)
+
+    # Random variable (e.g., demand)
+    np.random.seed(42) # for reproducibility
+    scenarios = np.random.normal(loc=10, scale=2, size=num_scenarios)  # Normally distributed demand
+
+    # Scenario set
+    model.S = pyo.Set(initialize=range(num_scenarios))
+
+    # Scenario-specific parameters and variables
+    model.demand = pyo.Param(model.S, initialize={i: scenarios[i] for i in model.S})
+    model.z = pyo.Var(model.S, domain=pyo.NonNegativeReals)  # Auxiliary variable for CVaR
+    model.v = pyo.Var(domain=pyo.Reals)  # VaR variable
+
+    # Objective function (Cost = production cost - revenue + shortage cost)
+    # Risk-neutral part: Minimize expected cost
+    # Risk-averse part: Minimize CVaR of the cost
+    def obj_rule(model):
+        expected_cost = sum(
+            model.x - model.demand[s] + 10*model.z[s] for s in model.S
+        ) / num_scenarios
+
+        cvar_term = model.v + (1 / (num_scenarios * (1 - alpha))) * sum(
+            model.z[s] for s in model.S
+        )
+
+        return expected_cost + risk_aversion * cvar_term  # Minimize expected cost + CVaR
+    model.objective = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
+
+    # Constraint: z &gt;= x - demand - v
+    def cvar_constraint_rule(model, s):
+        return model.z[s] &gt;= model.x - model.demand[s] - model.v
+    model.cvar_constraint = pyo.Constraint(model.S, rule=cvar_constraint_rule)
+
+    return model
+
+# Create and solve the model
+model = cvar_model()
+solver = pyo.SolverFactory('ipopt')  # Choose a solver (e.g., IPOPT, GLPK)
+solver.solve(model)
+
+# Print the solution
+print(f&quot;Optimal production quantity (x): {pyo.value(model.x)}&quot;)
+print(f&quot;VaR (v): {pyo.value(model.v)}&quot;)
+
+
+# Example with risk neutral model:
+def risk_neutral_model(num_scenarios=100):
+    model = pyo.ConcreteModel()
+    model.x = pyo.Var(domain=pyo.NonNegativeReals)
+    np.random.seed(42)
+    scenarios = np.random.normal(loc=10, scale=2, size=num_scenarios)
+    model.S = pyo.Set(initialize=range(num_scenarios))
+    model.demand = pyo.Param(model.S, initialize={i: scenarios[i] for i in model.S})
+
+    def obj_rule(model):
+        expected_cost = sum(
+            model.x - model.demand[s] for s in model.S
+        ) / num_scenarios
+        return expected_cost
+    model.objective = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
+
+    return model
+
+# model_rn = risk_neutral_model()
+# solver.solve(model_rn)
+# print(f&quot;RN Optimal quantity (x): {pyo.value(model_rn.x)}&quot;) #This will give an unbound warning
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The <code>cvar_model</code> function creates a Pyomo model that minimizes a cost function plus a CVaR term.</li>
+<li><code>model.x</code> is the decision variable (e.g., production quantity).</li>
+<li><code>model.demand</code> represents the uncertain demand, modeled as a normally distributed random variable.</li>
+<li><code>model.z</code> and <code>model.v</code> are auxiliary variables used to define the CVaR.</li>
+<li>The objective function minimizes the expected cost plus <code>risk_aversion</code> times the CVaR.  The <code>risk_aversion</code> parameter controls the trade-off between expected cost and risk. A higher value implies greater risk aversion.</li>
+<li>The <code>cvar_constraint</code> enforces the CVaR calculation.</li>
+<li>The <code>risk_neutral_model</code> function creates a Pyomo model that <em>only</em> minimizes the <em>expected</em> cost.</li>
+</ul>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example.  Real-world stochastic programming problems can be much more complex.</li>
+<li>You need to have Pyomo and a solver (like IPOPT) installed.</li>
+<li>The <code>num_scenarios</code> parameter affects the accuracy of the solution.  Larger values generally lead to more accurate results but increase computational time.</li>
+<li>The choice of solver is crucial. Some solvers are better suited for certain types of stochastic programming problems than others.  Try GLPK as a free alternative.</li>
+<li>For the risk-neutral model, the example is incomplete and results in an unbounded problem. A more sophisticated scenario would need to bound the solution, perhaps with maximum possible production amount.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of risk measure (e.g., CVaR, VaR, variance) affect the properties of the resulting stochastic program and the characteristics of the optimal solution? Specifically, what are the advantages and disadvantages of using CVaR versus variance as a risk measure in a practical application?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
