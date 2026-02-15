@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logistic Regression for NLP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-logistic-regression-for-nlp">Topic: Logistic Regression for NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Logistic Regression, despite its name, is actually a <em>classification</em> algorithm used in NLP, not a regression algorithm in the traditional sense (predicting a continuous value). It's used to predict the probability of a categorical outcome based on a set of predictor variables (features).</p>
+<p><strong>What is it?</strong></p>
+<ul>
+<li>
+<p>It's a linear model that transforms a linear combination of input features using the <em>logistic sigmoid function</em> (also known as the sigmoid function or the logistic function) to produce a probability value between 0 and 1.  The sigmoid function is defined as:</p>
+<p><code>sigmoid(x) = 1 / (1 + exp(-x))</code></p>
+</li>
+<li>
+<p>The linear combination of features is calculated as:</p>
+<p><code>z = b + w1*x1 + w2*x2 + ... + wn*xn</code></p>
+<p>where:
+*   <code>b</code> is the bias (intercept) term.
+*   <code>w1, w2, ..., wn</code> are the weights associated with the features.
+*   <code>x1, x2, ..., xn</code> are the values of the input features.</p>
+</li>
+<li>
+<p>This <code>z</code> value is then passed through the sigmoid function:</p>
+<p><code>p = sigmoid(z) = 1 / (1 + exp(-z))</code></p>
+<p><code>p</code> represents the predicted probability of the input belonging to the positive class (typically class 1).</p>
+</li>
+<li>
+<p>A decision threshold (usually 0.5) is used to classify the instance. If <code>p &gt;= 0.5</code>, the instance is classified as belonging to the positive class; otherwise, it's classified as belonging to the negative class (typically class 0).</p>
+</li>
+</ul>
+<p><strong>How can we use it in NLP?</strong></p>
+<p>Logistic regression can be used in a variety of NLP tasks by treating text or words as features. Examples include:</p>
+<ul>
+<li><strong>Sentiment Analysis:</strong>  Predict whether a piece of text expresses positive or negative sentiment.  Features could include word frequencies (bag-of-words), presence of certain keywords, or n-grams.</li>
+<li><strong>Spam Detection:</strong> Classify emails as spam or not spam.  Features could be the presence of certain words ("free", "discount"), the sender's address, or the structure of the email.</li>
+<li><strong>Part-of-Speech (POS) Tagging:</strong> Classify a word in a sentence based on its POS (noun, verb, adjective, etc.). Features could include the word itself, its surrounding words, and its morphological features.</li>
+<li><strong>Text Categorization:</strong> Assign a category or topic to a document. Features could be word frequencies, TF-IDF scores, or document embeddings.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a <strong>sentiment analysis</strong> scenario. We want to build a system that can automatically determine whether a movie review is positive or negative.</p>
+<ol>
+<li><strong>Data Collection:</strong>  Gather a labeled dataset of movie reviews, where each review is labeled as either "positive" or "negative".</li>
+<li><strong>Feature Extraction:</strong>  Convert the text of each review into numerical features.  A simple approach is to use the "bag-of-words" model. This involves:<ul>
+<li>Creating a vocabulary of all unique words in the corpus.</li>
+<li>Representing each review as a vector where each element corresponds to the frequency of a word from the vocabulary in that review.  For example, if the vocabulary is ["good", "bad", "movie", "acting"], the review "good movie good" would be represented as [2, 0, 1, 0].</li>
+</ul>
+</li>
+<li><strong>Training the Model:</strong> Train a logistic regression model using the extracted features and the corresponding sentiment labels. The model learns the weights associated with each word that best predict the sentiment.</li>
+<li><strong>Prediction:</strong> Given a new movie review, extract its features (using the same bag-of-words approach), and use the trained logistic regression model to predict its sentiment (positive or negative).</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use scikit-learn's <code>LogisticRegression</code> class.</p>
+<pre class="codehilite"><code class="language-python">from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# Sample data (replace with your actual data)
+reviews = [
+    &quot;This movie was great!&quot;,
+    &quot;The acting was terrible.&quot;,
+    &quot;I really enjoyed the film.&quot;,
+    &quot;It was a complete waste of time.&quot;,
+    &quot;Absolutely amazing, I loved it!&quot;,
+    &quot;The plot was boring and predictable.&quot;
+]
+labels = [1, 0, 1, 0, 1, 0]  # 1 = positive, 0 = negative
+
+# 1. Data Splitting
+X_train, X_test, y_train, y_test = train_test_split(reviews, labels, test_size=0.2, random_state=42)
+
+# 2. Feature Extraction (Bag of Words)
+vectorizer = CountVectorizer()
+X_train_vectors = vectorizer.fit_transform(X_train)
+X_test_vectors = vectorizer.transform(X_test)  # Note: Use transform on the test set
+
+# 3. Train the Logistic Regression Model
+model = LogisticRegression()
+model.fit(X_train_vectors, y_train)
+
+# 4. Make Predictions
+y_pred = model.predict(X_test_vectors)
+
+# 5. Evaluate the Model
+accuracy = accuracy_score(y_test, y_pred)
+print(f&quot;Accuracy: {accuracy}&quot;)
+
+# Example Prediction
+new_review = [&quot;This was an ok movie.&quot;]
+new_review_vector = vectorizer.transform(new_review)
+prediction = model.predict(new_review_vector)[0]  # Predict a single review
+if prediction == 1:
+    print(&quot;Sentiment: Positive&quot;)
+else:
+    print(&quot;Sentiment: Negative&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the performance of logistic regression in NLP compare to more complex models like deep learning models (e.g., transformers) for tasks like sentiment analysis?  Under what circumstances might logistic regression still be a better choice?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
