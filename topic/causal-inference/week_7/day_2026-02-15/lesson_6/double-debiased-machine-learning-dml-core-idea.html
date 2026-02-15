@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Double / Debiased Machine Learning (DML) Core Idea</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-double-debiased-machine-learning-dml-core-idea">Topic: Double / Debiased Machine Learning (DML) Core Idea</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Double/Debiased Machine Learning (DML) is a method for estimating the causal effect of a treatment (or intervention) on an outcome variable, even in the presence of confounding. The "double" part refers to the fact that we use machine learning <em>twice</em>: once to predict the outcome variable and once to predict the treatment variable. The "debiased" part refers to the fact that DML provides an estimate of the causal effect that is less sensitive to model misspecification than standard regression approaches.</p>
+<p>More formally, DML addresses the problem of estimating the Average Treatment Effect (ATE), often denoted as E[Y(1) - Y(0)], where Y(1) is the potential outcome if everyone received the treatment and Y(0) is the potential outcome if nobody received the treatment.  The key idea is to orthogonalize the treatment variable and the outcome variable with respect to the confounders.  This means we want to remove the influence of the confounders from both the treatment and the outcome before estimating the causal effect.</p>
+<p>Here's a breakdown of the DML procedure, assuming we want to estimate the ATE:</p>
+<ol>
+<li>
+<p><strong>Stage 1:  Nuisance Function Estimation</strong></p>
+<ul>
+<li>Model the outcome variable <em>Y</em> as a function of the confounders <em>X</em>:  E[Y|X] = m(X). We estimate this using machine learning (e.g., random forest, gradient boosting). Let the prediction be m_hat(X).</li>
+<li>Model the treatment variable <em>T</em> (binary or continuous) as a function of the confounders <em>X</em>: E[T|X] = g(X).  We estimate this using machine learning. Let the prediction be g_hat(X).  If T is binary, this is a propensity score model.</li>
+</ul>
+</li>
+<li>
+<p><strong>Stage 2:  Orthogonalization and Causal Effect Estimation</strong></p>
+<ul>
+<li>Calculate the residuals for the outcome variable:  Y_tilde = Y - m_hat(X).</li>
+<li>Calculate the residuals for the treatment variable:  T_tilde = T - g_hat(X).</li>
+<li>Estimate the causal effect (ATE) by regressing Y_tilde on T_tilde:</li>
+</ul>
+<p>ATE_hat = argmin_beta Σ (Y_tilde - beta * T_tilde)^2.  In other words,  ATE_hat = Cov(Y_tilde, T_tilde) / Var(T_tilde).</p>
+</li>
+</ol>
+<p>DML leverages sample splitting (or cross-fitting) to avoid overfitting and bias. This means we split the data into multiple folds. We use one fold to train the machine learning models (m_hat and g_hat) and then use the <em>other</em> folds to compute the residuals (Y_tilde and T_tilde) and estimate the ATE.  This process is repeated for each fold, and the final ATE estimate is the average of the estimates obtained from each fold.</p>
+<p>Key benefits of DML:</p>
+<ul>
+<li><strong>Robustness to Model Misspecification:</strong>  DML provides consistent estimates of the causal effect even if either the outcome model (m(X)) or the treatment model (g(X)) is misspecified, as long as <em>one</em> of them is correctly specified.</li>
+<li><strong>Use of Flexible Machine Learning Models:</strong> DML allows for the use of powerful machine learning algorithms to model the complex relationships between confounders, treatment, and outcome.</li>
+<li><strong>Asymptotic Normality:</strong> Under certain regularity conditions, the DML estimator is asymptotically normal, allowing for the construction of confidence intervals and hypothesis testing.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are working for a company that offers online advertising. You want to estimate the causal effect of showing users a specific type of advertisement (the treatment, T) on their subsequent purchase behavior (the outcome, Y).  However, users are shown different advertisements based on their demographics, browsing history, and past purchase behavior (the confounders, X).  Simply comparing the purchase rates of users who saw the advertisement versus those who didn't will likely lead to biased results because of these confounding factors.</p>
+<p>Using DML, you can:</p>
+<ol>
+<li>
+<p><strong>Model the relationship between user characteristics (X) and the probability of being shown the advertisement (T) using a machine learning model (g(X)).</strong> This captures the selection bias inherent in how advertisements are targeted.</p>
+</li>
+<li>
+<p><strong>Model the relationship between user characteristics (X) and their purchase behavior (Y) using a separate machine learning model (m(X)).</strong> This captures the baseline purchase behavior of users, independent of the advertisement.</p>
+</li>
+<li>
+<p><strong>Calculate the residuals Y_tilde and T_tilde.</strong> These residuals represent the variation in purchase behavior and advertisement exposure that is <em>not</em> explained by the user characteristics.</p>
+</li>
+<li>
+<p><strong>Regress Y_tilde on T_tilde to estimate the causal effect of the advertisement on purchase behavior.</strong> This isolates the causal effect by removing the influence of the confounders.</p>
+</li>
+</ol>
+<p>DML would be beneficial in this scenario because:</p>
+<ul>
+<li>The relationship between user characteristics and both advertisement exposure and purchase behavior may be complex and non-linear, making it difficult to model using standard linear regression. Machine learning models can capture these complex relationships.</li>
+<li>It's likely that one of your models is close to correct (either the advertisement targeting model or the purchase prediction model). DML is consistent as long as one is correct.</li>
+<li>The insights gained can be used to optimize advertisement targeting strategies and improve the return on investment of advertising campaigns.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single function called "DML" in a common Python library, you can implement DML using existing libraries like <code>sklearn</code>, <code>statsmodels</code>, and libraries specifically designed for causal inference such as <code>econml</code> or <code>causalml</code>. Here's an example using <code>sklearn</code> and <code>statsmodels</code> to illustrate the core idea. For a more robust and efficient implementation, consider using <code>econml</code> which provides pre-built DML estimators.</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.linear_model import LinearRegression
+import statsmodels.api as sm
+
+def dml_estimate(Y, T, X, model_Y, model_T, n_folds=2):
+    &quot;&quot;&quot;
+    Estimates the Average Treatment Effect (ATE) using Double Machine Learning.
+
+    Args:
+        Y: Outcome variable (numpy array or pandas Series).
+        T: Treatment variable (numpy array or pandas Series, binary or continuous).
+        X: Confounders (numpy array or pandas DataFrame).
+        model_Y: Scikit-learn regressor for Y ~ X (e.g., RandomForestRegressor).
+        model_T: Scikit-learn classifier/regressor for T ~ X (e.g., RandomForestClassifier if T is binary, RandomForestRegressor if T is continuous).
+        n_folds: Number of folds for cross-fitting.
+
+    Returns:
+        ate_estimate: Estimated Average Treatment Effect.
+    &quot;&quot;&quot;
+    n = len(Y)
+    folds = np.array_split(np.random.permutation(n), n_folds)
+    ate_estimates = []
+
+    for i in range(n_folds):
+        # Split data into training and testing sets for this fold
+        train_idx = np.concatenate([fold for j, fold in enumerate(folds) if j != i])
+        test_idx = folds[i]
+
+        Y_train, Y_test = Y[train_idx], Y[test_idx]
+        T_train, T_test = T[train_idx], T[test_idx]
+        X_train, X_test = X[train_idx], X[test_idx]
+
+        # Stage 1: Nuisance Function Estimation
+        model_Y.fit(X_train, Y_train)
+        m_hat = model_Y.predict(X_test)
+
+        model_T.fit(X_train, T_train)
+        g_hat = model_T.predict(X_test)
+
+        # Stage 2: Orthogonalization and Causal Effect Estimation
+        Y_tilde = Y_test - m_hat
+        T_tilde = T_test - g_hat
+
+        # ATE estimation (regression of Y_tilde on T_tilde)
+        model = LinearRegression()
+        model.fit(T_tilde.reshape(-1, 1), Y_tilde)  # Reshape for single feature
+        ate = model.coef_[0]  # Regression coefficient is the ATE
+        ate_estimates.append(ate)
+
+    return np.mean(ate_estimates)
+
+
+if __name__ == '__main__':
+    # Generate some synthetic data
+    np.random.seed(0)
+    n = 1000
+    X1 = np.random.normal(size=n)
+    X2 = np.random.normal(size=n)
+    X = np.column_stack([X1, X2])
+    T = 0.5 * X1 + np.random.normal(size=n, scale=0.5)  # Continuous treatment
+    Y = 2 + 1.5 * T + 0.3 * X2 + np.random.normal(size=n, scale=0.5)
+
+
+    # Define machine learning models
+    model_Y = RandomForestRegressor(n_estimators=100, random_state=0)
+    model_T = LinearRegression() #T is assumed to be continuous
+
+
+    # Estimate ATE using DML
+    ate_estimate = dml_estimate(Y, T, X, model_Y, model_T)
+    print(f&quot;Estimated ATE: {ate_estimate}&quot;) #Should be close to 1.5
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The <code>dml_estimate</code> function takes the outcome (Y), treatment (T), confounders (X), and the desired machine learning models as input.</li>
+<li>It implements cross-fitting by splitting the data into <code>n_folds</code> (default is 2).</li>
+<li>In each fold, it trains the machine learning models to predict Y and T from X.</li>
+<li>It calculates the residuals Y_tilde and T_tilde.</li>
+<li>Finally, it estimates the ATE by regressing Y_tilde on T_tilde.  A simple linear regression here to estimate the coefficient.</li>
+<li>The function returns the average ATE across all folds.</li>
+<li>The <code>if __name__ == '__main__'</code> block demonstrates how to use the function with synthetic data. The <code>RandomForestRegressor</code> is used for modeling Y, and Linear Regression for T since it is continuous in the example. You could replace this with any other sklearn Regressor.</li>
+</ul>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Sample Splitting/Cross-fitting:</strong> Sample splitting or cross-fitting is crucial for debiasing the ATE estimate. Without it, the ATE estimate will be biased.</li>
+<li><strong>Choice of Models:</strong> The choice of machine learning models (<code>model_Y</code> and <code>model_T</code>) depends on the specific problem and the nature of the data. It's important to choose models that are appropriate for the type of outcome and treatment variables (e.g., regression for continuous variables, classification for binary variables).  Consider using cross-validation to select the optimal hyperparameters for these models.</li>
+<li><strong>Library Recommendation:</strong>  For real-world applications, consider using the <code>econml</code> or <code>causalml</code> libraries. These libraries provide more sophisticated DML implementations, including:<ul>
+<li>Pre-built DML estimators with various options for model selection and regularization.</li>
+<li>Support for different types of treatments (binary, continuous, multi-valued).</li>
+<li>Methods for estimating treatment effect heterogeneity (i.e., how the treatment effect varies across different subgroups of the population).</li>
+</ul>
+</li>
+<li><strong>Continuous Treatment:</strong> In the above code, T is assumed to be continuous. If T is a binary treatment, use <code>RandomForestClassifier</code> or similar classifier for <code>model_T</code>.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does DML relate to instrumental variables (IV) regression? What are the advantages and disadvantages of DML compared to IV?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
