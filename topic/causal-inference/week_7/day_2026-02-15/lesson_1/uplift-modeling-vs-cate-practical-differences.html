@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uplift Modeling vs CATE (Practical Differences)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-uplift-modeling-vs-cate-practical-differences">Topic: Uplift Modeling vs CATE (Practical Differences)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>CATE (Conditional Average Treatment Effect):</strong> CATE aims to estimate the <em>treatment effect</em> for <em>specific subgroups</em> within a population.  In essence, it quantifies how much the outcome would change for a particular individual (or group) if they received the treatment compared to if they didn't. Mathematically:</p>
+<ul>
+<li>
+<p>CATE(x) = E[Y(1) - Y(0) | X = x]</p>
+<p>Where:
+*   Y(1) is the potential outcome if the individual receives treatment.
+*   Y(0) is the potential outcome if the individual receives control.
+*   X is a vector of observed covariates/features.
+*   x is a specific value of the covariates X.
+*   E[] denotes the expected value.</p>
+</li>
+</ul>
+<p>CATE allows us to understand heterogeneous treatment effects across different individuals/segments, guiding targeted interventions. We can use it to answer questions like: "Who benefits most from treatment A?". We estimate CATE using various modeling techniques and observational or experimental data (A/B tests, randomized control trials).</p>
+<p><strong>Uplift Modeling:</strong> Uplift modeling, also known as true lift modeling or incremental response modeling, focuses on identifying individuals who are <em>most responsive</em> to a treatment. It directly models the <em>incremental impact</em> of the treatment on an individual's outcome, compared to a control group. It estimates the <em>lift</em>, which is the change in probability of a desired outcome caused by the treatment. Mathematically:</p>
+<ul>
+<li>
+<p>Uplift(x) = P(Y=1 | T=1, X=x) - P(Y=1 | T=0, X=x)</p>
+<p>Where:
+*   Y is the outcome (typically binary: 0 or 1).
+*   T is the treatment indicator (1 for treated, 0 for control).
+*   X is a vector of observed covariates/features.
+*   x is a specific value of the covariates X.
+*   P() denotes probability.</p>
+</li>
+</ul>
+<p>Uplift modeling is about identifying individuals whose behavior <em>changes</em> because of the treatment, not just those who have a generally better outcome regardless of the treatment. It helps optimize resource allocation by targeting only those who will respond favorably to the intervention. For instance, "Which customers are most likely to purchase if we send them a targeted email?".</p>
+<p><strong>Key Difference:</strong> While both CATE and Uplift modeling estimate treatment effects, CATE estimates the <em>absolute difference</em> in outcomes due to treatment for a subgroup, while Uplift models the <em>incremental difference</em> or <em>lift</em> in outcomes caused by the treatment <em>compared to the control group</em>. CATE helps understand the magnitude of the effect for each group; Uplift helps identify the people who are most influenced by the intervention.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>CATE Application Scenario:</strong></p>
+<p>Imagine a bank wants to offer a new type of loan. They run a pilot program and collect data on customer demographics (age, income, credit score, etc.) and whether they accepted the loan offer (treatment) and their repayment behavior (outcome).</p>
+<p>Using CATE, they could analyze the data to answer: "What is the average difference in repayment rate for customers with <em>high</em> credit scores who received the loan versus those with <em>high</em> credit scores who didn't?". This information helps the bank understand the overall effect of the loan product on specific customer segments.  This can help determine product viability and market segments.</p>
+<p><strong>Uplift Modeling Application Scenario:</strong></p>
+<p>An e-commerce company wants to launch a promotional campaign. They can only afford to target a limited number of customers with a personalized coupon. They have historical data on customer purchase behavior, demographics, and past campaign interactions.</p>
+<p>Using Uplift modeling, they can answer: "Which customers are <em>most likely to make a purchase ONLY if they receive the coupon</em>?". This allows the company to focus its marketing efforts on the customers who are most likely to be influenced by the coupon, maximizing the return on investment (ROI).</p>
+<p>In short: CATE is useful when you want to understand treatment effects across various groups. Uplift is useful when you want to <em>optimize</em> treatment assignment by targeting the most responsive individuals.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python"># Uplift Modeling Example using scikit-uplift
+
+# Installation: pip install scikit-uplift
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklift.models import ClassTransformation
+from sklift.metrics import uplift_at_k
+import pandas as pd
+import numpy as np
+
+# Generate some dummy data
+np.random.seed(42)
+n_samples = 1000
+data = pd.DataFrame({
+    'feature_1': np.random.rand(n_samples),
+    'feature_2': np.random.rand(n_samples),
+    'feature_3': np.random.rand(n_samples),
+    'treatment': np.random.choice([0, 1], size=n_samples),
+    'outcome': np.random.choice([0, 1], size=n_samples) # Simulate some effect
+})
+
+# In a real application, the 'outcome' would be the observed response
+# In this simulation, we'll introduce a small uplift effect
+for i in range(n_samples):
+    if data['treatment'][i] == 1 and data['feature_1'][i] &gt; 0.5: #treatment increases outcome probability for certain features
+        data['outcome'][i] = np.random.choice([1,0], p=[0.7,0.3])
+    elif data['treatment'][i] == 0 and data['feature_1'][i] &gt; 0.5:
+         data['outcome'][i] = np.random.choice([1,0], p=[0.3,0.7])
+
+
+X = data[['feature_1', 'feature_2', 'feature_3']]
+y = data['outcome']
+treatment = data['treatment']
+
+# Split data into train and test sets
+X_train, X_test, y_train, y_test, treatment_train, treatment_test = train_test_split(
+    X, y, treatment, test_size=0.3, random_state=42
+)
+
+# Class Transformation Method
+model = ClassTransformation(estimator=RandomForestClassifier(random_state=42))
+model.fit(X_train, y_train, treatment_train)
+
+# Predict uplift scores on the test set
+uplift_predictions = model.predict(X_test)
+
+# Evaluate the model using uplift@k metric
+uplift_at_30 = uplift_at_k(y_test, uplift_predictions, treatment_test, rate=0.3)  #uplift at the top 30% of the population.
+print(f&quot;Uplift@30%: {uplift_at_30}&quot;)
+
+
+# CATE Estimation (using a simple approach - separate models)
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+# Train separate models for treated and control groups
+treatment_indices = treatment_train == 1
+control_indices = treatment_train == 0
+
+model_treated = LogisticRegression(random_state=42)
+model_control = LogisticRegression(random_state=42)
+
+model_treated.fit(X_train[treatment_indices], y_train[treatment_indices])
+model_control.fit(X_train[control_indices], y_train[control_indices])
+
+# Predict probabilities for both groups
+prob_treated = model_treated.predict_proba(X_test)[:, 1]
+prob_control = model_control.predict_proba(X_test)[:, 1]
+
+# Estimate CATE
+cate_estimates = prob_treated - prob_control
+
+#Print the average treatment effect of the first 5 samples
+print(&quot;CATE for the first 5 samples:&quot;, cate_estimates[:5])
+</code></pre>
+
+<p>This code provides an example of Uplift Modeling using the <code>scikit-uplift</code> library and CATE estimation using seperate models for treatment and control. <code>scikit-uplift</code> offers various techniques, and ClassTransformation is a simple and popular approach.  For CATE, we fit separate models to the treatment and control groups and then calculate the difference in predicted probabilities.  This is a simplified example and more sophisticated CATE estimation methods may be appropriate depending on the data.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different biases (e.g., selection bias, confounding) affect the accuracy and reliability of Uplift and CATE estimates, and what strategies can be used to mitigate these biases in practical applications?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
