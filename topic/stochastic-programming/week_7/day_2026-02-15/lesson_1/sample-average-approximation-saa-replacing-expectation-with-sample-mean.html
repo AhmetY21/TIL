@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample Average Approximation (SAA): replacing expectation with sample mean</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-sample-average-approximation-saa-replacing-expectation-with-sample-mean">Topic: Sample Average Approximation (SAA): replacing expectation with sample mean</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Sample Average Approximation (SAA) is a method used to approximate stochastic optimization problems, which are optimization problems that involve uncertainty in their objective function or constraints. The core idea of SAA is to replace the expectation in the stochastic program with a sample average calculated from a finite set of random samples.</p>
+<p>More formally, consider the stochastic optimization problem:</p>
+<pre class="codehilite"><code>minimize  F(x) = E[f(x, ξ)]
+subject to x ∈ X
+</code></pre>
+
+<p>where:
+*   <code>x</code> is the decision variable
+*   <code>ξ</code> is a random variable following a probability distribution P
+*   <code>f(x, ξ)</code> is the stochastic objective function
+*   <code>E[f(x, ξ)]</code> is the expected value of the objective function with respect to the random variable <code>ξ</code>
+*   <code>X</code> is the feasible region of the decision variable <code>x</code></p>
+<p>Directly solving this problem is often computationally intractable because evaluating the expectation <code>E[f(x, ξ)]</code> can be difficult or impossible. SAA addresses this by approximating the expectation using a Monte Carlo sample. We generate <code>N</code> independent and identically distributed (i.i.d.) samples <code>ξ₁, ξ₂, ..., ξₙ</code> from the distribution P. Then, the SAA approximation of the objective function is:</p>
+<pre class="codehilite"><code>Fₙ(x) = (1/N) * Σᵢ₌₁ⁿ f(x, ξᵢ)
+</code></pre>
+
+<p>The SAA problem becomes:</p>
+<pre class="codehilite"><code>minimize  Fₙ(x) = (1/N) * Σᵢ₌₁ⁿ f(x, ξᵢ)
+subject to x ∈ X
+</code></pre>
+
+<p>We then solve this deterministic approximation. The optimal solution <code>xₙ*</code> of the SAA problem is an approximation of the optimal solution of the original stochastic problem.</p>
+<p><strong>How we can use it:</strong></p>
+<ol>
+<li><strong>Approximate hard problems:</strong> SAA allows us to solve stochastic optimization problems that are intractable due to the presence of expectations.</li>
+<li><strong>Estimate solution quality:</strong> We can use statistical properties of the SAA solution, such as confidence intervals, to assess the quality of the approximate solution.  As the sample size <code>N</code> increases, the SAA problem converges (under certain conditions) to the true stochastic problem.</li>
+<li><strong>Scenario reduction:</strong> SAA can be seen as a scenario reduction technique where an infinite or extremely large number of potential scenarios are reduced to a finite number based on the sampled observations.</li>
+<li><strong>Simulation and Optimization:</strong> Allows combining simulation to generate the samples with optimization techniques to find good solutions under uncertainty.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A classic application scenario is <strong>portfolio optimization under uncertainty</strong>. Consider an investor wanting to allocate capital across different assets.  The future returns of these assets are uncertain.  The investor wants to minimize risk (e.g., variance) while achieving a target return.</p>
+<p>The problem can be formulated as:</p>
+<pre class="codehilite"><code>minimize  E[(rᵀx - μ)²]  (Minimize the variance of portfolio return)
+subject to:
+E[rᵀx] &gt;= R  (Achieve a target expected return R)
+Σᵢ xᵢ = 1   (Budget constraint: all capital must be invested)
+xᵢ &gt;= 0   (No short selling)
+</code></pre>
+
+<p>where:
+*   <code>x</code> is a vector of investment proportions for each asset
+*   <code>r</code> is a vector of random asset returns
+*   <code>μ</code> is the mean vector of random asset returns
+* <code>R</code> is the targeted return</p>
+<p>Here, the expectation is with respect to the uncertain asset returns <code>r</code>. We don't know the true distribution of <code>r</code>. Using SAA, we can:</p>
+<ol>
+<li>Generate <code>N</code> samples of possible asset return scenarios (e.g., using historical data or simulation models).  This gives us <code>r₁, r₂, ..., rₙ</code>.</li>
+<li>Replace the expectations with sample averages. For example:<ul>
+<li><code>E[(rᵀx - μ)²]</code> is approximated by <code>(1/N) * Σᵢ₌₁ⁿ (rᵢᵀx - (1/N)*Σⱼ₌₁ⁿ rⱼᵀx)²</code></li>
+<li><code>E[rᵀx]</code> is approximated by <code>(1/N) * Σᵢ₌₁ⁿ rᵢᵀx</code></li>
+</ul>
+</li>
+</ol>
+<p>The resulting SAA problem is a deterministic quadratic program, which can be solved using standard optimization solvers. The optimal investment proportions <code>x*</code> obtained from the SAA problem provide an approximate solution to the original stochastic portfolio optimization problem.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a Python example using <code>cvxpy</code> to implement SAA for a simplified portfolio optimization problem:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import cvxpy as cp
+
+def solve_portfolio_saa(returns, target_return):
+    &quot;&quot;&quot;
+    Solves a portfolio optimization problem using Sample Average Approximation (SAA).
+
+    Args:
+        returns (np.ndarray): A matrix where each row represents a sample of asset returns.
+                             Shape: (N, num_assets), where N is the number of samples.
+        target_return (float): The desired target return.
+
+    Returns:
+        np.ndarray: The optimal portfolio allocation (vector of investment proportions).
+    &quot;&quot;&quot;
+
+    num_assets = returns.shape[1]
+    x = cp.Variable(num_assets)  # Investment proportions
+
+    # Objective: Minimize portfolio variance (using the sample average approximation)
+    portfolio_return = returns @ x
+    variance = cp.sum_squares(portfolio_return - cp.sum(portfolio_return) / returns.shape[0]) / returns.shape[0]
+    objective = cp.Minimize(variance)  # Minimize variance
+
+    # Constraints:
+    constraints = [
+        cp.sum(x) == 1,  # Budget constraint
+        x &gt;= 0,          # No short selling
+        cp.sum(portfolio_return) / returns.shape[0] &gt;= target_return  # Target return
+    ]
+
+    # Solve the problem
+    problem = cp.Problem(objective, constraints)
+    problem.solve()
+
+    if problem.status == cp.OPTIMAL:
+        return x.value
+    else:
+        print(&quot;Problem is infeasible or unbounded&quot;)
+        return None
+
+
+if __name__ == '__main__':
+    # Example usage:
+    np.random.seed(42)  # for reproducibility
+    num_samples = 100
+    num_assets = 5
+    returns = np.random.normal(0.1, 0.05, size=(num_samples, num_assets))  # Simulate asset returns
+
+    target_return = 0.12
+
+    optimal_portfolio = solve_portfolio_saa(returns, target_return)
+
+    if optimal_portfolio is not None:
+        print(&quot;Optimal Portfolio Allocation:&quot;, optimal_portfolio)
+        print(&quot;Expected Return (SAA):&quot;, np.mean(returns @ optimal_portfolio))
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>solve_portfolio_saa(returns, target_return)</code> function:</strong></p>
+<ul>
+<li>Takes asset return samples (<code>returns</code>) and a target return (<code>target_return</code>) as input.</li>
+<li>Defines <code>x</code> as a <code>cvxpy</code> variable representing the investment proportions.</li>
+<li>Constructs the objective function: Minimize portfolio variance, approximated using the sample average.</li>
+<li>Defines the constraints: budget constraint (sum of <code>x</code> equals 1), no short selling (<code>x &gt;= 0</code>), and a constraint ensuring the portfolio's expected return (approximated via sample average) meets the target.</li>
+<li>Solves the <code>cvxpy</code> optimization problem.</li>
+<li>Returns the optimal portfolio allocation if a solution is found.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>if __name__ == '__main__':</code> block:</strong></p>
+<ul>
+<li>Sets up an example by generating random asset return samples.</li>
+<li>Calls <code>solve_portfolio_saa</code> to find the optimal portfolio.</li>
+<li>Prints the results.  It also calculates and prints the expected return of the resulting portfolio based on the SAA samples to assess how well it achieved the desired target.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important considerations:</strong></p>
+<ul>
+<li><strong>Sample Size (N):</strong> The accuracy of the SAA solution depends heavily on the sample size <code>N</code>.  A larger <code>N</code> generally leads to a better approximation, but also increases the computational cost. Determining the appropriate <code>N</code> often involves statistical analysis to balance accuracy and computational effort.</li>
+<li><strong>Solver Choice:</strong>  The choice of optimization solver (e.g., the solver used by <code>cvxpy</code>) can also affect the speed and accuracy of the solution.</li>
+<li><strong>Distribution of Random Variables:</strong>  The convergence properties of SAA depend on the properties of the distribution of the random variables.  For example, strong convexity and Lipschitz continuity of the objective function can guarantee convergence.</li>
+<li><strong>Statistical Guarantees:</strong>  SAA provides statistical guarantees on the quality of the solution.  Techniques like sample path analysis and confidence interval estimation can be used to assess the solution's optimality gap (the difference between the SAA solution and the true optimal solution).</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we improve the efficiency of SAA, especially when dealing with computationally expensive objective functions or very large sample sizes?  Are there variance reduction techniques or other strategies we can employ?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
