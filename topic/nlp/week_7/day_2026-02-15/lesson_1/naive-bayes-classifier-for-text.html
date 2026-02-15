@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naive Bayes Classifier for Text</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-naive-bayes-classifier-for-text">Topic: Naive Bayes Classifier for Text</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Naive Bayes classifier is a probabilistic machine learning algorithm used for classification tasks.  "Naive" refers to the simplifying assumption of <em>feature independence</em>, meaning it assumes that the presence of a particular feature in a class is unrelated to the presence of any other feature. In the context of text classification, this means it assumes the occurrence of a word in a document is independent of the occurrence of other words in the same document, given the class.  This assumption is almost always violated in real-world text, but surprisingly, the Naive Bayes classifier often performs well.</p>
+<p>Specifically, for text classification, we use the Bayes' Theorem:</p>
+<p>P(c|d) = [P(d|c) * P(c)] / P(d)</p>
+<p>Where:</p>
+<ul>
+<li>P(c|d) is the <em>posterior probability</em> of a document <em>d</em> belonging to class <em>c</em>. This is what we want to calculate.</li>
+<li>P(d|c) is the <em>likelihood</em> of observing the document <em>d</em> given that it belongs to class <em>c</em>.  This is where the "naive" assumption comes in.  We approximate this by multiplying the probabilities of each word in the document occurring given the class: P(d|c) ≈ P(word1|c) * P(word2|c) * ... * P(wordN|c)</li>
+<li>P(c) is the <em>prior probability</em> of class <em>c</em>, which is the proportion of documents in the training data belonging to class <em>c</em>.</li>
+<li>P(d) is the <em>evidence</em> or probability of observing the document <em>d</em>. Since we only care about comparing the probabilities of different classes for the same document, P(d) acts as a normalizing constant and can often be ignored in the classification decision.</li>
+</ul>
+<p>To classify a new document, we calculate P(c|d) for each possible class <em>c</em> and assign the document to the class with the highest probability.</p>
+<p>There are several types of Naive Bayes classifiers tailored for different feature types:</p>
+<ul>
+<li><strong>Multinomial Naive Bayes:</strong> Suitable for discrete features, like word counts (term frequency) in text documents.  It models the probability of a document belonging to a class based on the frequencies of words in the document. This is commonly used in text classification.</li>
+<li><strong>Bernoulli Naive Bayes:</strong> Suitable for binary features, such as word presence/absence (boolean feature). It models the probability of a document belonging to a class based on whether or not certain words are present.</li>
+<li><strong>Gaussian Naive Bayes:</strong> Suitable for continuous features, and is not typically used directly for text classification as text data is usually discrete. However, you might use it for text features that have been transformed into continuous values via some other method, like word embeddings averaged to form a document vector.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Naive Bayes is commonly used in the following application scenarios involving text:</p>
+<ul>
+<li><strong>Spam Filtering:</strong> Classifying emails as spam or not spam. The features are typically the words present in the email.</li>
+<li><strong>Sentiment Analysis:</strong> Determining the sentiment of a piece of text (e.g., positive, negative, neutral). Reviews, tweets, and social media posts are common inputs.</li>
+<li><strong>Topic Classification:</strong> Categorizing documents into predefined topics or categories (e.g., sports, politics, technology).  This can be used for news articles, scientific papers, and customer support tickets.</li>
+<li><strong>Author Identification:</strong> Determining the author of a document based on their writing style.</li>
+<li><strong>Language Detection:</strong> Identifying the language of a given text.</li>
+</ul>
+<p>Naive Bayes is a good choice for these scenarios when:</p>
+<ul>
+<li>You have a large dataset.</li>
+<li>Interpretability is important.</li>
+<li>Speed and simplicity are prioritized.</li>
+<li>The feature independence assumption, while not perfectly met, is not grossly violated.</li>
+<li>You want a baseline model to compare against more complex models.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+
+# Sample data (replace with your actual data)
+documents = [
+    &quot;This is a positive review. I loved the product!&quot;,
+    &quot;This is a negative review. I hated it.&quot;,
+    &quot;Another positive review. Great experience!&quot;,
+    &quot;A terrible experience. Very disappointing.&quot;,
+    &quot;The movie was great!  I really enjoyed it.&quot;,
+    &quot;A boring movie.  I fell asleep.&quot;
+]
+labels = ['positive', 'negative', 'positive', 'negative', 'positive', 'negative']
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(documents, labels, test_size=0.25, random_state=42)
+
+# Create a pipeline: TF-IDF vectorizer -&gt; Multinomial Naive Bayes
+model = make_pipeline(TfidfVectorizer(), MultinomialNB())
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred)
+
+print(f&quot;Accuracy: {accuracy}&quot;)
+print(f&quot;Classification Report:\n{report}&quot;)
+
+# Example prediction on new data
+new_document = [&quot;This movie was absolutely fantastic!&quot;]
+predicted_class = model.predict(new_document)[0]
+print(f&quot;Predicted class for new document: {predicted_class}&quot;)
+</code></pre>
+
+<p>This code uses <code>sklearn</code> to:</p>
+<ol>
+<li><strong>Vectorize the text:</strong> <code>TfidfVectorizer</code> converts the text documents into numerical feature vectors using TF-IDF (Term Frequency-Inverse Document Frequency).  This is a common technique for representing text data numerically. TF-IDF weighs words based on their frequency in a document and their inverse document frequency across the entire corpus, thus highlighting important terms.</li>
+<li><strong>Create a Naive Bayes model:</strong> <code>MultinomialNB</code> is used because we are dealing with word frequencies.</li>
+<li><strong>Create a pipeline:</strong>  <code>make_pipeline</code> chains the vectorizer and classifier together.  This simplifies the workflow.</li>
+<li><strong>Train the model:</strong> The model is trained using the training data.</li>
+<li><strong>Predict and Evaluate:</strong> The model predicts labels for the test data and the accuracy and classification report are printed.</li>
+<li><strong>Predict new data:</strong> Shows how to classify a new, unseen document.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some common techniques to improve the performance of a Naive Bayes classifier for text, especially considering the naive independence assumption?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
