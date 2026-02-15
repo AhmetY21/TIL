@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Trees and Random Forests for Text</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-decision-trees-and-random-forests-for-text">Topic: Decision Trees and Random Forests for Text</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Decision Trees for Text:</strong> A decision tree is a supervised learning algorithm that creates a tree-like structure to classify or predict a target variable based on input features. In the context of text, the input features are typically representations of the text, such as Term Frequency-Inverse Document Frequency (TF-IDF) values, word embeddings, or presence/absence of specific keywords.  The tree is built by recursively partitioning the data based on the feature that best splits the data according to the target variable (e.g., document category, sentiment).  Each internal node in the tree represents a test on a feature (e.g., "Is TF-IDF of 'cat' &gt; 0.5?"), and each branch represents the outcome of the test.  Leaf nodes represent the predicted class or value.</p>
+<p><strong>How we can use it:</strong>
+*   <strong>Text Classification:</strong>  Predict the category of a document (e.g., spam/not spam, sports/politics).
+*   <strong>Sentiment Analysis:</strong> Determine the sentiment expressed in a piece of text (e.g., positive, negative, neutral).
+*   <strong>Topic Modeling (Less Common):</strong> While not a primary topic modeling technique, decision trees can be used to assign documents to predefined topics based on keywords or feature combinations.</p>
+<p><strong>Random Forests for Text:</strong> A random forest is an ensemble learning method that builds multiple decision trees on different subsets of the training data and using a random subset of features. The final prediction is made by aggregating the predictions of all individual trees (e.g., through majority voting for classification or averaging for regression). This helps to reduce overfitting and improve the generalization performance compared to a single decision tree.</p>
+<p><strong>How we can use it:</strong> Essentially the same applications as decision trees, but often with better accuracy and robustness.</p>
+<ul>
+<li><strong>Text Classification:</strong> Predict the category of a document.</li>
+<li><strong>Sentiment Analysis:</strong> Determine the sentiment expressed in a piece of text.</li>
+<li><strong>Spam Detection:</strong> Classify emails or messages as spam or not spam.</li>
+<li><strong>Information Retrieval:</strong> Rank documents based on their relevance to a query.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a <strong>Sentiment Analysis</strong> scenario for movie reviews.</p>
+<p><strong>Goal:</strong> Classify movie reviews as either "positive" or "negative".</p>
+<p><strong>Data:</strong> A dataset of movie reviews, where each review is labeled with its sentiment.</p>
+<p><strong>Features:</strong> We'll use TF-IDF to represent the text.  This means each review will be represented by a vector, where each element corresponds to the TF-IDF value of a word in the vocabulary.</p>
+<p><strong>Process:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong>  Load the movie review dataset and split it into training and testing sets.  Preprocess the text data by removing punctuation, stop words, and converting to lowercase.</li>
+<li><strong>Feature Extraction:</strong> Calculate the TF-IDF values for each review in both training and testing sets using scikit-learn's <code>TfidfVectorizer</code>.</li>
+<li><strong>Model Training:</strong> Train a Random Forest classifier on the training data and the extracted TF-IDF features.</li>
+<li><strong>Model Evaluation:</strong> Evaluate the trained model on the testing data using metrics like accuracy, precision, recall, and F1-score.</li>
+<li><strong>Prediction:</strong> Use the trained model to predict the sentiment of new, unseen movie reviews.</li>
+</ol>
+<p>A single decision tree would likely overfit on this dataset. A random forest, by averaging the predictions of many trees trained on different subsets of the data and features, would generally perform better and generalize better to unseen reviews.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+# Sample data (replace with your actual movie review dataset)
+reviews = [
+    &quot;This movie was amazing! I loved it.&quot;,
+    &quot;The acting was terrible. I hated it.&quot;,
+    &quot;It was okay, nothing special.&quot;,
+    &quot;A fantastic film, highly recommended!&quot;,
+    &quot;I was bored and disappointed.&quot;
+]
+labels = [&quot;positive&quot;, &quot;negative&quot;, &quot;neutral&quot;, &quot;positive&quot;, &quot;negative&quot;]
+
+# 1. Data Preparation
+X_train, X_test, y_train, y_test = train_test_split(reviews, labels, test_size=0.2, random_state=42) # Corrected typo
+
+# 2. Feature Extraction (TF-IDF)
+vectorizer = TfidfVectorizer()
+X_train_tfidf = vectorizer.fit_transform(X_train)
+X_test_tfidf = vectorizer.transform(X_test)
+
+# 3. Model Training (Random Forest)
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42) # You can adjust n_estimators (number of trees)
+rf_classifier.fit(X_train_tfidf, y_train)
+
+# 4. Model Evaluation
+y_pred = rf_classifier.predict(X_test_tfidf)
+accuracy = accuracy_score(y_test, y_pred)
+print(f&quot;Accuracy: {accuracy}&quot;)
+print(classification_report(y_test, y_pred))
+
+# 5. Prediction (example)
+new_review = [&quot;This movie was surprisingly good!&quot;]
+new_review_tfidf = vectorizer.transform(new_review)
+prediction = rf_classifier.predict(new_review_tfidf)
+print(f&quot;Prediction for new review: {prediction}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do techniques like stemming and lemmatization, which reduce words to their root form, affect the performance of decision trees and random forests when used in conjunction with TF-IDF for text classification?  Specifically, do these techniques consistently improve performance, or does their effectiveness depend on the specific dataset and task? Why?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
