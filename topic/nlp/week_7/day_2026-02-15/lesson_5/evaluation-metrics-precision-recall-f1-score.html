@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation Metrics: Precision, Recall, F1-Score</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-evaluation-metrics-precision-recall-f1-score">Topic: Evaluation Metrics: Precision, Recall, F1-Score</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>These three metrics are fundamental for evaluating the performance of classification models, especially in scenarios where the class distribution is imbalanced. They focus on the accuracy of positive predictions and the model's ability to identify all actual positive instances.</p>
+<ul>
+<li>
+<p><strong>Precision:</strong>  Precision measures the accuracy of the positive predictions made by the model. It answers the question: "Out of all the instances the model <em>predicted</em> as positive, how many were <em>actually</em> positive?".</p>
+<ul>
+<li>Formula:  <code>Precision = True Positives / (True Positives + False Positives)</code></li>
+<li>A high precision indicates that the model is good at avoiding false positive errors.  It means that when the model predicts something is positive, it's likely to be correct.</li>
+</ul>
+</li>
+<li>
+<p><strong>Recall (Sensitivity or True Positive Rate):</strong> Recall measures the completeness of the positive predictions.  It answers the question: "Out of all the instances that were <em>actually</em> positive, how many did the model <em>correctly</em> identify as positive?".</p>
+<ul>
+<li>Formula: <code>Recall = True Positives / (True Positives + False Negatives)</code></li>
+<li>A high recall indicates that the model is good at finding most of the positive instances.  It means the model doesn't miss many actual positive cases.</li>
+</ul>
+</li>
+<li>
+<p><strong>F1-Score:</strong> The F1-score is the harmonic mean of precision and recall. It provides a single score that balances both precision and recall.</p>
+<ul>
+<li>Formula: <code>F1-Score = 2 * (Precision * Recall) / (Precision + Recall)</code></li>
+<li>The F1-score is useful when you want to find a balance between precision and recall.  It is especially helpful when the costs of false positives and false negatives are different but difficult to quantify precisely.</li>
+<li>Harmonic mean gives more weight to lower values. Therefore, a high F1-score ensures both precision and recall are reasonably high.</li>
+</ul>
+</li>
+</ul>
+<p>These metrics are used to understand how well a classification model is performing with respect to identifying positive cases, particularly important when dealing with imbalanced datasets.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're building a spam email filter.</p>
+<ul>
+<li>
+<p><strong>Precision:</strong> High precision would mean that when the filter flags an email as spam, it's very likely to actually <em>be</em> spam.  Fewer legitimate emails will be incorrectly classified as spam (false positives). This is important because you don't want to miss important emails.</p>
+</li>
+<li>
+<p><strong>Recall:</strong> High recall would mean that the filter catches <em>most</em> of the spam emails. Very few spam emails would slip through the filter and end up in your inbox (false negatives). This is important to avoid being bombarded with unwanted emails.</p>
+</li>
+<li>
+<p><strong>F1-Score:</strong> The F1-score helps balance these two concerns. If you prioritize precision (avoiding misclassifying legitimate emails as spam), you might sacrifice recall (letting some spam through). Conversely, prioritizing recall (catching all spam) might lead to lower precision (flagging legitimate emails as spam). The F1-score helps you choose a model that strikes a good balance between these two.  You want a high F1-score to minimize both missed spam and misclassified legitimate emails.</p>
+</li>
+</ul>
+<p>Other examples include: medical diagnosis (identifying diseases), fraud detection, and information retrieval (identifying relevant documents).</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.metrics import precision_score, recall_score, f1_score
+
+# Example predictions and ground truth labels
+y_true = [0, 1, 1, 0, 1, 0, 0, 1, 0, 1] # Actual labels (0: negative, 1: positive)
+y_pred = [0, 1, 0, 0, 1, 1, 0, 0, 1, 1] # Predicted labels
+
+# Calculate precision
+precision = precision_score(y_true, y_pred)
+print(f&quot;Precision: {precision}&quot;)
+
+# Calculate recall
+recall = recall_score(y_true, y_pred)
+print(f&quot;Recall: {recall}&quot;)
+
+# Calculate F1-score
+f1 = f1_score(y_true, y_pred)
+print(f&quot;F1-Score: {f1}&quot;)
+
+
+# Example using different averaging methods for multiclass/multilabel problems
+y_true_multiclass = [0, 1, 2, 0, 1, 2]
+y_pred_multiclass = [0, 2, 1, 0, 0, 2]
+
+precision_micro = precision_score(y_true_multiclass, y_pred_multiclass, average='micro')
+print(f&quot;Micro-averaged Precision: {precision_micro}&quot;) #Global True positives / Global number of predicted positives
+
+precision_macro = precision_score(y_true_multiclass, y_pred_multiclass, average='macro') #average precision of each class
+print(f&quot;Macro-averaged Precision: {precision_macro}&quot;)
+
+precision_weighted = precision_score(y_true_multiclass, y_pred_multiclass, average='weighted') # weighted average precision of each class
+print(f&quot;Weighted-averaged Precision: {precision_weighted}&quot;)
+
+
+from sklearn.metrics import classification_report
+
+# Generate a comprehensive classification report
+report = classification_report(y_true, y_pred)
+print(report)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do these metrics (precision, recall, F1-score) relate to the concept of a "confusion matrix," and how can analyzing a confusion matrix provide further insights into model performance beyond just these three metrics?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
