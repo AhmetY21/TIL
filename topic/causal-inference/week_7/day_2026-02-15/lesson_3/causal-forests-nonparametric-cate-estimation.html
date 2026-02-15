@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Causal Forests (Nonparametric CATE Estimation)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-causal-forests-nonparametric-cate-estimation">Topic: Causal Forests (Nonparametric CATE Estimation)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Causal Forests are a machine learning method used for <strong>nonparametric estimation of heterogeneous treatment effects</strong>, specifically the Conditional Average Treatment Effect (CATE). Unlike traditional regression models that estimate a single average treatment effect (ATE) for the entire population, Causal Forests aim to estimate the treatment effect <em>for each individual</em>, based on their specific characteristics.</p>
+<p><strong>What is it?</strong></p>
+<p>Causal Forests are an adaptation of Random Forests tailored to causal inference. They leverage tree-based partitioning of the feature space to identify subgroups of individuals who respond differently to a treatment. The key differences from standard Random Forests are:</p>
+<ul>
+<li><strong>Honest Estimation (Splitting Rule and Value Estimation on Separate Data):</strong> To avoid overfitting and bias in causal inference, Causal Forests employ honest estimation. This means that the data used to build the trees (splitting rules) is different from the data used to estimate the treatment effect within the terminal nodes. This separation ensures that the estimated treatment effects are not influenced by the data used to define the subgroups.</li>
+<li><strong>Splitting Criterion Specifically Designed for Causal Inference:</strong> Standard Random Forests often use variance reduction as the splitting criterion. Causal Forests use splitting criteria that directly target the heterogeneity of treatment effects. Common criteria include maximizing the estimated variance of the CATE or minimizing the prediction error of the CATE.</li>
+<li><strong>CATE Estimation within Terminal Nodes:</strong> Once the forest is grown, the CATE for a new observation is estimated by averaging the treatment effects estimated within the terminal nodes (leaves) of the trees where the observation falls. The treatment effect in each node is typically estimated by comparing the outcomes of treated and untreated individuals within that node.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Causal Forests can be used to:</p>
+<ul>
+<li><strong>Identify which individuals benefit most (or least) from a treatment:</strong> This is crucial for personalized decision-making in areas like medicine, marketing, and policy. For example, identifying which patients will respond best to a new drug or which customers are most likely to convert after receiving a targeted advertisement.</li>
+<li><strong>Estimate the CATE for new individuals or populations:</strong>  Given a new individual's features, the Causal Forest can predict their likely treatment effect.</li>
+<li><strong>Discover heterogeneous treatment effects:</strong> By examining the splits in the trees, we can gain insights into the factors that modify the treatment effect, leading to a better understanding of the underlying causal mechanisms.</li>
+<li><strong>Policy Evaluation:</strong>  Assess the impact of a policy change on different segments of the population.</li>
+</ul>
+<p>In essence, Causal Forests provide a powerful tool for exploring and quantifying the variation in treatment effects across a population, enabling more informed and targeted interventions.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a company wants to launch a new marketing campaign to increase sales.  They have data on past customers, including their demographics (age, location, income), purchase history, and whether or not they were exposed to previous marketing campaigns, along with their subsequent spending behavior.</p>
+<p>Without Causal Forests, they might simply run a standard A/B test on a small subset of customers to determine the overall average impact of the new campaign.  This will tell them if <em>on average</em> the campaign is effective, but it won't reveal whether certain customer segments respond more positively (or negatively) to the campaign.</p>
+<p>Using a Causal Forest, the company can:</p>
+<ol>
+<li>
+<p><strong>Input:</strong>  Customer data (features), treatment (exposed to the new marketing campaign or not), and outcome (subsequent spending).</p>
+</li>
+<li>
+<p><strong>Model Training:</strong> Train a Causal Forest to estimate the CATE, which, in this case, represents the <em>incremental spending increase due to the campaign</em> for each customer.</p>
+</li>
+<li>
+<p><strong>Analysis and Interpretation:</strong></p>
+<ul>
+<li><strong>Identify target segments:</strong> The Causal Forest can identify segments that are highly responsive to the campaign (e.g., young, affluent customers who have previously purchased related products).</li>
+<li><strong>Personalize marketing:</strong> Based on the CATE estimates, the company can tailor their marketing strategy.  For example, they might only send the campaign to customers with a high predicted CATE, or they might tailor the campaign message to appeal to specific segments.</li>
+<li><strong>Optimize budget allocation:</strong> The company can allocate their marketing budget more efficiently by focusing on the segments with the highest potential return on investment.</li>
+<li><strong>Discover insights:</strong> The tree splits reveal which customer characteristics are most predictive of treatment effect heterogeneity, leading to a better understanding of customer behavior and campaign effectiveness.</li>
+</ul>
+</li>
+</ol>
+<p>This example highlights how Causal Forests can move beyond a one-size-fits-all approach to marketing, enabling personalized interventions and maximizing the return on marketing investments.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single, universally agreed-upon "Causal Forest" package in Python that includes all possible variations, libraries like <code>EconML</code> and <code>CausalML</code> provide implementations of forest-based CATE estimators that adhere to the core principles of Causal Forests.</p>
+<p>Here's an example using <code>EconML</code> which provides an implementation called <code>DoubleMLForest</code>:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from econml.dml import DoubleMLForest
+
+# Generate synthetic data
+np.random.seed(123)
+n_samples = 500
+X = np.random.rand(n_samples, 5)  # Features
+T = np.random.randint(0, 2, n_samples)  # Treatment (0 or 1)
+e = np.random.randn(n_samples)  # Error term
+Y = 2 * X[:, 0] + T * (1 + X[:, 1]) + e  # Outcome
+
+# Split data into training and testing sets
+X_train, X_test, T_train, T_test, Y_train, Y_test = train_test_split(
+    X, T, Y, test_size=0.2, random_state=42
+)
+
+# Initialize DoubleMLForest
+# We need a separate model for Y and T (nuisance functions)
+est_model = RandomForestRegressor(random_state=42, n_estimators=100)
+prop_model = RandomForestRegressor(random_state=42, n_estimators=100)
+causal_forest = DoubleMLForest(model_y=est_model, model_t=prop_model, random_state=42)
+
+
+# Train the Causal Forest
+causal_forest.fit(Y_train, T_train, X=X_train)
+
+# Estimate the CATE on the test set
+cate_estimates = causal_forest.effect(X_test)
+
+# Print the first 5 CATE estimates
+print(&quot;CATE Estimates (first 5):&quot;, cate_estimates[:5])
+
+# Estimate the average treatment effect (ATE)
+ate = causal_forest.ate(X_test)
+print(&quot;ATE:&quot;, ate)
+
+# Estimate the individual treatment effect (ITE) / CATE for a new individual
+new_individual = np.array([[0.6, 0.2, 0.8, 0.1, 0.9]])  # Example feature vector
+ite = causal_forest.effect(new_individual)
+print(&quot;ITE for new individual:&quot;, ite)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Generation:</strong> The code generates synthetic data where the treatment effect <em>varies</em> with X[:, 1].  This is crucial for demonstrating CATE estimation.</li>
+<li><strong>Data Splitting:</strong>  The data is split into training and test sets.</li>
+<li><strong><code>DoubleMLForest</code> Initialization:</strong> <code>DoubleMLForest</code> from <code>EconML</code> is used. Note that  DoubleMLForest, like other DoubleML estimators, uses nuisance models to estimate the treatment propensities P(T=1|X) and the outcome function E[Y|X,T]. Here RandomForestRegressor are used for both.</li>
+<li><strong><code>fit()</code>:</strong> The <code>fit()</code> method trains the Causal Forest using the training data.</li>
+<li><strong><code>effect()</code>:</strong>  The <code>effect()</code> method estimates the CATE (treatment effect) for each observation in the test set <code>X_test</code>.</li>
+<li><strong><code>ate()</code>:</strong>  The <code>ate()</code> method estimates the Average Treatment Effect (ATE) on the test set.</li>
+<li><strong>Individual Treatment Effect (ITE):</strong> The code demonstrates how to estimate the ITE for a new, unseen individual using the trained model.</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>This example uses synthetic data.  When using real data, carefully preprocess your data and ensure that the assumptions of Causal Forests (e.g., unconfoundedness conditional on X) are reasonably met.</li>
+<li>Parameter tuning of the underlying Random Forest regressors can significantly impact performance.</li>
+<li>Other libraries like <code>CausalML</code> may offer alternative Causal Forest implementations.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we assess the <em>quality</em> or <em>validity</em> of the CATE estimates produced by a Causal Forest?  What metrics or techniques are available to evaluate the performance of a Causal Forest model, beyond simply examining the ATE?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
