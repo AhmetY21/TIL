@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scenario Generation: Monte Carlo vs historical vs parametric sampling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-scenario-generation-monte-carlo-vs-historical-vs-parametric-sampling">Topic: Scenario Generation: Monte Carlo vs historical vs parametric sampling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Scenario generation, in the context of stochastic programming, is the process of creating a finite set of plausible future realizations (scenarios) of uncertain parameters.  Stochastic programming models incorporate these scenarios to make decisions that are robust across different potential future states.  Rather than treating uncertain parameters as fixed values, stochastic programming allows for variability, reflecting the inherent uncertainty in real-world problems. The quality of the scenarios directly impacts the quality of the solution. Good scenarios should:</p>
+<ul>
+<li><strong>Represent the underlying uncertainty appropriately:</strong> They should capture the range of possible values and their probabilities.</li>
+<li><strong>Be realistic:</strong> Avoid scenarios that are completely implausible in the real world.</li>
+<li><strong>Be computationally manageable:</strong>  The number of scenarios significantly affects the computational complexity of solving the stochastic program.  Too many scenarios can make the problem intractable, while too few may lead to suboptimal or unrealistic decisions.</li>
+</ul>
+<p>Scenario generation techniques aim to achieve these goals using different approaches. Here's a breakdown of the three methods:</p>
+<ul>
+<li>
+<p><strong>Monte Carlo Sampling:</strong> This method involves simulating the uncertain parameters based on their assumed probability distributions.  We define the distribution(s) (e.g., normal, uniform, exponential) for each uncertain parameter and then generate a large number of random samples from these distributions. Each sample represents a possible scenario. We can then use a subset of these samples, or potentially reduce the number via scenario reduction techniques, to represent the uncertainty in the stochastic programming model.</p>
+</li>
+<li>
+<p><strong>Historical Sampling:</strong> This method uses historical data to create scenarios. We collect past observations of the uncertain parameters and treat each observation as a possible scenario. This is useful when probability distributions are unknown or difficult to estimate, but sufficient historical data is available.  Variations exist, such as resampling with replacement or bootstrapping. This is often used in financial applications where we have a long time series of returns.</p>
+</li>
+<li>
+<p><strong>Parametric Sampling:</strong> This method involves estimating the parameters of a known probability distribution from historical data (e.g., estimating the mean and standard deviation of a normal distribution) or using expert knowledge. Then, instead of simply using the historical data points directly, we sample from the fitted distribution. This combines the benefits of historical data with the ability to generate scenarios beyond the observed range and potentially smooth out noise in the historical data.  It also provides a more concise representation of the uncertainty than simply using all historical data.</p>
+</li>
+</ul>
+<p>How to use it: Once the scenarios are generated using one of these methods (or a combination thereof), they are incorporated into the stochastic programming model. The model then optimizes a decision variable subject to constraints that hold (or are likely to hold) for each scenario. The objective function usually includes a risk measure or expected value calculation across all scenarios.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Supply Chain Network Design Under Demand Uncertainty:</strong></p>
+<p>Consider a company designing its supply chain network. They need to decide where to locate warehouses and how much inventory to hold at each location. The demand for their products is uncertain.</p>
+<ul>
+<li>
+<p><strong>Monte Carlo Sampling:</strong>  Assume that demand in each region follows a normal distribution. Using historical sales data or market analysis, estimate the mean and standard deviation of demand for each region. Then, use Monte Carlo simulation to generate a set of demand scenarios for each region.</p>
+</li>
+<li>
+<p><strong>Historical Sampling:</strong>  Collect historical sales data for each region over the past few years.  Each year's demand data becomes a scenario. This approach doesn't assume any underlying distribution.</p>
+</li>
+<li>
+<p><strong>Parametric Sampling:</strong>  Fit a probability distribution (e.g., normal, gamma) to the historical sales data for each region. Then, sample from the fitted distribution to generate demand scenarios. This approach acknowledges historical trends but allows for extrapolation and capturing the overall shape of the data, rather than relying solely on past observations.</p>
+</li>
+</ul>
+<p>The stochastic programming model would then decide the optimal warehouse locations and inventory levels, considering the costs of opening warehouses, transportation costs, inventory holding costs, and potential penalties for unmet demand across all generated scenarios.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+
+# Example using numpy for scenario generation
+def monte_carlo_scenario_generation(num_scenarios, mean, std_dev):
+    &quot;&quot;&quot;Generates scenarios using Monte Carlo simulation.
+
+    Args:
+        num_scenarios: The number of scenarios to generate.
+        mean: The mean of the normal distribution.
+        std_dev: The standard deviation of the normal distribution.
+
+    Returns:
+        A numpy array of scenarios.
+    &quot;&quot;&quot;
+    scenarios = np.random.normal(loc=mean, scale=std_dev, size=num_scenarios)
+    return scenarios
+
+def historical_scenario_generation(historical_data):
+  &quot;&quot;&quot;Generates scenarios from historical data by simply using the data directly.
+
+  Args:
+      historical_data: A list or numpy array containing historical data.
+
+  Returns:
+      A numpy array containing the historical data as scenarios.
+  &quot;&quot;&quot;
+  return np.array(historical_data)
+
+
+def parametric_scenario_generation(num_scenarios, historical_data):
+  &quot;&quot;&quot;Generates scenarios by fitting a normal distribution to historical data and sampling from it.
+
+  Args:
+      num_scenarios: The number of scenarios to generate.
+      historical_data: A list or numpy array containing historical data.
+
+  Returns:
+      A numpy array of scenarios.
+  &quot;&quot;&quot;
+  mean = np.mean(historical_data)
+  std_dev = np.std(historical_data)
+  scenarios = np.random.normal(loc=mean, scale=std_dev, size=num_scenarios)
+  return scenarios
+
+# Example Usage
+num_scenarios = 100
+
+# Monte Carlo Example
+mean_demand = 100
+std_dev_demand = 20
+mc_scenarios = monte_carlo_scenario_generation(num_scenarios, mean_demand, std_dev_demand)
+print(&quot;Monte Carlo Scenarios (first 5):&quot;, mc_scenarios[:5])
+
+# Historical Example
+historical_demand = [80, 90, 110, 120, 100, 95, 105]
+historical_scenarios = historical_scenario_generation(historical_demand)
+print(&quot;Historical Scenarios:&quot;, historical_scenarios)
+
+# Parametric Example
+parametric_scenarios = parametric_scenario_generation(num_scenarios, historical_demand)
+print(&quot;Parametric Scenarios (first 5):&quot;, parametric_scenarios[:5])
+
+# Example using Pandas for Historical Scenario generation (easier to work with time series data)
+# Simulate some daily demand data
+dates = pd.date_range('2023-01-01', periods=365, freq='D')
+demand_values = np.random.randint(50, 150, size=365) # Random demand between 50 and 150
+demand_data = pd.DataFrame({'Date': dates, 'Demand': demand_values})
+demand_data = demand_data.set_index('Date')
+
+# Now we can use historical sampling directly from the pandas DataFrame
+historical_scenarios_pandas = demand_data['Demand'].values # numpy array
+print(&quot;Historical Pandas Scenarios (first 5):&quot;, historical_scenarios_pandas[:5])
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can scenario reduction techniques be used to reduce the computational burden associated with large scenario sets generated by Monte Carlo simulation, while still maintaining a representative set of scenarios for the stochastic programming model? Can you provide examples of common scenario reduction methods?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
