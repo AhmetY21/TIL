@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instrumental Variables (IV): Relevance and Exclusion</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-instrumental-variables-iv-relevance-and-exclusion">Topic: Instrumental Variables (IV): Relevance and Exclusion</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Instrumental Variables (IV) is a statistical technique used in causal inference to estimate the causal effect of a treatment or exposure (X) on an outcome (Y) when there is confounding, meaning the relationship between X and Y is influenced by other variables (U) that affect both. IVs exploit a third variable (Z), the <em>instrument</em>, that is related to the treatment but not directly to the outcome, except through the treatment. This allows us to isolate the causal effect of X on Y.</p>
+<p>More formally:</p>
+<ul>
+<li><strong>Instrument (Z):</strong> A variable that influences the treatment (X) but does <em>not</em> directly influence the outcome (Y), except through its effect on X.</li>
+</ul>
+<p>To be a valid instrument, Z must satisfy two key conditions:</p>
+<ul>
+<li>
+<p><strong>Relevance:</strong> The instrument (Z) is correlated with the treatment (X). Mathematically, cov(Z, X) != 0. This means that the instrument must have a significant effect on the likelihood or intensity of the treatment.  A weak instrument has a small correlation with X, which can lead to biased estimates of the causal effect.</p>
+</li>
+<li>
+<p><strong>Exclusion Restriction:</strong> The instrument (Z) affects the outcome (Y) only through its effect on the treatment (X). Mathematically, cov(Z, Y | X, U) = 0, where U represents unobserved confounders. This means that there are no direct pathways from Z to Y other than through X. This is the hardest assumption to verify, as it states a <em>lack</em> of effect.</p>
+</li>
+</ul>
+<p>In essence, IV allows us to "mimic" a randomized controlled trial (RCT) even when we can't directly randomize the treatment itself. By leveraging the instrument, we can estimate the effect of X on Y by examining how changes in Z influence changes in Y, knowing that the only way Z can influence Y is through X (given the exclusion restriction).</p>
+<p>Two common methods for implementing IV are:</p>
+<ol>
+<li>
+<p><strong>Two-Stage Least Squares (2SLS):</strong> A two-step regression approach:</p>
+<ul>
+<li><em>Stage 1:</em> Regress the treatment (X) on the instrument (Z) and any control variables. Obtain the predicted values of X (denoted as X_hat).</li>
+<li><em>Stage 2:</em> Regress the outcome (Y) on the predicted values of X (X_hat) and any control variables.  The coefficient on X_hat in this second regression is the IV estimate of the causal effect of X on Y.</li>
+</ul>
+</li>
+<li>
+<p><strong>Wald Estimator:</strong> A simplified version of 2SLS applicable when both X and Z are binary. It calculates the causal effect as:</p>
+<p>Causal Effect = (Change in Y caused by Z) / (Change in X caused by Z) =  (E[Y | Z=1] - E[Y | Z=0]) / (E[X | Z=1] - E[X | Z=0])</p>
+</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> We want to estimate the effect of education (X) on income (Y). However, there are likely unobserved confounders (U) like ability, family background, and motivation that affect both education and income. These confounders make it difficult to isolate the causal effect of education.</p>
+<p><strong>Instrument:</strong> Distance to the nearest college (Z).</p>
+<p><strong>Relevance:</strong> Students who live closer to a college are more likely to attend college (cov(Z, X) != 0).  The closer you live, the lower the barriers to entry (e.g., commute time, cost).</p>
+<p><strong>Exclusion Restriction:</strong> Distance to college affects income <em>only</em> through its effect on education (cov(Z, Y | X, U) = 0).  We assume that distance to college doesn't directly influence your earning potential in other ways, <em>except</em> by influencing how much education you get.  This is a strong assumption that might be violated if, for example, living in an area with many colleges provides other opportunities (jobs, networking) independent of your education level.</p>
+<p><strong>Using IV:</strong> We can use the distance to college as an instrument for education to estimate the causal effect of education on income.  We would first estimate the relationship between distance to college and years of education, and then use that relationship to estimate the effect of predicted education on income.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import pandas as pd
+import numpy as np
+
+# Simulate some data
+np.random.seed(0)
+n = 500
+
+# Simulate unobserved confounder
+U = np.random.normal(0, 1, n)
+
+# Simulate instrument (distance to college)
+Z = np.random.normal(0, 1, n)
+
+# Simulate treatment (education) - affected by instrument and confounder
+X = 0.5*Z + 0.7*U + np.random.normal(0, 1, n)
+
+# Simulate outcome (income) - affected by treatment and confounder
+Y = 2*X + 0.9*U + np.random.normal(0, 1, n)
+
+df = pd.DataFrame({'Y': Y, 'X': X, 'Z': Z, 'U':U}) #Added 'U' to dataframe
+
+# Two-Stage Least Squares (2SLS) using statsmodels
+
+# Stage 1: Regress X on Z
+first_stage = smf.ols('X ~ Z', data=df).fit()
+df['X_hat'] = first_stage.predict(df)  # Predicted values of X
+
+# Stage 2: Regress Y on X_hat
+second_stage = smf.ols('Y ~ X_hat', data=df).fit()
+
+print(&quot;2SLS Results:&quot;)
+print(second_stage.summary())
+
+# Alternative using statsmodels' IV2SLS class.
+from statsmodels.sandbox.regression.iv import IV2SLS
+
+iv_model = IV2SLS(df['Y'], df['X'], df['Z']).fit()
+
+print(&quot;\nIV2SLS Results (more concise):&quot;)
+print(iv_model.summary)
+
+# OLS (ignoring confounding) for comparison
+ols_model = smf.ols('Y ~ X', data=df).fit()
+print(&quot;\nOLS Results (biased due to confounding):&quot;)
+print(ols_model.summary())
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>We simulate data with an unobserved confounder (U) affecting both X and Y.</li>
+<li>We define our instrument Z.</li>
+<li>We perform 2SLS using <code>statsmodels</code>. First we regress X on Z, and then Y on the predicted values of X.</li>
+<li>We compare the 2SLS results to OLS, which is biased due to the confounding. The coefficient on X in the OLS regression is closer to 2 + 0.9*0.7 = 2.63 because it captures the causal effect plus the effect of the confounder U.  The IV results should be closer to 2 because it's designed to remove that bias.</li>
+<li>The <code>IV2SLS</code> class provides a more direct way to implement IV in <code>statsmodels</code>.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you test for weak instruments and what are the consequences of using a weak instrument? What are some approaches to dealing with weak instruments?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
