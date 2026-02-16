@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two-Stage Decomposition: Benders (L-shaped) method — idea</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-two-stage-decomposition-benders-l-shaped-method-idea">Topic: Two-Stage Decomposition: Benders (L-shaped) method — idea</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Benders decomposition method, also known as the L-shaped method, is a technique for solving two-stage stochastic linear programming problems (or problems with similar block angular structure). These problems involve making decisions in two stages:</p>
+<ul>
+<li>
+<p><strong>First-stage decisions (here-and-now decisions):</strong>  These decisions must be made before the realization of any uncertainty. They are represented by a vector <em>x</em>.</p>
+</li>
+<li>
+<p><strong>Second-stage decisions (recourse decisions):</strong> These decisions can be made <em>after</em> observing the uncertain parameters. They are represented by a vector <em>y</em>. The second-stage decisions are designed to "recourse" or correct for any adverse effects of the uncertainty on the first-stage decisions.</p>
+</li>
+</ul>
+<p>The typical two-stage stochastic linear programming problem can be written as:</p>
+<pre class="codehilite"><code>min c'x + E[Q(x, ξ)]
+s.t. Ax = b
+x ∈ X
+</code></pre>
+
+<p>Where:</p>
+<ul>
+<li><em>x</em> is the vector of first-stage decision variables.</li>
+<li><em>c</em> is the cost vector associated with the first-stage variables.</li>
+<li><em>ξ</em> represents the random parameters (e.g., demand, costs).</li>
+<li><em>E[Q(x, ξ)]</em> is the expected value of the second-stage cost.</li>
+<li><em>A</em> is a matrix of coefficients for the first-stage constraints.</li>
+<li><em>b</em> is the right-hand side vector for the first-stage constraints.</li>
+<li><em>X</em> is the feasible set for the first-stage variables (e.g., non-negativity constraints).</li>
+<li><em>Q(x, ξ)</em> is the optimal value of the second-stage problem, given <em>x</em> and the realization of <em>ξ</em>. The second-stage problem is:</li>
+</ul>
+<pre class="codehilite"><code>Q(x, ξ) = min q'y
+s.t. Wy = h - Tx
+y ∈ Y
+</code></pre>
+
+<p>Where:</p>
+<ul>
+<li><em>y</em> is the vector of second-stage decision variables.</li>
+<li><em>q</em> is the cost vector associated with the second-stage variables.</li>
+<li><em>W</em> is the matrix of coefficients for the second-stage constraints.</li>
+<li><em>h</em> is the right-hand side vector for the second-stage constraints (dependent on <em>ξ</em>).</li>
+<li><em>T</em> is a matrix relating the first-stage variables to the second-stage constraints.</li>
+<li><em>Y</em> is the feasible set for the second-stage variables (e.g., non-negativity constraints).</li>
+</ul>
+<p><strong>Idea of the L-shaped method:</strong></p>
+<p>The L-shaped method decomposes the problem into two parts:</p>
+<ol>
+<li>
+<p><strong>Master Problem:</strong> Deals with the first-stage variables <em>x</em> and approximates the expected second-stage cost <em>E[Q(x, ξ)]</em> using linear cuts.</p>
+</li>
+<li>
+<p><strong>Subproblems:</strong> For a given <em>x</em>, these are the second-stage problems solved for different realizations of the random parameters <em>ξ</em>. These subproblems generate feasibility and optimality cuts that are added to the master problem to improve the approximation of <em>E[Q(x, ξ)]</em>.</p>
+</li>
+</ol>
+<p>The algorithm iteratively solves the master problem and subproblems, adding cuts to the master problem based on the subproblem solutions. This process continues until a satisfactory solution is found. The cuts are of two types:</p>
+<ul>
+<li><strong>Optimality Cuts:</strong>  These cuts approximate the cost function E[Q(x, ξ)] from below.</li>
+<li><strong>Feasibility Cuts:</strong>  These cuts eliminate first-stage solutions <em>x</em> that lead to infeasible second-stage problems for some realization of <em>ξ</em>.</li>
+</ul>
+<p>The L-shaped method allows us to solve large-scale stochastic programs by iteratively improving the first-stage solution and progressively refining the approximation of the second-stage cost.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A common application is <strong>supply chain management under demand uncertainty</strong>.</p>
+<p>Imagine a company that needs to decide how much inventory to stock in its warehouses (<em>x</em> - first-stage decision). The demand for the product is uncertain (<em>ξ</em> - random parameter). After observing the actual demand, the company can decide how much to produce or purchase to meet the demand (<em>y</em> - second-stage decision).</p>
+<ul>
+<li><strong>Objective:</strong> Minimize the total cost, including inventory holding costs, production/purchase costs, and potential shortage costs.</li>
+<li><strong>First-Stage:</strong> Deciding on the initial inventory levels at warehouses before knowing the true demand.</li>
+<li><strong>Second-Stage:</strong> Determining the optimal production/purchase quantities after observing the actual demand to satisfy customer needs, potentially incurring penalties for shortages.</li>
+</ul>
+<p>The Benders decomposition method can be used to find the optimal inventory levels (<em>x</em>) by iteratively solving a master problem that minimizes the first-stage costs plus an approximation of the expected second-stage costs (production/purchase and shortage costs). The subproblems would involve solving the second-stage problem for different demand scenarios to generate cuts that refine the approximation in the master problem.</p>
+<p>Another scenario is <strong>investment planning with uncertain returns</strong>.  You must decide on the amount of capital to invest in different projects (x) now.  The returns of the projects depend on uncertain market conditions (ξ).  In the second stage, you can re-allocate resources or invest in different projects (y) to optimize your overall profit.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+def benders_decomposition(c, A, b, q, W, T, h, num_scenarios):
+    &quot;&quot;&quot;
+    Implements a simplified Benders decomposition for a two-stage stochastic LP.
+
+    Args:
+        c: Cost vector for first-stage variables (x).
+        A: Constraint matrix for first-stage constraints.
+        b: Right-hand side vector for first-stage constraints.
+        q: Cost vector for second-stage variables (y).
+        W: Constraint matrix for second-stage constraints.
+        T: Matrix relating first-stage variables to second-stage constraints.
+        h: Right-hand side vector for second-stage constraints (scenarios).
+        num_scenarios: Number of scenarios to consider.
+
+    Returns:
+        x_optimal: Optimal first-stage solution.
+    &quot;&quot;&quot;
+
+    # Master Problem
+    master_model = pyo.ConcreteModel()
+    master_model.x = pyo.Var(range(len(c)), within=pyo.NonNegativeReals)  # First-stage variables
+    master_model.theta = pyo.Var(within=pyo.Reals)  # Approximation of expected second-stage cost
+
+    # Objective Function
+    master_model.objective = pyo.Objective(expr=sum(c[i] * master_model.x[i] for i in range(len(c))) + master_model.theta,
+                                        sense=pyo.minimize)
+
+    # First-stage Constraints
+    master_model.first_stage_constraints = pyo.ConstraintList()
+    for i in range(len(b)):
+        master_model.first_stage_constraints.add(expr=sum(A[i, j] * master_model.x[j] for j in range(len(c))) &lt;= b[i])
+
+    # Optimality Cuts (Initially empty)
+    master_model.optimality_cuts = pyo.ConstraintList()
+
+    # Optimizer
+    solver = pyo.SolverFactory('glpk')  # You can use other solvers like 'gurobi' or 'cplex'
+
+    # Benders Iteration
+    max_iterations = 10
+    for iteration in range(max_iterations):
+        print(f&quot;Iteration: {iteration + 1}&quot;)
+
+        # Solve Master Problem
+        solver.solve(master_model)
+        x_val = [pyo.value(master_model.x[i]) for i in range(len(c))]  # Current first-stage solution
+        theta_val = pyo.value(master_model.theta)
+
+        # Subproblem (Second-Stage Problem)
+        subproblem_model = pyo.ConcreteModel()
+        subproblem_model.y = pyo.Var(range(len(q)), within=pyo.NonNegativeReals)  # Second-stage variables
+        subproblem_model.scenario = pyo.Param(initialize=0) # parameter used to select the correct h.
+
+        # Objective Function
+        subproblem_model.objective = pyo.Objective(expr=sum(q[i] * subproblem_model.y[i] for i in range(len(q))),
+                                                sense=pyo.minimize)
+
+        # Second-stage Constraints
+        subproblem_model.constraints = pyo.ConstraintList()
+        for i in range(W.shape[0]):
+            subproblem_model.constraints.add(expr=sum(W[i, j] * subproblem_model.y[j] for j in range(len(q))) == h[subproblem_model.scenario.value, i] - sum(T[i,j] * x_val[j] for j in range(len(c))))
+
+
+        # Evaluate subproblem for each scenario and generate cuts
+        expected_cost = 0
+        for scenario in range(num_scenarios):
+            subproblem_model.scenario.value = scenario
+            subproblem_instance = subproblem_model.create_instance()
+            results = solver.solve(subproblem_instance)
+
+            if results.solver.termination_condition != pyo.TerminationCondition.optimal:
+                print(&quot;Subproblem infeasible or unbounded. This implementation requires modifications to handle this.&quot;)
+                return None # need to add feasibility cuts to the master problem when this is needed
+
+            obj_val = pyo.value(subproblem_instance.objective)
+            expected_cost += obj_val
+
+        expected_cost /= num_scenarios # average over all scenarios
+
+        #Generate Optimality Cut (assuming dual solutions are available from the subproblems - simplified)
+        master_model.optimality_cuts.add(master_model.theta &gt;= expected_cost ) # replace with correct dual value from subproblem if dual values are available.
+
+        #Convergence check is not rigorously implemented. This is a simplified example.
+        if abs(theta_val - expected_cost) &lt; 0.001:
+             print(&quot;Convergence reached.&quot;)
+             break
+
+    x_optimal = [pyo.value(master_model.x[i]) for i in range(len(c))]
+    return x_optimal
+
+
+# Example Usage (small illustrative example)
+if __name__ == '__main__':
+    # First-stage data
+    c = np.array([2, 3])  # Cost vector for x
+    A = np.array([[1, 1]])  # Constraint matrix for x
+    b = np.array([5])  # Right-hand side for x constraints
+
+    # Second-stage data
+    q = np.array([1, 2])  # Cost vector for y
+    W = np.array([[1, 1]])  # Constraint matrix for y
+    T = np.array([[1, 1]])  # Matrix relating x to y constraints
+    h = np.array([[7, 8], [6,9]])  # Right-hand side for y constraints (scenarios)
+    num_scenarios = 2
+
+    # Run Benders Decomposition
+    x_optimal = benders_decomposition(c, A, b, q, W, T, h, num_scenarios)
+
+    if x_optimal:
+        print(&quot;Optimal first-stage solution:&quot;, x_optimal)
+    else:
+        print(&quot;Benders decomposition failed.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>benders_decomposition(c, A, b, q, W, T, h, num_scenarios)</code> function:</strong></p>
+<ul>
+<li>Takes the problem parameters as input.</li>
+<li>Creates a Pyomo model for the master problem.</li>
+<li>Iteratively solves the master problem and subproblems.</li>
+<li>Adds optimality cuts to the master problem based on the subproblem solutions.</li>
+<li>Returns the optimal first-stage solution <code>x_optimal</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Master Problem:</strong></p>
+<ul>
+<li><code>master_model.x</code>: First-stage decision variables.</li>
+<li><code>master_model.theta</code>: Approximation of the expected second-stage cost.  The algorithm tries to find the best x, while finding a theta that is a lower bound on the average cost from the subproblem.  As the cuts are added, theta will increase (or stay the same) towards the real expected second stage cost.</li>
+<li><code>master_model.objective</code>: Minimizes the first-stage cost plus the approximation of the second-stage cost.</li>
+<li><code>master_model.first_stage_constraints</code>: First-stage constraints.</li>
+<li><code>master_model.optimality_cuts</code>: List of optimality cuts (initially empty).</li>
+</ul>
+</li>
+<li>
+<p><strong>Subproblem:</strong></p>
+<ul>
+<li><code>subproblem_model.y</code>: Second-stage decision variables.</li>
+<li><code>subproblem_model.objective</code>: Minimizes the second-stage cost.</li>
+<li><code>subproblem_model.constraints</code>: Second-stage constraints, depending on the first-stage solution <em>x</em> and the scenario <em>ξ</em>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Benders Iteration:</strong></p>
+<ul>
+<li>Solves the master problem to get a candidate first-stage solution <em>x</em>.</li>
+<li>Solves the subproblem for each scenario to evaluate the second-stage cost given <em>x</em>.</li>
+<li>Calculates the expected second-stage cost across all scenarios.</li>
+<li>Generates an optimality cut based on the subproblem solutions. <strong>Important:</strong> This simplified example directly uses the optimal objective value of the subproblem in the cut. A proper implementation would typically use the dual variables of the subproblem to form the cut.</li>
+<li>Adds the optimality cut to the master problem.</li>
+<li>A convergence check is used to see if <code>theta_val</code> is close to the <code>expected_cost</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Example Usage:</strong></p>
+<ul>
+<li>Provides a small example problem to demonstrate the usage of the <code>benders_decomposition</code> function.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Dual Variables:</strong>  A true Benders implementation relies on the <em>dual variables</em> of the second-stage problem to construct the cuts.  The dual variables contain information about the sensitivity of the optimal objective value to changes in the constraints, which is crucial for generating effective cuts.  This simplified example <em>approximates</em> this by using the optimal objective value directly.  A real implementation should calculate dual solutions.</li>
+<li><strong>Feasibility Cuts:</strong> The provided code <em>doesn't include feasibility cuts</em>.  If the subproblem is infeasible for some scenarios, you need to add feasibility cuts to the master problem to exclude first-stage solutions that lead to infeasibility. This requires solving the subproblem to determine the extreme rays of the dual feasible region and using these to formulate the cuts.</li>
+<li><strong>Convergence:</strong> The convergence check is very rudimentary. Proper Benders implementations use tighter convergence criteria based on duality gaps and objective function bounds.</li>
+<li><strong>Solver:</strong>  You'll need a suitable LP solver installed (e.g., GLPK, Gurobi, CPLEX) and accessible through Pyomo.</li>
+<li><strong>Scenario Generation:</strong> For problems with a large number of scenarios, you'll typically use scenario generation techniques (e.g., Monte Carlo simulation, sampling methods) to generate a representative set of scenarios.</li>
+<li><strong>Integer Variables:</strong>  This code focuses on linear programming.  For problems with integer variables, the Benders decomposition algorithm needs to be adapted, typically using branch-and-cut techniques.</li>
+<li><strong>Scalability:</strong> Benders decomposition can be very effective for certain problem structures, but its performance depends heavily on the formulation and the properties of the subproblems.</li>
+</ul>
+<p>This simplified example provides a basic understanding of the Benders decomposition idea.  A complete and robust implementation would require handling dual variables, feasibility cuts, and more sophisticated convergence criteria.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you handle infeasibility in the second-stage problem within the Benders decomposition framework, and what form do the corresponding "feasibility cuts" take?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
