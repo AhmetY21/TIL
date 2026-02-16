@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Topic Modeling: Latent Semantic Analysis (LSA)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-topic-modeling-latent-semantic-analysis-lsa">Topic: Topic Modeling: Latent Semantic Analysis (LSA)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Latent Semantic Analysis (LSA), also known as Latent Semantic Indexing (LSI), is a technique in natural language processing (NLP) used for topic modeling and dimensionality reduction. It aims to uncover the latent (hidden) semantic structure within a collection of documents.</p>
+<p><strong>What it is:</strong> LSA is based on the assumption that there is an underlying semantic structure in the usage of words across documents, even if words don't explicitly appear together. It uses singular value decomposition (SVD) to reduce the dimensions of a term-document matrix.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>
+<p><strong>Term-Document Matrix:</strong>  A matrix is created where rows represent terms (words) and columns represent documents.  Each cell (i, j) contains a value representing the frequency of term 'i' in document 'j' (e.g., term frequency-inverse document frequency, or TF-IDF).</p>
+</li>
+<li>
+<p><strong>Singular Value Decomposition (SVD):</strong> The matrix is decomposed using SVD into three matrices:  U, Σ, and V<sup>T</sup>.</p>
+<ul>
+<li><strong>U (Term-Topic Matrix):</strong>  Represents the relationship between terms and topics.  Each row corresponds to a term, and each column corresponds to a topic. The values indicate the importance of the term for that topic.</li>
+<li><strong>Σ (Singular Values):</strong>  A diagonal matrix containing singular values. These values represent the "strength" or importance of each topic.</li>
+<li><strong>V<sup>T</sup> (Topic-Document Matrix):</strong> Represents the relationship between topics and documents.  Each row corresponds to a topic, and each column corresponds to a document. The values indicate the relevance of the topic to that document.</li>
+</ul>
+</li>
+<li>
+<p><strong>Dimensionality Reduction:</strong> The 'k' largest singular values (and corresponding columns/rows in U and V<sup>T</sup>) are kept, where 'k' is the desired number of topics. This truncation reduces the dimensionality of the matrices while retaining the most important information, effectively capturing the underlying semantic structure. The reduced matrices are U<sub>k</sub>, Σ<sub>k</sub>, and V<sub>k</sub><sup>T</sup>.</p>
+</li>
+</ol>
+<p><strong>How can we use it?:</strong></p>
+<ul>
+<li><strong>Topic Modeling:</strong>  By examining the terms with the highest values in the U matrix for a given topic, we can interpret the meaning of that topic.  Similarly, the V<sup>T</sup> matrix shows the relevance of each document to each topic.</li>
+<li><strong>Document Similarity:</strong> Documents can be compared based on their topic vectors (rows in V<sup>T</sup>).  Documents with similar topic vectors are considered semantically similar.</li>
+<li><strong>Information Retrieval:</strong>  LSA can be used to retrieve documents relevant to a query, even if the query doesn't contain the exact same words as the documents. The query can be represented as a pseudo-document and compared to the document vectors in V<sup>T</sup>.</li>
+<li><strong>Dimensionality Reduction:</strong> The reduced matrices can be used for downstream tasks like clustering or classification, reducing computational complexity and potentially improving performance.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Suppose we have a collection of news articles about various topics like politics, sports, technology, and finance. We want to automatically group these articles into meaningful topics.</p>
+<p><strong>How LSA can be applied:</strong></p>
+<ol>
+<li><strong>Data Preprocessing:</strong> Clean the text data (e.g., remove stop words, punctuation, and perform stemming or lemmatization).</li>
+<li><strong>Term-Document Matrix Creation:</strong> Build a term-document matrix, where rows represent words and columns represent news articles.  TF-IDF weighting is commonly used.</li>
+<li><strong>LSA Application:</strong> Apply SVD to the term-document matrix and reduce the dimensionality to a smaller number of topics (e.g., 10-20).</li>
+<li><strong>Topic Interpretation:</strong>  Examine the top words associated with each topic (from the U matrix). For example, a topic might have words like "election," "candidate," "vote," and "campaign," indicating that it represents the "Politics" topic.</li>
+<li><strong>Document Assignment:</strong>  Assign each news article to the most relevant topic based on its vector in the V<sup>T</sup> matrix.</li>
+<li><strong>Insights:</strong> By analyzing the topics and the articles assigned to them, we can gain insights into the main themes covered in the news articles. We can also identify relationships between different topics or articles.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import TruncatedSVD
+
+# Sample documents
+documents = [
+    &quot;The cat sat on the mat.&quot;,
+    &quot;The dog chased the cat.&quot;,
+    &quot;The bird flew in the sky.&quot;,
+    &quot;The airplane took off from the airport.&quot;,
+    &quot;Machine learning is a subset of artificial intelligence.&quot;,
+    &quot;Deep learning is a type of machine learning.&quot;
+]
+
+# 1. Create the Term-Document Matrix using TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english') # Remove common English stop words
+X = vectorizer.fit_transform(documents)
+
+# 2. Apply Truncated SVD (LSA)
+n_components = 2  # Number of topics to extract
+svd = TruncatedSVD(n_components=n_components, random_state=42)
+svd.fit(X)
+
+# 3. Get the topic-term matrix (U matrix)
+terms = vectorizer.get_feature_names_out()
+for i, comp in enumerate(svd.components_):
+    terms_zip = zip(terms, comp)
+    sorted_terms = sorted(terms_zip, key=lambda x: x[1], reverse=True)[:5] # Top 5 terms per topic
+    print(f&quot;Topic {i}:&quot;)
+    for term, value in sorted_terms:
+        print(f&quot;{term}: {value:.3f}&quot;)
+    print(&quot;\n&quot;)
+
+# 4. Get the document-topic matrix (V^T matrix)
+document_topic_matrix = svd.transform(X)
+print(&quot;Document-Topic Matrix:&quot;)
+print(document_topic_matrix)
+
+# Example: Check topic distribution of first document
+print(f&quot;\nTopic distribution for document 1: {document_topic_matrix[0]}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>TfidfVectorizer:</strong>  Used to create the term-document matrix with TF-IDF weighting.  <code>stop_words='english'</code> removes common English words that don't carry much meaning.</li>
+<li><strong>TruncatedSVD:</strong>  This is the scikit-learn implementation of SVD used in LSA. We specify the number of components (topics) we want to extract using <code>n_components</code>. <code>random_state</code> ensures reproducibility.  Truncated SVD is preferred over regular SVD for large sparse matrices, which are common in text data.</li>
+<li><strong>svd.components_:</strong>  This attribute holds the U<sup>T</sup> matrix (transpose of the U matrix). Each row represents a topic, and the values indicate the importance of each term for that topic.</li>
+<li><strong>svd.transform(X):</strong>  Transforms the term-document matrix X into the document-topic matrix (V<sup>T</sup> matrix).</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does LSA handle polysemy (words with multiple meanings) and synonymy (different words with similar meanings), and what are its limitations in addressing these challenges compared to more advanced topic modeling techniques like LDA (Latent Dirichlet Allocation)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
