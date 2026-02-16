@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regression Discontinuity Design (RDD)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-regression-discontinuity-design-rdd">Topic: Regression Discontinuity Design (RDD)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Regression Discontinuity Design (RDD) is a quasi-experimental research design that allows researchers to estimate the causal effect of a treatment or intervention by exploiting a discontinuity in the assignment rule. In essence, individuals are assigned to treatment or control based on a continuous variable (called the "running variable" or "forcing variable") and a predetermined cutoff. Those just above the cutoff receive the treatment, while those just below do not.</p>
+<p>The core idea is that individuals just above and just below the cutoff are, on average, very similar except for their treatment status. Therefore, any jump (discontinuity) in the outcome variable at the cutoff can be attributed to the effect of the treatment. This relies on the assumption that the running variable itself does not directly cause the outcome (only indirectly through the treatment) and that other factors influencing the outcome are smoothly distributed around the cutoff.</p>
+<p>Two main types of RDD exist:</p>
+<ul>
+<li>
+<p><strong>Sharp RDD:</strong>  Treatment assignment is entirely determined by the cutoff.  If the running variable is above the cutoff, the individual <em>always</em> receives treatment; if below, they <em>never</em> receive treatment. This is the simpler and more commonly used type.</p>
+</li>
+<li>
+<p><strong>Fuzzy RDD:</strong>  The probability of receiving treatment jumps at the cutoff, but treatment assignment is not completely determined by the running variable.  Some individuals above the cutoff might not receive treatment, and some below might receive it.  Fuzzy RDD requires an instrumental variable approach, using the assignment rule (being above or below the cutoff) as an instrument for actual treatment receipt.</p>
+</li>
+</ul>
+<p>We use RDD to estimate a <em>local</em> average treatment effect (LATE) - the average treatment effect for those individuals whose treatment status is determined by the cutoff.  This makes RDD useful when a randomized controlled trial (RCT) is not feasible or ethical.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A common application scenario for RDD is evaluating the impact of scholarships on academic performance. Suppose a university offers a scholarship to students who score above a certain threshold on a standardized test (the running variable).  Students just above the threshold receive the scholarship (the treatment), while those just below do not.</p>
+<p>The outcome variable of interest might be the students' GPA after one year of college. We can use RDD to estimate the causal effect of receiving the scholarship on GPA by comparing the GPA of students slightly above the threshold to the GPA of students slightly below the threshold.  The assumption is that these two groups of students are otherwise similar in terms of their academic ability, motivation, and other factors that might affect GPA. Any significant difference in GPA at the threshold can be attributed to the effect of the scholarship.</p>
+<p>Another application is determining the effect of legal drinking age on mortality. The legal drinking age (say, 21) is the threshold, and the running variable is age. The outcome is mortality. We can compare mortality rates of people just above and just below the age of 21 to see if access to alcohol causes a jump in mortality.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Simulate some data (Sharp RDD)
+np.random.seed(123)
+n = 200
+cutoff = 0
+
+# Running variable
+x = np.random.normal(0, 1, n)
+
+# Treatment assignment
+treatment = (x &gt; cutoff).astype(int)
+
+# True effect of treatment
+treatment_effect = 1.5
+
+# Outcome variable (with some noise)
+y = 2 + 0.5*x + treatment_effect*treatment + np.random.normal(0, 0.5, n)
+
+# Create a Pandas DataFrame
+data = pd.DataFrame({'x': x, 'treatment': treatment, 'y': y})
+
+# Estimate the RDD model using statsmodels
+# We use a linear regression with an interaction term
+model = smf.ols(&quot;y ~ x + treatment + x:treatment&quot;, data=data).fit()
+print(model.summary())
+
+
+# Plot the data and the regression lines
+x_plot = np.linspace(min(x), max(x), 100)
+y_pred_below = model.params['Intercept'] + model.params['x'] * x_plot
+y_pred_above = (model.params['Intercept'] + model.params['treatment']) + (model.params['x'] + model.params['x:treatment']) * x_plot
+
+
+plt.scatter(x, y, label='Data')
+plt.plot(x_plot, y_pred_below, color='red', label='Regression Line (Below Cutoff)')
+plt.plot(x_plot, y_pred_above, color='green', label='Regression Line (Above Cutoff)')
+plt.axvline(x=cutoff, color='black', linestyle='--', label='Cutoff')
+plt.xlabel('Running Variable (x)')
+plt.ylabel('Outcome (y)')
+plt.title('Regression Discontinuity Design')
+plt.legend()
+plt.show()
+
+# Estimate the jump at the cutoff (treatment effect)
+treatment_effect_estimate = model.params['treatment']
+print(f&quot;Estimated Treatment Effect: {treatment_effect_estimate}&quot;)
+</code></pre>
+
+<p>The Python code simulates data for a sharp RDD, estimates the effect of the treatment using linear regression with interaction terms, plots the regression lines, and prints the estimated treatment effect. Key points:</p>
+<ul>
+<li><code>statsmodels</code> is used for the regression analysis.</li>
+<li>The model includes the running variable (<code>x</code>), the treatment indicator (<code>treatment</code>), and an interaction term (<code>x:treatment</code>).  The interaction term allows for different slopes on either side of the cutoff.</li>
+<li>The coefficient on <code>treatment</code> estimates the jump in the outcome at the cutoff.</li>
+<li>Plotting the data and regression lines is essential for visualizing the discontinuity and assessing the validity of the RDD assumptions.</li>
+<li>Bandwidth selection is an important step and cross validation can be used to find an optimal bandwidth.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the main threats to the validity of RDD, and what diagnostic tests can be used to assess these threats? Specifically, what are some tests you can perform on the running variable near the cutoff?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
