@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sentiment Analysis: Rule-based Approaches (VADER)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-sentiment-analysis-rule-based-approaches-vader">Topic: Sentiment Analysis: Rule-based Approaches (VADER)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool specifically attuned to sentiments expressed in social media. Unlike many machine learning-based sentiment analysis tools that require large training datasets, VADER relies on a predefined sentiment lexicon and a set of rules to determine the sentiment intensity of a piece of text.</p>
+<p>Here's a breakdown:</p>
+<ul>
+<li>
+<p><strong>Lexicon:</strong> VADER's core is a pre-built lexicon, a dictionary of words and expressions, each assigned a sentiment valence (intensity) score. These scores range from -4 (extremely negative) to +4 (extremely positive). This lexicon has been meticulously curated and validated by human raters, focusing on words and expressions commonly used in social media contexts (e.g., emoticons, slang, acronyms).</p>
+</li>
+<li>
+<p><strong>Rules:</strong> Beyond the lexicon, VADER employs a set of linguistic rules to account for the nuances of human language and improve sentiment detection accuracy. These rules consider:</p>
+<ul>
+<li><strong>Degree modifiers (intensifiers/diminishers):</strong> Words like "very," "slightly," or "extremely" that modify the intensity of a sentiment-bearing word (e.g., "very good" is more positive than "good").</li>
+<li><strong>Conjunctions:</strong> Words like "but" that can shift the sentiment of a sentence (e.g., "The food was good, but the service was slow").</li>
+<li><strong>Negations:</strong> Words like "not," "isn't," or "never" that can reverse the sentiment of a phrase (e.g., "not good" is negative).</li>
+<li><strong>Punctuation:</strong> Increased use of exclamation marks (!!!) or question marks (?) can amplify or diminish sentiment intensity.</li>
+<li><strong>Capitalization:</strong> Using all caps can also amplify sentiment.</li>
+<li><strong>Emoticons and slang:</strong> VADER's lexicon includes many emoticons and slang terms specific to social media.</li>
+</ul>
+</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<p>VADER analyzes a text and returns a set of sentiment scores:</p>
+<ul>
+<li><strong>Positive:</strong> Probability the text is positive.</li>
+<li><strong>Negative:</strong> Probability the text is negative.</li>
+<li><strong>Neutral:</strong> Probability the text is neutral.</li>
+<li><strong>Compound:</strong> A normalized, weighted composite score ranging from -1 (most negative) to +1 (most positive). This is often used as a single metric to represent the overall sentiment.</li>
+</ul>
+<p>We can use these scores to:</p>
+<ul>
+<li>Determine the overall sentiment of a text (positive, negative, or neutral).</li>
+<li>Compare the sentiment of different texts or segments of text.</li>
+<li>Track changes in sentiment over time (e.g., monitoring brand perception on social media).</li>
+<li>Identify potentially positive or negative comments/reviews for further analysis.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're a brand manager responsible for monitoring social media conversations around your company's new product, "Awesome Gadget."  You want to quickly gauge public sentiment without having to manually read thousands of tweets.</p>
+<p>Using VADER, you can automatically analyze tweets mentioning "Awesome Gadget."  VADER would process each tweet and output sentiment scores. You could then:</p>
+<ul>
+<li>Identify the percentage of tweets that are positive, negative, or neutral.</li>
+<li>Focus on the most negative tweets to understand specific customer complaints or concerns.</li>
+<li>Track the overall sentiment towards "Awesome Gadget" over time to see if sentiment is trending upwards or downwards after a marketing campaign or product update.</li>
+<li>Compare sentiment scores across different social media platforms.</li>
+</ul>
+<p>For example, if a tweet says: "Awesome Gadget is AMAZING!!!  I love it! 😍", VADER would likely return a high positive compound score.  Conversely, a tweet like "Awesome Gadget is terrible.  It broke after only one day! 😡" would receive a strongly negative compound score.</p>
+<p>By using VADER, the brand manager can quickly gain insights into public sentiment and make data-driven decisions regarding product improvements, marketing strategies, and customer service interventions.  This is much faster and more scalable than manually reading and categorizing tweets.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+# Download VADER lexicon if you haven't already
+try:
+    sid = SentimentIntensityAnalyzer()
+except LookupError:
+    nltk.download('vader_lexicon')
+    sid = SentimentIntensityAnalyzer()
+
+
+def analyze_sentiment(text):
+    &quot;&quot;&quot;
+    Analyzes the sentiment of a given text using VADER.
+
+    Args:
+        text (str): The text to analyze.
+
+    Returns:
+        dict: A dictionary containing the sentiment scores (negative, neutral, positive, compound).
+    &quot;&quot;&quot;
+    scores = sid.polarity_scores(text)
+    return scores
+
+
+# Example usage:
+text1 = &quot;This is an amazing product! I love it.&quot;
+text2 = &quot;This product is terrible and doesn't work.&quot;
+text3 = &quot;This is an okay product. Nothing special.&quot;
+
+scores1 = analyze_sentiment(text1)
+scores2 = analyze_sentiment(text2)
+scores3 = analyze_sentiment(text3)
+
+print(f&quot;Text: {text1}&quot;)
+print(f&quot;Scores: {scores1}&quot;)
+print(&quot;\n&quot;)
+
+print(f&quot;Text: {text2}&quot;)
+print(f&quot;Scores: {scores2}&quot;)
+print(&quot;\n&quot;)
+
+print(f&quot;Text: {text3}&quot;)
+print(f&quot;Scores: {scores3}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>VADER is trained primarily on social media data. How would its performance likely differ when applied to formal documents such as legal contracts or scientific papers, and what strategies could be used to mitigate any potential issues?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
