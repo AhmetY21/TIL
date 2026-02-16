@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chance Constraints: concept and interpretation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-chance-constraints-concept-and-interpretation">Topic: Chance Constraints: concept and interpretation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>What is a Chance Constraint?</strong></p>
+<p>A chance constraint, also known as a probabilistic constraint, is a type of constraint used in stochastic programming where the constraint is only required to hold with a certain probability, rather than absolutely. In deterministic optimization, constraints must be satisfied for all possible values of the parameters.  However, in stochastic optimization, some of the parameters are uncertain (random variables).  A chance constraint acknowledges this uncertainty and allows for the possibility that the constraint may be violated in some scenarios, but only with a probability less than or equal to a specified tolerance level (usually denoted by α).</p>
+<p>Formally, a chance constraint can be expressed as:</p>
+<p>P(g(x, ξ) ≤ 0) ≥ 1 - α</p>
+<p>where:</p>
+<ul>
+<li><code>x</code> is the decision variable vector (the variables we want to optimize).</li>
+<li><code>ξ</code> is a random variable vector representing the uncertain parameters.</li>
+<li><code>g(x, ξ)</code> is a function that defines the constraint. It depends on both the decision variables and the uncertain parameters.</li>
+<li><code>P()</code> denotes the probability measure.</li>
+<li><code>α</code> is the risk level (or tolerance level), a value between 0 and 1. It represents the maximum acceptable probability of violating the constraint. Typically, α is a small value (e.g., 0.05, 0.1).</li>
+<li><code>1 - α</code> is the confidence level, representing the probability that the constraint will be satisfied.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Chance constraints are used when:</p>
+<ol>
+<li><strong>Uncertainty exists:</strong>  The problem involves parameters that are not known with certainty but are instead described by probability distributions.</li>
+<li><strong>Violations are tolerable to some extent:</strong> Violating the constraint occasionally is acceptable, as long as the probability of violation is sufficiently low.  This is common in real-world problems where strict adherence to constraints in the face of uncertainty can be overly conservative or even impossible.</li>
+<li><strong>Trade-off between cost and risk:</strong> You want to balance the cost of the decision with the risk of violating the constraint.  Stricter chance constraints (smaller α) often lead to more conservative solutions with higher costs.</li>
+</ol>
+<p>Chance constraints enable us to formulate optimization problems that are more realistic and robust in the face of uncertainty than purely deterministic models. They allow for the explicit management of risk and the exploration of trade-offs between performance and reliability.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Inventory Management with Demand Uncertainty:</strong></p>
+<p>Consider an inventory management problem where a retailer needs to decide how much of a particular product to order. The demand for the product is uncertain and follows a known probability distribution (e.g., normal distribution).  The retailer wants to ensure that they can meet the demand most of the time, but they are willing to tolerate occasional stockouts.</p>
+<p><strong>Deterministic Approach (Inadequate):</strong> A deterministic approach would typically use a worst-case scenario for demand (e.g., the maximum possible demand).  This leads to excessive inventory levels, resulting in high holding costs and potential waste if the worst-case scenario doesn't materialize.</p>
+<p><strong>Chance Constraint Approach (Better):</strong>  A chance constraint can be used to model the retailer's desired service level.  Let:</p>
+<ul>
+<li><code>x</code> be the order quantity (decision variable).</li>
+<li><code>ξ</code> be the random variable representing the demand, following a probability distribution <code>D</code>.</li>
+<li><code>g(x, ξ) = ξ - x</code> represent the demand exceeding the order quantity (i.e., a stockout).</li>
+<li><code>α</code> be the maximum acceptable probability of a stockout (e.g., 0.05, meaning a 95% service level).</li>
+</ul>
+<p>The chance constraint would then be:</p>
+<p><code>P(ξ ≤ x) ≥ 1 - α</code></p>
+<p>This constraint ensures that the probability of the demand being less than or equal to the order quantity (no stockout) is at least <code>1 - α</code>. The retailer can then minimize the total cost (ordering cost, holding cost) subject to this chance constraint.  This allows the retailer to balance the costs of holding inventory with the risk of stockouts, leading to a more efficient and cost-effective inventory management policy.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Dealing with chance constraints in Python typically involves libraries for optimization and stochastic programming. Pyomo and Gurobi (or other solvers like CPLEX) are commonly used. The following is a conceptual example.  Direct implementation depends on the specific solver and distribution of the random variable.</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+from scipy.stats import norm  # Example: Assuming normal distribution
+
+def chance_constrained_model(mean_demand, std_dev_demand, alpha=0.05):
+    &quot;&quot;&quot;
+    Creates a Pyomo model for an inventory problem with a chance constraint.
+
+    Args:
+        mean_demand (float): The mean of the demand distribution.
+        std_dev_demand (float): The standard deviation of the demand distribution.
+        alpha (float): The risk level (maximum acceptable probability of stockout).
+
+    Returns:
+        pyomo.environ.ConcreteModel: The Pyomo model.
+    &quot;&quot;&quot;
+
+    model = pyo.ConcreteModel()
+
+    # Decision Variable
+    model.order_quantity = pyo.Var(domain=pyo.NonNegativeReals)
+
+    # Parameters (assuming a normal distribution for demand)
+
+    # Calculate the quantile corresponding to the confidence level
+    quantile = norm.ppf(1 - alpha, loc=mean_demand, scale=std_dev_demand)
+
+    # Objective function (example: minimize order quantity - could be more complex)
+    model.objective = pyo.Objective(expr=model.order_quantity, sense=pyo.minimize)
+
+    # Chance Constraint (approximated using the quantile)
+    #  We approximate P(Demand &lt;= order_quantity) &gt;= 1 - alpha
+    #  by setting order_quantity &gt;= the (1-alpha)-quantile of the demand distribution.
+
+    model.chance_constraint = pyo.Constraint(expr=model.order_quantity &gt;= quantile)
+
+
+
+    return model
+
+# Example Usage
+if __name__ == '__main__':
+    mean_demand = 100
+    std_dev_demand = 20
+    alpha = 0.05  # 95% service level
+
+    model = chance_constrained_model(mean_demand, std_dev_demand, alpha)
+
+    # Solve the model (using Gurobi or another solver)
+    opt = pyo.SolverFactory('gurobi')  # Requires Gurobi installation and license
+    if opt.available():
+        results = opt.solve(model)
+        if results.solver.termination_condition == pyo.TerminationCondition.optimal:
+            print(f&quot;Optimal Order Quantity: {pyo.value(model.order_quantity)}&quot;)
+        else:
+            print(&quot;Solver did not find an optimal solution.&quot;)
+            print(results.solver.termination_condition)
+    else:
+        print(&quot;Gurobi solver not available. Make sure to install it with a valid license.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Pyomo:</strong>  The code uses the Pyomo library for modeling optimization problems.</li>
+<li><strong>Decision Variable:</strong> <code>model.order_quantity</code> is the decision variable representing the amount to order.</li>
+<li><strong>Demand Distribution:</strong> The code assumes a normal distribution for demand with a given mean and standard deviation. The <code>scipy.stats.norm</code> library is used.</li>
+<li><strong>Quantile Calculation:</strong> The key step is calculating the <code>(1 - alpha)</code>-quantile of the demand distribution using <code>norm.ppf()</code>. This quantile is the value below which the demand will fall with probability <code>1 - alpha</code>.</li>
+<li><strong>Chance Constraint Approximation:</strong> The chance constraint <code>P(ξ ≤ x) ≥ 1 - α</code> is <em>approximated</em> by enforcing <code>x &gt;= quantile</code>.  This relies on knowing the distribution of <code>ξ</code>. This is a common simplification technique, but it's important to understand that it's an approximation and its accuracy depends on the distribution of the uncertain parameters.  More complex cases might require sample average approximation or other techniques to handle the probability calculation.</li>
+<li><strong>Solver:</strong> The example uses Gurobi, but you can use other solvers that are compatible with Pyomo. Note that you need to have Gurobi installed and properly licensed.  If you don't have it, change the <code>SolverFactory</code> to an open-source alternative if available.</li>
+<li><strong>Important Notes:</strong><ul>
+<li>This is a simplified example.  Real-world problems often have more complex objective functions and constraints.</li>
+<li>The method for dealing with the chance constraint depends heavily on the distribution of the random variable. For more complex distributions, you may need to use simulation or other techniques to estimate the probability.</li>
+<li>If the demand variable does not follow a normal distribution, you must adjust the <code>norm.ppf</code> calculation accordingly.</li>
+<li>For complex cases where the constraint function <code>g(x, ξ)</code> is non-linear or the random variable <code>ξ</code> has a complex distribution, specialized algorithms or approximations may be required.  Simulation-based approaches (e.g., sample average approximation) are often used.</li>
+</ul>
+</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the risk level α affect the optimal solution in a chance-constrained optimization problem, and what are some strategies for selecting an appropriate value for α in practice?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
