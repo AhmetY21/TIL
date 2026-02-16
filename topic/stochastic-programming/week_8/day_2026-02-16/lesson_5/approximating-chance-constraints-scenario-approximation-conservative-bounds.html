@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Approximating Chance Constraints (scenario approximation / conservative bounds)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-approximating-chance-constraints-scenario-approximation-conservative-bounds">Topic: Approximating Chance Constraints (scenario approximation / conservative bounds)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Chance constraints, also known as probabilistic constraints, are constraints that must hold with a specified probability.  They express the requirement that a constraint, which depends on random parameters, holds with at least a certain confidence level.  Mathematically, a chance constraint has the general form:</p>
+<pre class="codehilite"><code>P(g(x, ξ) &lt;= 0) &gt;= 1 - α
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><code>x</code> is the decision variable vector.</li>
+<li><code>ξ</code> is a random vector representing uncertain parameters.</li>
+<li><code>g(x, ξ)</code> is a function describing the constraint, which depends on both the decision variable and the random parameters.</li>
+<li><code>α</code> is the acceptable violation probability (typically a small value like 0.05 or 0.1), and <code>1 - α</code> is the desired confidence level.</li>
+<li><code>P(.)</code> denotes the probability measure.</li>
+</ul>
+<p>Directly solving optimization problems with chance constraints is often computationally intractable because evaluating the probability <code>P(g(x, ξ) &lt;= 0)</code> can be difficult or impossible. This is especially true when the distribution of <code>ξ</code> is complex or unknown.</p>
+<p>Approximating chance constraints involves replacing the probabilistic constraint with a deterministic approximation that is easier to solve. <em>Scenario approximation</em> and <em>conservative bounds</em> are two common techniques for this.</p>
+<p><strong>Scenario Approximation (Sample Average Approximation - SAA):</strong></p>
+<p>Scenario approximation replaces the probability with an empirical estimate obtained by sampling the random variable <code>ξ</code>.  We generate <code>N</code> independent samples (scenarios) <code>ξ_1, ξ_2, ..., ξ_N</code> from the distribution of <code>ξ</code>.  The chance constraint is then approximated by requiring the constraint <code>g(x, ξ_i) &lt;= 0</code> to hold for a sufficient number of scenarios. The most common approach is to require the constraint to hold for <em>all</em> scenarios, resulting in a deterministic problem:</p>
+<pre class="codehilite"><code>g(x, ξ_i) &lt;= 0  for all i = 1, ..., N
+</code></pre>
+
+<p>The problem then becomes:</p>
+<pre class="codehilite"><code>minimize f(x)
+subject to:
+g(x, ξ_i) &lt;= 0  for all i = 1, ..., N
+x ∈ X
+</code></pre>
+
+<p>where <code>f(x)</code> is the objective function and <code>X</code> represents other deterministic constraints on <code>x</code>.</p>
+<p>SAA provides a statistical guarantee on the quality of the solution as <code>N</code> increases.  Specifically, under certain assumptions, as <code>N</code> goes to infinity, the solution to the SAA problem converges to the solution of the original chance-constrained problem. The number of samples <code>N</code> required depends on the problem's complexity and the desired confidence level.</p>
+<p><strong>Conservative Bounds:</strong></p>
+<p>Conservative bounds replace the chance constraint with a more restrictive deterministic constraint that is guaranteed to be feasible if the original chance constraint is feasible. These bounds are typically derived by exploiting properties of the distribution of <code>ξ</code> or by using inequalities to relate the probability to other quantities.  Examples include using Chebyshev's inequality or transforming the chance constraint into an equivalent robust optimization problem.  The "conservativeness" comes from the fact that satisfying the deterministic constraint is a <em>sufficient</em> condition for satisfying the chance constraint, but not necessarily a <em>necessary</em> one. Thus, the resulting solution may be suboptimal compared to the ideal solution of the true chance-constrained problem.</p>
+<p><strong>How to use it:</strong></p>
+<ol>
+<li><strong>Identify the random parameters (ξ) and their distributions (or samples).</strong></li>
+<li><strong>Formulate the constraint function g(x, ξ).</strong></li>
+<li><strong>Choose a method (SAA or conservative bound).</strong></li>
+<li><strong>For SAA, generate a sufficient number of samples (scenarios).</strong></li>
+<li><strong>Formulate the deterministic approximation of the chance constraint.</strong></li>
+<li><strong>Solve the resulting deterministic optimization problem.</strong></li>
+<li><strong>(For SAA) Assess the quality of the solution (e.g., through out-of-sample validation or statistical tests). Increase the number of samples if necessary.</strong></li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a power grid operator who needs to schedule electricity generation to meet demand while ensuring the grid's reliability.  The demand is uncertain and can be modeled as a random variable. The grid operator wants to ensure that the total generation capacity is sufficient to meet the demand with a high probability (e.g., 95%).</p>
+<p>Let:</p>
+<ul>
+<li><code>x_i</code> be the amount of electricity generated by generator <code>i</code>.</li>
+<li><code>ξ</code> be the random variable representing the total electricity demand.</li>
+<li><code>C_i</code> be the generation capacity of generator <code>i</code>.</li>
+<li><code>α</code> be the acceptable probability of demand exceeding generation.</li>
+</ul>
+<p>The chance constraint is:</p>
+<pre class="codehilite"><code>P(∑_{i=1}^{n} x_i &gt;= ξ) &gt;= 1 - α
+</code></pre>
+
+<p>where <code>n</code> is the number of generators. Also:</p>
+<pre class="codehilite"><code>0 &lt;= x_i &lt;= C_i
+</code></pre>
+
+<p><strong>Applying Scenario Approximation:</strong></p>
+<p>The grid operator can generate <code>N</code> scenarios of electricity demand, <code>ξ_1, ξ_2, ..., ξ_N</code>, based on historical data and weather forecasts.  The chance constraint is then approximated by:</p>
+<pre class="codehilite"><code>∑_{i=1}^{n} x_i &gt;= ξ_j  for all j = 1, ..., N
+</code></pre>
+
+<p>The operator then minimizes the cost of generation (objective function) subject to these constraints and the capacity constraints.</p>
+<p><strong>Applying a Conservative Bound:</strong></p>
+<p>If the distribution of demand (<code>ξ</code>) is known, the operator could use Chebyshev's inequality. Let <code>μ</code> be the mean demand and <code>σ</code> be the standard deviation. Chebyshev's inequality states:</p>
+<pre class="codehilite"><code>P(|ξ - μ| &gt;= kσ) &lt;= 1/k^2
+</code></pre>
+
+<p>We want <code>P(ξ &gt; ∑_{i=1}^{n} x_i) &lt;= α</code>.  Rearranging, <code>P(∑_{i=1}^{n} x_i &gt;= ξ) &gt;= 1-α</code>.  A conservative approach could involve choosing <code>∑_{i=1}^{n} x_i</code>  such that it's at least <code>kσ</code> above the mean demand <code>μ</code>, where <code>1/k^2 = α</code>.  Therefore, <code>k = 1/sqrt(α)</code>. The deterministic constraint becomes:</p>
+<pre class="codehilite"><code>∑_{i=1}^{n} x_i &gt;= μ + (1/sqrt(α)) * σ
+</code></pre>
+
+<p>This constraint is more restrictive than the original chance constraint, but it is deterministic and easier to solve. The operator would then minimize the cost of generation subject to this conservative deterministic constraint and the capacity constraints.  Note that the choice of <code>k</code> directly influences the conservativeness of the bound.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using Pyomo and NumPy, we can demonstrate SAA. This example shows how to formulate and solve a simple SAA problem in Python. It's a basic illustration and needs adaptation for specific problems.</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+# Example: Minimize x subject to P(a*x &gt;= b) &gt;= 0.95, where a and b are random
+# and x &gt;= 0
+
+# 1. Generate scenarios
+num_scenarios = 100
+np.random.seed(42) # for reproducibility
+a_scenarios = np.random.normal(loc=1.0, scale=0.2, size=num_scenarios) # normally distributed 'a'
+b_scenarios = np.random.normal(loc=0.5, scale=0.1, size=num_scenarios) # normally distributed 'b'
+
+
+# 2. Create Pyomo model
+model = pyo.ConcreteModel()
+
+# 3. Define decision variable
+model.x = pyo.Var(domain=pyo.NonNegativeReals)
+
+# 4. Define objective function
+model.objective = pyo.Objective(expr=model.x, sense=pyo.minimize)
+
+# 5. Define scenarios as a set (needed for indexed constraints)
+model.scenarios = pyo.Set(initialize=range(num_scenarios))
+
+
+# 6. Define chance constraint (approximated by scenario constraints)
+def scenario_constraint_rule(model, s):
+  return a_scenarios[s] * model.x &gt;= b_scenarios[s]
+
+model.scenario_constraints = pyo.Constraint(model.scenarios, rule=scenario_constraint_rule)
+
+
+# 7. Solve the model
+solver = pyo.SolverFactory('ipopt')  # Choose an appropriate solver
+results = solver.solve(model)
+
+# 8. Print the solution
+if results.solver.status == pyo.SolverStatus.ok and results.solver.termination_condition == pyo.TerminationCondition.optimal:
+    print(&quot;Optimal solution found:&quot;)
+    print(&quot;x =&quot;, pyo.value(model.x))
+else:
+    print(&quot;Solver did not find an optimal solution.&quot;)
+    print(results.solver)
+
+# Optional: Evaluate solution on out-of-sample data to estimate constraint violation
+# (This step is crucial in practice to assess solution quality)
+num_out_of_sample = 1000
+a_out_of_sample = np.random.normal(loc=1.0, scale=0.2, size=num_out_of_sample)
+b_out_of_sample = np.random.normal(loc=0.5, scale=0.1, size=num_out_of_sample)
+
+violation_count = 0
+for i in range(num_out_of_sample):
+  if a_out_of_sample[i] * pyo.value(model.x) &lt; b_out_of_sample[i]:
+    violation_count += 1
+
+violation_probability_estimate = violation_count / num_out_of_sample
+print(f&quot;Estimated violation probability (out-of-sample): {violation_probability_estimate}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Generate Scenarios:</strong>  We use <code>numpy</code> to generate <code>num_scenarios</code> realizations of the random parameters <code>a</code> and <code>b</code> from normal distributions.</li>
+<li><strong>Create Pyomo Model:</strong> We create a <code>ConcreteModel</code> in Pyomo.</li>
+<li><strong>Define Decision Variable:</strong> <code>model.x</code> is the decision variable we want to optimize.</li>
+<li><strong>Define Objective Function:</strong> We want to minimize <code>x</code>.</li>
+<li><strong>Define Scenarios Set:</strong> We define a set <code>model.scenarios</code> to iterate through our scenarios. This is crucial for creating indexed constraints.</li>
+<li><strong>Define Scenario Constraints:</strong> The <code>scenario_constraint_rule</code> function defines the constraint for each scenario. This is the core of the SAA approach. Pyomo's <code>Constraint</code> object is then used to create constraints for <em>each</em> scenario.</li>
+<li><strong>Solve the Model:</strong>  We use the <code>ipopt</code> solver (installable via <code>conda install -c conda-forge ipopt</code> or similar). Choose an appropriate solver based on your problem's characteristics.</li>
+<li><strong>Print the Solution:</strong>  If the solver finds an optimal solution, we print the optimal value of <code>x</code>.</li>
+<li><strong>Out-of-Sample Validation:</strong>  After solving, it's crucial to <em>validate</em> the solution using out-of-sample data. We generate new samples and check how often the constraint is violated with the obtained <code>x</code> value. This provides an <em>estimate</em> of the actual violation probability. This is a key step for assessing the reliability of the SAA solution. If the estimated violation probability is greater than <code>alpha</code> (0.05 in this case), then the number of scenarios should be increased.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Choose a suitable solver based on the problem type (linear, nonlinear, etc.).</li>
+<li>The number of scenarios <code>num_scenarios</code> significantly impacts the solution quality. Use out-of-sample validation to determine if more scenarios are needed.</li>
+<li>This is a basic example.  Real-world problems are more complex and may require more sophisticated modeling techniques.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we determine the minimum number of scenarios required for the Sample Average Approximation (SAA) method to achieve a certain level of accuracy and confidence in the solution of a chance-constrained optimization problem? Are there theoretical results or practical guidelines for selecting the appropriate sample size?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
