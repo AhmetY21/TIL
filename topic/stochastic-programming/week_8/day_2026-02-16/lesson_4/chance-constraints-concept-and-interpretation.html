@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chance Constraints: concept and interpretation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-chance-constraints-concept-and-interpretation">Topic: Chance Constraints: concept and interpretation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A chance constraint, also known as a probabilistic constraint, is a constraint in optimization problems that requires a given constraint to hold with a specified probability level.  Unlike deterministic constraints, which must be satisfied absolutely, chance constraints allow for a certain level of violation, making them valuable when dealing with uncertain parameters in the problem.</p>
+<p>Formally, let:</p>
+<ul>
+<li><code>x</code> be the decision variable vector.</li>
+<li><code>ξ</code> (Xi) be a random vector representing uncertain parameters.</li>
+<li><code>g(x, ξ)</code> be a function that depends on both the decision variable and the uncertain parameters.</li>
+<li><code>b</code> be a threshold value.</li>
+<li><code>α</code> (Alpha) be the probability level (typically close to 1, like 0.95 or 0.99).</li>
+</ul>
+<p>Then, a chance constraint takes the following form:</p>
+<pre class="codehilite"><code>P(g(x, ξ) ≤ b) ≥ α
+</code></pre>
+
+<p>This constraint states that the probability that the function <code>g(x, ξ)</code> is less than or equal to <code>b</code> must be greater than or equal to <code>α</code>.  In other words, we require the constraint <code>g(x, ξ) ≤ b</code> to be satisfied with probability at least <code>α</code>.</p>
+<p><strong>How can we use it?</strong></p>
+<p>Chance constraints are used in optimization problems where uncertainty is present. They allow decision-makers to incorporate risk considerations into their optimization models. They are particularly useful when:</p>
+<ul>
+<li><strong>Dealing with uncertain data:</strong> When parameters like demand, supply, costs, or technological coefficients are not known with certainty but are characterized by probability distributions.</li>
+<li><strong>Managing risk:</strong> When violating a constraint has consequences but complete adherence is impossible or too costly.</li>
+<li><strong>Balancing feasibility and optimality:</strong>  Allowing for a small probability of violation can lead to significantly better objective function values compared to requiring absolute feasibility.</li>
+<li><strong>Incorporating stakeholder preferences:</strong>  The probability level α can be adjusted to reflect the risk tolerance of the decision-maker or other stakeholders.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a <strong>portfolio optimization</strong> problem.  An investor wants to allocate capital among different assets to maximize expected return while limiting the risk of losses.  The returns of these assets are uncertain and can be modeled using probability distributions.</p>
+<p>A chance constraint could be used to ensure that the probability of the portfolio losing more than a certain amount (say, 10% of the initial investment) is below a certain threshold (say, 5%).</p>
+<p>Let:</p>
+<ul>
+<li><code>x_i</code> be the proportion of capital allocated to asset <em>i</em>.</li>
+<li><code>r_i</code> be the random return of asset <em>i</em>. Assume <code>r_i</code> are independent and normally distributed with mean <code>μ_i</code> and standard deviation <code>σ_i</code>.</li>
+<li><code>W_0</code> be the initial capital.</li>
+<li><code>L</code> be the maximum acceptable loss (e.g., 0.1 * <code>W_0</code>).</li>
+<li><code>α</code> be the desired confidence level (e.g., 0.95).</li>
+</ul>
+<p>The chance constraint would be:</p>
+<pre class="codehilite"><code>P( ∑(x_i * r_i * W_0) &lt; -L) ≤ 1 - α
+</code></pre>
+
+<p>This constraint ensures that the probability of the portfolio losing more than <code>L</code> is less than or equal to <code>1 - α</code>.  The optimization problem then aims to maximize the expected return of the portfolio, subject to this chance constraint and other constraints (e.g., budget constraint: ∑x_i = 1).</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Solving chance-constrained optimization problems can be challenging, especially when the random parameters have complex distributions. Many solvers do not directly handle chance constraints.  Here's a simplified example using <code>cvxpy</code> where we approximate the chance constraint by its deterministic equivalent under certain assumptions.</p>
+<p>Let's assume that the random variables (asset returns) follow a normal distribution.  In this case, the chance constraint can often be transformed into a tractable deterministic constraint using properties of the normal distribution.</p>
+<pre class="codehilite"><code class="language-python">import cvxpy as cp
+import numpy as np
+from scipy.stats import norm
+
+# Problem data (simplified for demonstration)
+n = 3  # Number of assets
+mu = np.array([0.15, 0.10, 0.05])  # Expected returns
+sigma = np.array([0.20, 0.15, 0.10]) # Standard deviations (assume independent)
+W0 = 1000  # Initial capital
+L = 0.1 * W0  # Maximum acceptable loss
+alpha = 0.95  # Confidence level
+
+# Decision variables
+x = cp.Variable(n)  # Proportions allocated to each asset
+
+# Objective function: Maximize expected return
+portfolio_return = cp.sum(x * mu * W0)
+objective = cp.Maximize(portfolio_return)
+
+# Constraints
+constraints = [
+    cp.sum(x) == 1,  # Budget constraint
+    x &gt;= 0          # Non-negativity constraint
+]
+
+# Chance constraint:  P( ∑(x_i * r_i * W_0) &lt; -L) &lt;= 1 - alpha
+# Assuming normality of returns, we can use the deterministic equivalent.
+# Let Z = ∑(x_i * r_i * W_0).  Z ~ N(∑(x_i * mu_i * W_0), sqrt(∑(x_i^2 * sigma_i^2 * W_0^2)))
+# P(Z &lt; -L) &lt;= 1 - alpha  &lt;=&gt;  CDF((-L - E[Z]) / SD[Z]) &lt;= 1 - alpha
+#  &lt;=&gt;  (-L - E[Z]) / SD[Z] &lt;= norm.ppf(1 - alpha)
+# &lt;=&gt; -L - E[Z] &lt;= norm.ppf(1 - alpha) * SD[Z]
+# &lt;=&gt; E[Z] + norm.ppf(alpha) * SD[Z] &gt;= -L
+
+expected_return = cp.sum(x * mu * W0)
+portfolio_stddev = cp.sqrt(cp.sum(cp.square(x) * cp.square(sigma) * (W0**2)))
+
+quantile = norm.ppf(alpha)  # Inverse CDF for alpha
+
+chance_constraint = [expected_return + quantile * portfolio_stddev &gt;= -L]
+
+constraints += chance_constraint # Add the chance constraint
+
+# Formulate and solve the problem
+problem = cp.Problem(objective, constraints)
+problem.solve()
+
+# Print results
+print(&quot;Optimal portfolio allocation:&quot;)
+for i in range(n):
+    print(f&quot;Asset {i+1}: {x[i].value:.4f}&quot;)
+print(f&quot;Expected return: {portfolio_return.value:.2f}&quot;)
+print(f&quot;Portfolio standard deviation: {portfolio_stddev.value:.2f}&quot;)
+</code></pre>
+
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>This example assumes that the asset returns are independent and normally distributed. In practice, these assumptions may not hold, and more sophisticated methods for handling chance constraints may be required.</li>
+<li>The deterministic equivalent transformation relies on the specific distribution of the random variables. If the distribution is not known or is complex, approximation techniques like scenario generation or sample average approximation are used.</li>
+<li><code>cvxpy</code> does not natively handle probabilistic constraints. The above code converts the chance constraint to its deterministic equivalent, based on the distributional assumptions.</li>
+<li>For non-convex problems, or when converting to deterministic equivalents is difficult, consider using methods like sample average approximation (SAA) or scenario-based approaches. These are beyond the scope of this simple example. SAA involves generating a large number of scenarios for the uncertain parameters and approximating the chance constraint by requiring the constraint to hold for a sufficient number of scenarios.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the main challenges in solving chance-constrained optimization problems, and what are some alternative approaches when the deterministic equivalent is difficult or impossible to derive?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
