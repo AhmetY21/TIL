@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Topic Modeling: Latent Dirichlet Allocation (LDA)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-topic-modeling-latent-dirichlet-allocation-lda">Topic: Topic Modeling: Latent Dirichlet Allocation (LDA)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Latent Dirichlet Allocation (LDA) is a generative probabilistic model for collections of discrete data such as text corpora. It's a form of unsupervised machine learning used to discover the abstract "topics" that occur in a collection of documents. LDA assumes documents are mixtures of topics, where each topic is a probability distribution over words.</p>
+<p>Formally:</p>
+<ul>
+<li><strong>Corpus:</strong> A collection of documents.</li>
+<li><strong>Document:</strong> A sequence of words.</li>
+<li><strong>Topic:</strong> A distribution over words.</li>
+<li><strong>Latent:</strong> Hidden; LDA infers the topics without knowing them beforehand.</li>
+<li><strong>Dirichlet:</strong> A probability distribution over probability distributions. LDA uses Dirichlet distributions to model both the document-topic and topic-word distributions.</li>
+</ul>
+<p><strong>Generative Process (simplified):</strong></p>
+<ol>
+<li>For each document:<ul>
+<li>Choose a distribution over topics (using a Dirichlet distribution parameterized by alpha). This determines how much each topic contributes to the document.</li>
+</ul>
+</li>
+<li>For each word in the document:<ul>
+<li>Choose a topic from the document's topic distribution.</li>
+<li>Choose a word from the chosen topic's word distribution (using a Dirichlet distribution parameterized by beta).</li>
+</ul>
+</li>
+</ol>
+<p><strong>How can we use it?</strong></p>
+<p>LDA can be used for:</p>
+<ul>
+<li><strong>Topic Discovery:</strong> Automatically discover the underlying topics present in a large collection of text.</li>
+<li><strong>Document Classification/Categorization:</strong> Assign documents to specific topics based on their topic distributions.</li>
+<li><strong>Text Summarization:</strong> Identify the key topics in a document and use them to create a concise summary.</li>
+<li><strong>Information Retrieval:</strong> Improve search engine results by understanding the topic content of documents.</li>
+<li><strong>Exploratory Data Analysis:</strong> Gain insights into the main themes and subjects present in a text dataset.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Application Scenario: Analyzing Customer Reviews for Product Improvement</strong></p>
+<p>Imagine a company wants to improve its new smartphone. They collect thousands of customer reviews from various online platforms. Manually reading and categorizing these reviews is time-consuming and impractical.</p>
+<p>Using LDA, they can:</p>
+<ol>
+<li><strong>Preprocess the reviews:</strong> Clean the text data by removing stop words, punctuation, and performing stemming or lemmatization.</li>
+<li>
+<p><strong>Apply LDA:</strong> Train an LDA model on the preprocessed review data. The model will discover latent topics discussed in the reviews.  For instance, LDA might identify topics such as:</p>
+<ul>
+<li>Topic 1: "Battery life" (words like battery, charge, long-lasting, drain)</li>
+<li>Topic 2: "Camera quality" (words like camera, image, quality, photos, resolution)</li>
+<li>Topic 3: "Screen display" (words like screen, display, brightness, resolution, colors)</li>
+<li>Topic 4: "Call quality" (words like call, audio, voice, reception, clear)</li>
+</ul>
+</li>
+<li>
+<p><strong>Analyze topic distributions:</strong> Examine the proportion of each topic in different reviews. A review dominated by "Battery life" indicates the customer is primarily concerned about that aspect.</p>
+</li>
+<li><strong>Identify problems and opportunities:</strong> The company can identify common complaints (e.g., poor battery life) and positive feedback (e.g., excellent camera quality) based on the prevalence of these topics. They can then prioritize improvements based on the most frequently discussed topics and the sentiment associated with them. For example, if the "Battery life" topic is frequently associated with negative sentiment (using sentiment analysis), addressing battery life issues becomes a high priority.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import gensim
+from gensim import corpora
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+
+# Sample documents (replace with your actual data)
+documents = [
+    &quot;This is the first document about computer vision.&quot;,
+    &quot;This document is the second document related to machine learning.&quot;,
+    &quot;And this is the third one which is about computer vision&quot;,
+    &quot;Is this the first document about machine learning?&quot;,
+    &quot;The second document is not about either computer vision or machine learning, but about natural language processing.&quot;
+]
+
+# Preprocessing function
+def preprocess_documents(documents):
+    stop_words = set(stopwords.words('english'))
+    processed_docs = []
+    for doc in documents:
+        # Tokenize the document
+        word_tokens = word_tokenize(doc.lower()) #lower case
+        # Remove stop words and non-alphabetic tokens
+        filtered_words = [w for w in word_tokens if not w in stop_words and w.isalpha()]
+        processed_docs.append(filtered_words)
+    return processed_docs
+
+
+processed_docs = preprocess_documents(documents)
+
+# Create a dictionary representation of the documents.
+dictionary = corpora.Dictionary(processed_docs)
+
+# Filter out words that occur less than 2 documents, or more than 80% of the documents.
+dictionary.filter_extremes(no_below=2, no_above=0.8)
+
+# Convert document into the bag-of-words format = list of (token_id, token_count) tuples.
+corpus = [dictionary.doc2bow(text) for text in processed_docs]
+
+
+# Train the LDA model
+num_topics = 3  # Number of topics to discover
+lda_model = gensim.models.LdaModel(corpus, num_topics=num_topics, id2word=dictionary, passes=15)
+
+# Print the topics and their corresponding words
+for idx, topic in lda_model.print_topics(-1):
+    print('Topic: {} \nWords: {}'.format(idx, topic))
+
+# Get the topic distribution for a specific document (e.g., the first document)
+doc_topics = lda_model.get_document_topics(corpus[0])
+print(&quot;\nTopic distribution for the first document:&quot;, doc_topics)
+
+
+# You can also save and load the model
+# lda_model.save(&quot;lda_model.model&quot;)
+# loaded_model = gensim.models.LdaModel.load(&quot;lda_model.model&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the number of topics affect the interpretability and usefulness of the LDA model? What methods are there for choosing an optimal number of topics?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
