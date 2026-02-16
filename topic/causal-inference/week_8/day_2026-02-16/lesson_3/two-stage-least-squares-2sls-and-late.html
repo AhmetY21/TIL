@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two-Stage Least Squares (2SLS) and LATE</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-two-stage-least-squares-2sls-and-late">Topic: Two-Stage Least Squares (2SLS) and LATE</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Two-Stage Least Squares (2SLS) is an instrumental variable (IV) method used to estimate the causal effect of an endogenous variable (a variable correlated with the error term) on an outcome variable. The endogeneity can arise from omitted variable bias, simultaneity, or measurement error. 2SLS addresses this by using an instrumental variable (Z) that satisfies two key conditions:</p>
+<ul>
+<li><strong>Relevance:</strong> Z is correlated with the endogenous variable (X).</li>
+<li><strong>Exclusion Restriction:</strong> Z affects the outcome (Y) <em>only</em> through its effect on the endogenous variable (X). In other words, Z is independent of the error term in the outcome equation (Y).</li>
+</ul>
+<p>Here's how 2SLS works in two stages:</p>
+<p><strong>Stage 1:</strong> Regress the endogenous variable (X) on the instrumental variable(s) (Z) and any other exogenous covariates (W) included in the model. This produces predicted values of the endogenous variable (X̂).</p>
+<pre class="codehilite"><code>X = αZ + βW + v
+X̂ = α̂Z + β̂W
+</code></pre>
+
+<p><strong>Stage 2:</strong> Regress the outcome variable (Y) on the predicted values of the endogenous variable (X̂) and any other exogenous covariates (W).</p>
+<pre class="codehilite"><code>Y = γX + δW + ε
+Y = γX̂ + δW + ε
+</code></pre>
+
+<p>The coefficient γ from the second stage is the 2SLS estimate of the causal effect of X on Y.</p>
+<p><strong>Local Average Treatment Effect (LATE):</strong>  2SLS estimates the <em>Local Average Treatment Effect (LATE)</em>, which is the average treatment effect <em>only</em> for the <em>compliers</em>. Compliers are individuals whose treatment status changes in response to the instrument.</p>
+<ul>
+<li><strong>Always-takers:</strong> Always take the treatment, regardless of the instrument's value.</li>
+<li><strong>Never-takers:</strong> Never take the treatment, regardless of the instrument's value.</li>
+<li><strong>Defiers:</strong> Take the treatment when <em>not</em> encouraged by the instrument and do <em>not</em> take the treatment when encouraged. (often ignored due to monotonicity assumptions)</li>
+<li><strong>Compliers:</strong> Take the treatment when encouraged by the instrument and do <em>not</em> take the treatment when <em>not</em> encouraged.</li>
+</ul>
+<p>LATE is important because the 2SLS estimate is <em>not</em> necessarily the average treatment effect (ATE) for the entire population. It only applies to the subpopulation of compliers. The LATE provides a causal estimate specific to those individuals whose treatment decision is affected by the instrument.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Example: Effect of Education on Wages (Endogeneity: Ability Bias)</strong></p>
+<p>Suppose we want to estimate the effect of education (years of schooling, X) on wages (Y).  A simple regression of wages on education might be biased because ability (unobserved) is likely correlated with both education and wages.  Individuals with higher ability are more likely to pursue more education <em>and</em> earn higher wages, even without the extra education.  This is omitted variable bias.</p>
+<p>We can use proximity to a college as an instrument (Z). People who live closer to a college are more likely to attend college, regardless of their ability.</p>
+<ul>
+<li><strong>Relevance:</strong> Proximity to college is correlated with years of schooling.</li>
+<li><strong>Exclusion Restriction:</strong> Proximity to college <em>only</em> affects wages through its impact on educational attainment. We assume that living near a college doesn't directly increase someone's wages independently of their education level.</li>
+</ul>
+<p>In this scenario, 2SLS would estimate the LATE: the average effect of additional schooling on wages <em>only for those people whose decision to attend college was influenced by the availability of a local college</em> (the compliers).</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import statsmodels.formula.api as smf
+import pandas as pd
+import numpy as np
+
+# Simulate some data
+np.random.seed(0)
+n = 1000
+z = np.random.normal(0, 1, n)  # Instrument (proximity to college)
+w = np.random.normal(0, 1, n)  # Exogenous covariate (parental income)
+u = np.random.random(n)        # Unobserved ability, correlated with X and Y
+x = 0.5 * z + 0.3 * w + 0.2 * u + np.random.normal(0, 0.5, n) # Endogenous variable (education)
+y = 0.8 * x + 0.4 * w + 0.5 * u + np.random.normal(0, 0.5, n) # Outcome variable (wages)
+
+data = pd.DataFrame({'y': y, 'x': x, 'z': z, 'w': w})
+
+# Stage 1: Regress x on z and w
+stage1 = smf.ols(&quot;x ~ z + w&quot;, data=data).fit()
+data['x_hat'] = stage1.predict(data)
+
+# Stage 2: Regress y on x_hat and w
+stage2 = smf.ols(&quot;y ~ x_hat + w&quot;, data=data).fit()
+print(stage2.summary())
+
+# Using statsmodels.api for 2SLS directly
+import statsmodels.api as sm
+from statsmodels.sandbox.regression.iv2sls import IV2SLS
+
+res_iv = IV2SLS(data['y'], data[['w']], data['x'], data['z']).fit()
+print(res_iv.summary)
+</code></pre>
+
+<p>This code snippet performs the following:</p>
+<ol>
+<li><strong>Simulates data:</strong> Creates a dataset with an endogenous variable <code>x</code>, an outcome <code>y</code>, an instrument <code>z</code>, and a covariate <code>w</code>. The endogeneity is created by the unobserved variable <code>u</code> which correlates with both <code>x</code> and <code>y</code>.</li>
+<li><strong>Performs 2SLS manually:</strong>  Fits the two-stage least squares regression as described above, first predicting <code>x</code> in stage 1, then using the predicted <code>x</code> in stage 2 to estimate the effect on <code>y</code>.</li>
+<li><strong>Performs 2SLS using <code>IV2SLS</code>:</strong> Uses the <code>IV2SLS</code> function from <code>statsmodels.sandbox.regression.iv2sls</code> to perform the 2SLS estimation directly. The parameters passed are: outcome variable <code>y</code>, exogenous covariates <code>w</code>, endogenous variable <code>x</code>, and instrumental variable <code>z</code>.</li>
+<li><strong>Prints Results:</strong> The results from both the manual 2SLS and the <code>IV2SLS</code> methods are printed. These will be very similar. Look for the coefficient on 'x_hat' (in the manual method) or <code>x</code> (in the <code>IV2SLS</code> method) to find the 2SLS estimate.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we test the validity of the instrumental variable (specifically, the exclusion restriction), and what are some common challenges in finding good instruments in real-world applications?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
