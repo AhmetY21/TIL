@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Similarity Measures (Cosine, Jaccard)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-text-similarity-measures-cosine-jaccard">Topic: Text Similarity Measures (Cosine, Jaccard)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text similarity measures aim to quantify how similar two pieces of text are. This is typically achieved by comparing the representations of the text, not the raw string characters.  Cosine and Jaccard similarity are two popular methods.</p>
+<ul>
+<li>
+<p><strong>Cosine Similarity:</strong> This measures the cosine of the angle between two non-zero vectors in a multi-dimensional space. In the context of text, these vectors typically represent the term frequency-inverse document frequency (TF-IDF) or word embeddings of the documents. The cosine similarity ranges from -1 to 1, where 1 indicates identical documents (same orientation), 0 indicates orthogonality (no similarity), and -1 indicates exactly opposite documents. It focuses on the orientation (direction) of the vectors rather than their magnitude (length).</p>
+<ul>
+<li><strong>How to use it:</strong> Convert documents into vectors (e.g., using TF-IDF). Calculate the cosine similarity between each pair of document vectors. The resulting score indicates the similarity.</li>
+</ul>
+</li>
+<li>
+<p><strong>Jaccard Similarity (Jaccard Index):</strong> This measures the similarity between two sets. In the context of text, the sets typically represent the unique words or tokens present in the documents.  It's defined as the size of the intersection divided by the size of the union of the sets. The Jaccard similarity ranges from 0 to 1, where 1 indicates identical sets and 0 indicates disjoint sets (no common elements).</p>
+<ul>
+<li><strong>How to use it:</strong> Convert documents into sets of unique words/tokens. Calculate the Jaccard index between each pair of document sets. The resulting score indicates the similarity.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Here are application scenarios for each measure:</p>
+<ul>
+<li>
+<p><strong>Cosine Similarity:</strong></p>
+<ul>
+<li><strong>Document Clustering:</strong> Grouping similar documents together based on topic.</li>
+<li><strong>Information Retrieval:</strong> Finding documents relevant to a user's query (search engines).</li>
+<li><strong>Recommendation Systems:</strong> Recommending items (e.g., products, movies) to users based on their past behavior and the similarity of item descriptions.</li>
+<li><strong>Plagiarism Detection:</strong> Identifying documents that are similar to existing sources.</li>
+</ul>
+</li>
+<li>
+<p><strong>Jaccard Similarity:</strong></p>
+<ul>
+<li><strong>Duplicate Detection:</strong> Identifying duplicate web pages or entries in a database.</li>
+<li><strong>Collaborative Filtering:</strong> Finding users with similar tastes or interests based on the items they've interacted with (e.g., rated highly).</li>
+<li><strong>Market Basket Analysis:</strong> Discovering associations between items purchased together.</li>
+<li><strong>Bioinformatics:</strong> Comparing sets of genes or proteins.</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.tokenize import word_tokenize
+import nltk
+
+# Download required NLTK data (run once)
+# nltk.download('punkt')
+
+def cosine_similarity_example(doc1, doc2):
+    &quot;&quot;&quot;Calculates cosine similarity between two documents using TF-IDF.&quot;&quot;&quot;
+    vectorizer = TfidfVectorizer()
+    vectors = vectorizer.fit_transform([doc1, doc2])
+    return cosine_similarity(vectors[0], vectors[1])[0][0]
+
+def jaccard_similarity_example(doc1, doc2):
+    &quot;&quot;&quot;Calculates Jaccard similarity between two documents.&quot;&quot;&quot;
+    # Tokenize the documents
+    tokens1 = set(word_tokenize(doc1.lower())) # Convert to lowercase and tokenize
+    tokens2 = set(word_tokenize(doc2.lower()))
+
+    # Calculate intersection and union
+    intersection = tokens1.intersection(tokens2)
+    union = tokens1.union(tokens2)
+
+    # Calculate Jaccard similarity
+    return len(intersection) / len(union) if len(union) &gt; 0 else 0.0
+
+
+# Example usage:
+doc1 = &quot;This is a sample document about natural language processing.&quot;
+doc2 = &quot;This is another example document focusing on NLP.&quot;
+
+cosine_sim = cosine_similarity_example(doc1, doc2)
+jaccard_sim = jaccard_similarity_example(doc1, doc2)
+
+
+print(f&quot;Cosine Similarity: {cosine_sim}&quot;)
+print(f&quot;Jaccard Similarity: {jaccard_sim}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the limitations of Cosine and Jaccard similarity, and how can these limitations be addressed with other text similarity measures (e.g., Word Mover's Distance)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
