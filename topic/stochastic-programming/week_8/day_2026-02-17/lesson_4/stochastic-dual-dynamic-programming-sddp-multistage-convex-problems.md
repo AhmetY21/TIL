@@ -1,0 +1,164 @@
+---
+title: "Stochastic Dual Dynamic Programming (SDDP): multistage convex problems"
+date: "2026-02-17"
+week: 8
+lesson: 4
+slug: "stochastic-dual-dynamic-programming-sddp-multistage-convex-problems"
+---
+
+# Topic: Stochastic Dual Dynamic Programming (SDDP): multistage convex problems
+
+## 1) Formal definition (what is it, and how can we use it?)
+
+Stochastic Dual Dynamic Programming (SDDP) is a decomposition algorithm used to solve multistage stochastic convex programming problems. It is primarily designed for problems where decisions are made sequentially over time, and future outcomes are uncertain but represented by probability distributions. The "convex" requirement refers to the objective function and constraints at each stage needing to be convex. "Dual" in the name refers to the fact that the algorithm iteratively builds inner approximations (cuts) to the cost-to-go function using dual variables obtained from solving subproblems. "Dynamic Programming" refers to the fact that the algorithm relies on the Bellman equation of Dynamic Programming to solve the multistage problem.
+
+More formally, a multistage stochastic convex problem can be represented as:
+
+```
+min  E[ sum_{t=1}^{T} c_t(x_t, ξ_t) ]
+s.t. x_t ∈ X_t(x_{t-1}, ξ_t)  for t = 1, ..., T
+```
+
+Where:
+
+*   `T` is the number of stages (time periods).
+*   `x_t` is the decision variable at stage `t`.
+*   `ξ_t` is the stochastic parameter (random variable) at stage `t`.  These represent the uncertainty that unfolds over time.
+*   `c_t(x_t, ξ_t)` is the cost function at stage `t`, which depends on the decision `x_t` and the realization of the random variable `ξ_t`.
+*   `X_t(x_{t-1}, ξ_t)` is the feasible region for `x_t`, which depends on the previous stage's decision `x_{t-1}` and the current stage's stochastic parameter `ξ_t`.
+*   `E[.]` denotes the expectation operator.
+
+**How SDDP Works:**
+
+SDDP works by iteratively building inner approximations to the cost-to-go function at each stage. The cost-to-go function, *Q<sub>t</sub>(x<sub>t-1</sub>, ξ<sub>t</sub>)*, represents the optimal expected cost from stage *t* to the end of the horizon, given a state *x<sub>t-1</sub>* and realization of the stochastic parameter *ξ<sub>t</sub>*. The method involves two main phases:
+
+1.  **Forward Pass (Simulation):** Generate scenarios of the random variables.  For each scenario, sequentially solve stage-specific subproblems, using the existing cost-to-go approximations (cuts) as part of the objective function. This yields trial solutions, *x<sub>t</sub>*, and dual variables associated with the constraints.
+2.  **Backward Pass (Cut Generation):**  Starting from the last stage, and working backwards to the first stage, use the solutions and dual variables from the forward pass to generate linear cuts that approximate the cost-to-go function *Q<sub>t</sub>(x<sub>t-1</sub>, ξ<sub>t</sub>)* for each stage *t*.  These cuts are added to the formulation for the next forward pass.
+
+These forward and backward passes are repeated until the algorithm converges.  Convergence is typically assessed by tracking the lower and upper bounds of the optimal objective function value. The lower bound is the expected value of the sum of the costs in the forward pass, given the incumbent policy. The upper bound is an estimate of the expected cost-to-go function, and it is obtained by solving the dual problem. The algorithm stops when the gap between the lower and upper bounds is below a predetermined threshold.
+
+**How we can use it:**
+
+SDDP is useful for solving complex stochastic optimization problems that cannot be efficiently solved with other methods, such as extensive form formulations.  It is particularly effective for problems with a large number of stages and scenarios.
+
+## 2) Application scenario
+
+Consider a hydro-thermal power generation planning problem over multiple years.  A utility company needs to decide how much electricity to generate from both hydro (water) and thermal (e.g., coal, gas) power plants in each year to meet the electricity demand.  The problem is stochastic due to uncertain factors such as:
+
+*   **Water inflows:** The amount of water flowing into the hydroelectric reservoirs is uncertain and varies from year to year depending on rainfall and snowmelt.
+*   **Electricity demand:** The electricity demand is uncertain and depends on factors such as weather, economic growth, and population changes.
+*   **Fuel prices:** The prices of thermal fuels such as coal and gas are uncertain and vary over time.
+
+The objective is to minimize the total cost of electricity generation over the planning horizon while satisfying the electricity demand and respecting the physical constraints of the hydro and thermal power plants. Constraints might include:
+
+*   **Reservoir water balance:** The amount of water in the reservoir in each period depends on the inflow, the outflow (water used for generation), and evaporation.
+*   **Power plant capacity:** The amount of electricity generated by each power plant is limited by its capacity.
+*   **Electricity demand:** The total electricity generation must meet the electricity demand in each period.
+
+This problem can be formulated as a multistage stochastic convex program, and SDDP can be used to solve it. The decisions at each stage are the electricity generation levels for each power plant. The stochastic parameters are the water inflows, electricity demand, and fuel prices. The cost function at each stage is the cost of generating electricity from the thermal power plants.  SDDP would iteratively build cuts representing the optimal cost-to-go of operating the system from future periods, allowing the utility company to make near-optimal generation decisions in the present, considering the uncertainty of future conditions.
+
+## 3) Python method (if possible)
+
+The SDDP algorithm is quite complex to implement from scratch.  Fortunately, several Python libraries provide implementations of SDDP or related methods.  One popular option is `SDDP.jl`, written in Julia, with wrappers in Python. Another option is `PySP`, which can be used with `Gurobi` or other commercial/open source solvers.
+
+Here is a simplified example using `PySP` and `Gurobi`. This is illustrative and would require significant adaptation for a real-world problem.  This example focuses on a two-stage stochastic linear program, which is a simplified form of a multistage convex problem suitable for SDDP:
+
+```python
+# Requires PySP, Gurobi, and installation/configuration.
+
+import pyomo.environ as pyo
+from pyomo.environ import *
+from pyomo.pysp.scenariotree.tree_model import CreateAbstractScenarioTreeModel
+from pyomo.pysp.scenariotree.instance_factory import CreateScenarioTreeInstance
+from pyomo.pysp.ef.sputils import create_ef_instance
+from pyomo.pysp.algorithms.ef import ExtensiveFormAlgorithm
+from pyomo.pysp.algorithms.sddd import SDD
+
+# Create a dummy two-stage stochastic linear program.
+# Adapt this to represent your problem.
+
+def create_model():
+    model = pyo.AbstractModel()
+
+    model.Stages = pyo.Set(initialize=['Stage1', 'Stage2'])
+
+    model.x = pyo.Var(within=pyo.NonNegativeReals) # Stage 1 var
+    model.y = pyo.Var(within=pyo.NonNegativeReals) # Stage 2 var
+
+    model.c1 = pyo.Param(default=1.0)
+    model.c2 = pyo.Param(default=2.0)
+
+    model.obj = pyo.Objective(expr = model.c1 * model.x + model.c2 * model.y, sense=pyo.minimize)
+
+    model.constraint1 = pyo.Constraint(expr = model.x >= 1.0)
+    model.constraint2 = pyo.Constraint(expr = model.x + model.y >= 5.0)
+
+    return model
+
+# Create Scenario Tree
+def create_scenario_tree_model():
+    model = CreateAbstractScenarioTreeModel()
+    return model
+
+def scenario_tree_data():
+    data = {
+        "Nodes": {
+            "ROOT": {'stage': 1},
+            "scenario1": {'stage': 2, 'parent': 'ROOT', 'probability': 0.5},
+            "scenario2": {'stage': 2, 'parent': 'ROOT', 'probability': 0.5}
+        },
+        "Scenarios": {
+            "scenario1": {'leaf_node': 'scenario1'},
+            "scenario2": {'leaf_node': 'scenario2'}
+        }
+    }
+    return data
+
+# Main execution block
+if __name__ == '__main__':
+    # Create problem instance
+    model = create_model()
+    instance = model.create_instance()
+
+    # Create scenario tree instance
+    scenario_tree_model = create_scenario_tree_model()
+    scenario_tree_data_dict = scenario_tree_data()
+    scenario_tree_instance = CreateScenarioTreeInstance(scenario_tree_model, scenario_tree_data_dict)
+
+    # Attach instance to scenario tree
+    scenario_tree_instance.FirstStageVariables = [instance.x]
+    scenario_tree_instance.ScenarioVariables["scenario1"] = [instance.y] # y vars specific to scenario1
+    scenario_tree_instance.ScenarioVariables["scenario2"] = [instance.y] # y vars specific to scenario2
+
+    # Solve using SDD
+    sddd = SDD(scenario_tree_instance)
+    sddd.options.max_iterations = 100
+    sddd.run()
+
+    # Print solution
+    print("Solution:")
+    print("x = ", pyo.value(instance.x))
+    print("y = ", pyo.value(instance.y)) # This needs to be adpated to print the values of y from both scenarios
+
+```
+
+**Explanation:**
+
+1.  **Import Libraries:** Import Pyomo, PySP, and the solver (Gurobi in this example).
+2.  **Define the Model:**  The `create_model()` function defines the two-stage stochastic linear program. Note how the variables (x, y), parameters (c1, c2), objective, and constraints are defined.
+3.  **Define Scenario Tree:** The `create_scenario_tree_model()` and `scenario_tree_data()` functions define a simple scenario tree with two scenarios in the second stage, representing two possible realizations of the random variables.  Each scenario has a probability.
+4.  **Create Instances:** Create Pyomo instances for the model and the scenario tree.
+5.  **Attach Instance to Scenario Tree**: Add first-stage and scenario-specific variables to the scenario tree.
+6.  **Run SDD Algorithm:** The `SDD` object from PySP is initialized with the scenario tree instance and the `run()` method executes the SDDP algorithm. Parameters such as `max_iterations` can be configured using `sddd.options`.
+7.  **Print Solution:** The final solution is printed.
+
+**Important Notes:**
+
+*   **Installation:** You need to install PySP, Pyomo, and a compatible solver (like Gurobi) separately.  Gurobi requires a license.  Installation instructions for PySP are available on the PySP documentation.
+*   **Solver Configuration:** You may need to configure PySP to recognize your solver.
+*   **Scenario Generation:** This example uses a simple, predefined scenario tree.  In a real-world application, you would need to generate scenarios (e.g., using Monte Carlo simulation) to represent the uncertainty.
+*   **Multistage Adaptation:** This is a *two-stage* example.  Adapting it to a true *multistage* problem requires extending the scenario tree and defining stage-specific decision variables and constraints.  The complexity increases significantly.
+
+## 4) Follow-up question
+
+How does SDDP handle non-anticipativity constraints, and how do these constraints affect the convergence of the algorithm?

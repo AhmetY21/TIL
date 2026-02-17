@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stochastic Dual Dynamic Programming (SDDP): multistage convex problems</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-stochastic-dual-dynamic-programming-sddp-multistage-convex-problems">Topic: Stochastic Dual Dynamic Programming (SDDP): multistage convex problems</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Stochastic Dual Dynamic Programming (SDDP) is a decomposition algorithm used to solve multistage stochastic convex programming problems. It is primarily designed for problems where decisions are made sequentially over time, and future outcomes are uncertain but represented by probability distributions. The "convex" requirement refers to the objective function and constraints at each stage needing to be convex. "Dual" in the name refers to the fact that the algorithm iteratively builds inner approximations (cuts) to the cost-to-go function using dual variables obtained from solving subproblems. "Dynamic Programming" refers to the fact that the algorithm relies on the Bellman equation of Dynamic Programming to solve the multistage problem.</p>
+<p>More formally, a multistage stochastic convex problem can be represented as:</p>
+<pre class="codehilite"><code>min  E[ sum_{t=1}^{T} c_t(x_t, ξ_t) ]
+s.t. x_t ∈ X_t(x_{t-1}, ξ_t)  for t = 1, ..., T
+</code></pre>
+
+<p>Where:</p>
+<ul>
+<li><code>T</code> is the number of stages (time periods).</li>
+<li><code>x_t</code> is the decision variable at stage <code>t</code>.</li>
+<li><code>ξ_t</code> is the stochastic parameter (random variable) at stage <code>t</code>.  These represent the uncertainty that unfolds over time.</li>
+<li><code>c_t(x_t, ξ_t)</code> is the cost function at stage <code>t</code>, which depends on the decision <code>x_t</code> and the realization of the random variable <code>ξ_t</code>.</li>
+<li><code>X_t(x_{t-1}, ξ_t)</code> is the feasible region for <code>x_t</code>, which depends on the previous stage's decision <code>x_{t-1}</code> and the current stage's stochastic parameter <code>ξ_t</code>.</li>
+<li><code>E[.]</code> denotes the expectation operator.</li>
+</ul>
+<p><strong>How SDDP Works:</strong></p>
+<p>SDDP works by iteratively building inner approximations to the cost-to-go function at each stage. The cost-to-go function, <em>Q<sub>t</sub>(x<sub>t-1</sub>, ξ<sub>t</sub>)</em>, represents the optimal expected cost from stage <em>t</em> to the end of the horizon, given a state <em>x<sub>t-1</sub></em> and realization of the stochastic parameter <em>ξ<sub>t</sub></em>. The method involves two main phases:</p>
+<ol>
+<li><strong>Forward Pass (Simulation):</strong> Generate scenarios of the random variables.  For each scenario, sequentially solve stage-specific subproblems, using the existing cost-to-go approximations (cuts) as part of the objective function. This yields trial solutions, <em>x<sub>t</sub></em>, and dual variables associated with the constraints.</li>
+<li><strong>Backward Pass (Cut Generation):</strong>  Starting from the last stage, and working backwards to the first stage, use the solutions and dual variables from the forward pass to generate linear cuts that approximate the cost-to-go function <em>Q<sub>t</sub>(x<sub>t-1</sub>, ξ<sub>t</sub>)</em> for each stage <em>t</em>.  These cuts are added to the formulation for the next forward pass.</li>
+</ol>
+<p>These forward and backward passes are repeated until the algorithm converges.  Convergence is typically assessed by tracking the lower and upper bounds of the optimal objective function value. The lower bound is the expected value of the sum of the costs in the forward pass, given the incumbent policy. The upper bound is an estimate of the expected cost-to-go function, and it is obtained by solving the dual problem. The algorithm stops when the gap between the lower and upper bounds is below a predetermined threshold.</p>
+<p><strong>How we can use it:</strong></p>
+<p>SDDP is useful for solving complex stochastic optimization problems that cannot be efficiently solved with other methods, such as extensive form formulations.  It is particularly effective for problems with a large number of stages and scenarios.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a hydro-thermal power generation planning problem over multiple years.  A utility company needs to decide how much electricity to generate from both hydro (water) and thermal (e.g., coal, gas) power plants in each year to meet the electricity demand.  The problem is stochastic due to uncertain factors such as:</p>
+<ul>
+<li><strong>Water inflows:</strong> The amount of water flowing into the hydroelectric reservoirs is uncertain and varies from year to year depending on rainfall and snowmelt.</li>
+<li><strong>Electricity demand:</strong> The electricity demand is uncertain and depends on factors such as weather, economic growth, and population changes.</li>
+<li><strong>Fuel prices:</strong> The prices of thermal fuels such as coal and gas are uncertain and vary over time.</li>
+</ul>
+<p>The objective is to minimize the total cost of electricity generation over the planning horizon while satisfying the electricity demand and respecting the physical constraints of the hydro and thermal power plants. Constraints might include:</p>
+<ul>
+<li><strong>Reservoir water balance:</strong> The amount of water in the reservoir in each period depends on the inflow, the outflow (water used for generation), and evaporation.</li>
+<li><strong>Power plant capacity:</strong> The amount of electricity generated by each power plant is limited by its capacity.</li>
+<li><strong>Electricity demand:</strong> The total electricity generation must meet the electricity demand in each period.</li>
+</ul>
+<p>This problem can be formulated as a multistage stochastic convex program, and SDDP can be used to solve it. The decisions at each stage are the electricity generation levels for each power plant. The stochastic parameters are the water inflows, electricity demand, and fuel prices. The cost function at each stage is the cost of generating electricity from the thermal power plants.  SDDP would iteratively build cuts representing the optimal cost-to-go of operating the system from future periods, allowing the utility company to make near-optimal generation decisions in the present, considering the uncertainty of future conditions.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The SDDP algorithm is quite complex to implement from scratch.  Fortunately, several Python libraries provide implementations of SDDP or related methods.  One popular option is <code>SDDP.jl</code>, written in Julia, with wrappers in Python. Another option is <code>PySP</code>, which can be used with <code>Gurobi</code> or other commercial/open source solvers.</p>
+<p>Here is a simplified example using <code>PySP</code> and <code>Gurobi</code>. This is illustrative and would require significant adaptation for a real-world problem.  This example focuses on a two-stage stochastic linear program, which is a simplified form of a multistage convex problem suitable for SDDP:</p>
+<pre class="codehilite"><code class="language-python"># Requires PySP, Gurobi, and installation/configuration.
+
+import pyomo.environ as pyo
+from pyomo.environ import *
+from pyomo.pysp.scenariotree.tree_model import CreateAbstractScenarioTreeModel
+from pyomo.pysp.scenariotree.instance_factory import CreateScenarioTreeInstance
+from pyomo.pysp.ef.sputils import create_ef_instance
+from pyomo.pysp.algorithms.ef import ExtensiveFormAlgorithm
+from pyomo.pysp.algorithms.sddd import SDD
+
+# Create a dummy two-stage stochastic linear program.
+# Adapt this to represent your problem.
+
+def create_model():
+    model = pyo.AbstractModel()
+
+    model.Stages = pyo.Set(initialize=['Stage1', 'Stage2'])
+
+    model.x = pyo.Var(within=pyo.NonNegativeReals) # Stage 1 var
+    model.y = pyo.Var(within=pyo.NonNegativeReals) # Stage 2 var
+
+    model.c1 = pyo.Param(default=1.0)
+    model.c2 = pyo.Param(default=2.0)
+
+    model.obj = pyo.Objective(expr = model.c1 * model.x + model.c2 * model.y, sense=pyo.minimize)
+
+    model.constraint1 = pyo.Constraint(expr = model.x &gt;= 1.0)
+    model.constraint2 = pyo.Constraint(expr = model.x + model.y &gt;= 5.0)
+
+    return model
+
+# Create Scenario Tree
+def create_scenario_tree_model():
+    model = CreateAbstractScenarioTreeModel()
+    return model
+
+def scenario_tree_data():
+    data = {
+        &quot;Nodes&quot;: {
+            &quot;ROOT&quot;: {'stage': 1},
+            &quot;scenario1&quot;: {'stage': 2, 'parent': 'ROOT', 'probability': 0.5},
+            &quot;scenario2&quot;: {'stage': 2, 'parent': 'ROOT', 'probability': 0.5}
+        },
+        &quot;Scenarios&quot;: {
+            &quot;scenario1&quot;: {'leaf_node': 'scenario1'},
+            &quot;scenario2&quot;: {'leaf_node': 'scenario2'}
+        }
+    }
+    return data
+
+# Main execution block
+if __name__ == '__main__':
+    # Create problem instance
+    model = create_model()
+    instance = model.create_instance()
+
+    # Create scenario tree instance
+    scenario_tree_model = create_scenario_tree_model()
+    scenario_tree_data_dict = scenario_tree_data()
+    scenario_tree_instance = CreateScenarioTreeInstance(scenario_tree_model, scenario_tree_data_dict)
+
+    # Attach instance to scenario tree
+    scenario_tree_instance.FirstStageVariables = [instance.x]
+    scenario_tree_instance.ScenarioVariables[&quot;scenario1&quot;] = [instance.y] # y vars specific to scenario1
+    scenario_tree_instance.ScenarioVariables[&quot;scenario2&quot;] = [instance.y] # y vars specific to scenario2
+
+    # Solve using SDD
+    sddd = SDD(scenario_tree_instance)
+    sddd.options.max_iterations = 100
+    sddd.run()
+
+    # Print solution
+    print(&quot;Solution:&quot;)
+    print(&quot;x = &quot;, pyo.value(instance.x))
+    print(&quot;y = &quot;, pyo.value(instance.y)) # This needs to be adpated to print the values of y from both scenarios
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Import Pyomo, PySP, and the solver (Gurobi in this example).</li>
+<li><strong>Define the Model:</strong>  The <code>create_model()</code> function defines the two-stage stochastic linear program. Note how the variables (x, y), parameters (c1, c2), objective, and constraints are defined.</li>
+<li><strong>Define Scenario Tree:</strong> The <code>create_scenario_tree_model()</code> and <code>scenario_tree_data()</code> functions define a simple scenario tree with two scenarios in the second stage, representing two possible realizations of the random variables.  Each scenario has a probability.</li>
+<li><strong>Create Instances:</strong> Create Pyomo instances for the model and the scenario tree.</li>
+<li><strong>Attach Instance to Scenario Tree</strong>: Add first-stage and scenario-specific variables to the scenario tree.</li>
+<li><strong>Run SDD Algorithm:</strong> The <code>SDD</code> object from PySP is initialized with the scenario tree instance and the <code>run()</code> method executes the SDDP algorithm. Parameters such as <code>max_iterations</code> can be configured using <code>sddd.options</code>.</li>
+<li><strong>Print Solution:</strong> The final solution is printed.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Installation:</strong> You need to install PySP, Pyomo, and a compatible solver (like Gurobi) separately.  Gurobi requires a license.  Installation instructions for PySP are available on the PySP documentation.</li>
+<li><strong>Solver Configuration:</strong> You may need to configure PySP to recognize your solver.</li>
+<li><strong>Scenario Generation:</strong> This example uses a simple, predefined scenario tree.  In a real-world application, you would need to generate scenarios (e.g., using Monte Carlo simulation) to represent the uncertainty.</li>
+<li><strong>Multistage Adaptation:</strong> This is a <em>two-stage</em> example.  Adapting it to a true <em>multistage</em> problem requires extending the scenario tree and defining stage-specific decision variables and constraints.  The complexity increases significantly.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does SDDP handle non-anticipativity constraints, and how do these constraints affect the convergence of the algorithm?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
