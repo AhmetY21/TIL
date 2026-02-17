@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stochastic Integer Programming: two-stage stochastic MILP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-stochastic-integer-programming-two-stage-stochastic-milp">Topic: Stochastic Integer Programming: two-stage stochastic MILP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Two-stage stochastic mixed-integer linear programming (two-stage stochastic MILP) is a type of stochastic programming problem that deals with decision-making under uncertainty, where decisions are made in two stages. The key characteristic is that some of the decision variables are integer-valued, making the problem significantly more challenging to solve than its continuous counterpart.</p>
+<ul>
+<li>
+<p><strong>What is it?</strong></p>
+<ul>
+<li><strong>First-stage (Here-and-Now) Decisions:</strong> These decisions must be made <em>before</em> the uncertainty is revealed. Think of them as strategic, long-term decisions. They are represented by variables, say, <code>x</code>. These are generally (but not always) integer or binary variables in a MILP setting.</li>
+<li><strong>Second-stage (Wait-and-See) Decisions:</strong> These decisions can be made <em>after</em> the uncertainty is revealed. They are corrective or operational decisions, adjusting to the realized scenario. They are represented by variables, say, <code>y(ω)</code>. Note that the second-stage decisions <code>y</code> are scenario-dependent and thus are functions of the scenario <code>ω</code>. These can also be integer or continuous.</li>
+<li><strong>Uncertainty:</strong> The uncertainty is modeled as a finite set of scenarios, each with an associated probability of occurrence. A scenario <code>ω</code> represents a specific realization of the uncertain parameters (e.g., demand, cost, etc.).</li>
+<li><strong>Objective Function:</strong> The objective function aims to minimize the sum of the first-stage cost and the expected value of the second-stage cost across all scenarios.  In general form:</li>
+</ul>
+<p><code>min  c'x + E[Q(x, ω)]
+s.t. Ax &lt;= b
+     x ∈ X</code></p>
+<p>Where:
+    * <code>x</code> are the first-stage decisions.
+    * <code>c</code> is the cost vector for the first-stage decisions.
+    * <code>E[Q(x, ω)]</code> is the expected second-stage cost. <code>Q(x, ω)</code> is the optimal value of the second-stage problem given first stage decisions <code>x</code> and scenario <code>ω</code>.
+    * <code>Ax &lt;= b</code> are first-stage constraints.
+    * <code>X</code> is the feasible region for the first-stage decisions (often defined by integrality constraints on <code>x</code>).</p>
+<p>The second-stage problem for a given scenario ω is:</p>
+<p><code>Q(x, ω) = min q(ω)'y(ω)
+        s.t. T(ω)x + W(ω)y(ω) &lt;= h(ω)
+             y(ω) ∈ Y</code></p>
+<p>Where:
+    * <code>y(ω)</code> are the second-stage decisions for scenario <code>ω</code>.
+    * <code>q(ω)</code> is the cost vector for the second-stage decisions under scenario <code>ω</code>.
+    * <code>T(ω)x + W(ω)y(ω) &lt;= h(ω)</code> are the second-stage constraints under scenario <code>ω</code> that link the first-stage and second-stage decisions.
+    * <code>Y</code> is the feasible region for the second-stage decisions (often defined by integrality constraints on <code>y</code>).
+* <strong>How can we use it?</strong>
+* <strong>Modeling Complex Problems:</strong> It is useful for modeling problems where some decisions must be made before knowing all the information, and then corrective actions can be taken once more information is available.
+* <strong>Risk Management:</strong> By considering multiple scenarios, the model explicitly accounts for uncertainty, which can lead to more robust solutions.
+* <strong>Optimization Under Uncertainty:</strong>  Provides a framework for finding solutions that are optimal on average across a range of possible outcomes.
+* <strong>Capacity Planning:</strong>  Useful for determining the optimal capacity of resources given uncertain future demand.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Example: Supply Chain Design with Demand Uncertainty</strong></p>
+<p>A company needs to decide on the number of warehouses to build (first-stage decisions) <em>before</em> knowing the actual demand in different regions. After the warehouses are built, the company can decide how much product to ship from each warehouse to each region (second-stage decisions) based on the realized demand.</p>
+<ul>
+<li><strong>First-stage decisions (x):</strong><ul>
+<li>Binary variables: <code>x_i = 1</code> if warehouse <code>i</code> is built, <code>0</code> otherwise.</li>
+</ul>
+</li>
+<li><strong>Second-stage decisions (y(ω)):</strong><ul>
+<li>Continuous variables: <code>y_{ij}(ω)</code> = amount of product shipped from warehouse <code>i</code> to region <code>j</code> under scenario <code>ω</code>.</li>
+</ul>
+</li>
+<li><strong>Uncertainty (ω):</strong><ul>
+<li>Scenarios represent different possible demand levels in each region. Each scenario has an associated probability.</li>
+</ul>
+</li>
+<li><strong>Objective:</strong><ul>
+<li>Minimize the cost of building warehouses plus the expected cost of shipping products across all demand scenarios.</li>
+</ul>
+</li>
+<li><strong>Constraints:</strong><ul>
+<li>First-stage constraints: Limit on the total number of warehouses that can be built, budget constraints.</li>
+<li>Second-stage constraints:  Demand must be met in each region for each scenario. Warehouse capacity limits. Flow balance constraints.</li>
+</ul>
+</li>
+</ul>
+<p>In this example, the company makes strategic decisions about warehouse location upfront and then makes operational shipping decisions after the demand uncertainty is resolved.  The stochastic MILP model helps the company find the best warehouse configuration that minimizes costs while ensuring that customer demand can be satisfied under various possible demand scenarios.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using the <code>pyomo</code> library. Note: This is a simplified example for illustrative purposes. Building a full-scale model can be more complex.  This example models a simple capacity planning problem, where the first stage is about the amount of a factory to build and the second stage is how much to produce depending on the demand.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+# Number of scenarios
+num_scenarios = 3
+
+# Scenario probabilities
+probabilities = {1: 0.3, 2: 0.4, 3: 0.3}
+
+# Demand scenarios
+demand = {1: 10, 2: 15, 3: 20}
+
+# Production cost per unit
+production_cost = 2
+
+# Capacity cost per unit of capacity built
+capacity_cost = 5
+
+# Create a concrete model
+model = ConcreteModel()
+
+# First-stage variable: Capacity to build
+model.capacity = Var(domain=NonNegativeReals)  # Continuous variable
+
+# Second-stage variables: Production level for each scenario
+model.production = Var(range(1, num_scenarios + 1), domain=NonNegativeReals)
+
+# Objective function
+def objective_rule(model):
+    return capacity_cost * model.capacity + sum(probabilities[s] * production_cost * model.production[s] for s in range(1, num_scenarios + 1))
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+# First-stage constraint:  Capacity Limit (optional, can be omitted)
+# model.capacity_limit = Constraint(expr=model.capacity &lt;= 100)  # Example upper bound
+
+# Second-stage constraints: Production must be less than or equal to capacity AND production must meet demand
+def production_capacity_rule(model, s):
+    return model.production[s] &lt;= model.capacity
+model.production_capacity = Constraint(range(1, num_scenarios + 1), rule=production_capacity_rule)
+
+
+def production_demand_rule(model, s):
+    return model.production[s] &gt;= demand[s]
+model.production_demand = Constraint(range(1, num_scenarios + 1), rule=production_demand_rule)
+
+
+# Solve the model
+solver = SolverFactory('glpk') # Or 'gurobi', 'cplex', etc.  glpk is a free solver.
+solver.solve(model)
+
+# Print the results
+print(&quot;Optimal capacity:&quot;, model.capacity.value)
+for s in range(1, num_scenarios + 1):
+    print(&quot;Production in scenario&quot;, s, &quot;:&quot;, model.production[s].value)
+print(&quot;Objective value:&quot;, model.objective.expr()) # model.objective.value also works
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Scenario Definition:</strong> Defines the number of scenarios, their probabilities, and the demand for each scenario.</li>
+<li><strong>Model Creation:</strong> Creates a <code>ConcreteModel</code> in Pyomo.</li>
+<li><strong>Variables:</strong> Defines the first-stage variable <code>capacity</code> (continuous) and the second-stage variable <code>production</code> for each scenario.</li>
+<li><strong>Objective Function:</strong> Minimizes the sum of the capacity cost and the expected production cost.</li>
+<li><strong>Constraints:</strong></li>
+<li><code>production_capacity</code>:  Ensures that production in each scenario does not exceed the built capacity.</li>
+<li><code>production_demand</code>: Ensures demand is met in each scenario.</li>
+<li><strong>Solving:</strong>  Uses the <code>glpk</code> solver (a free solver) to solve the model. You can replace it with <code>gurobi</code> or <code>cplex</code> if you have a license for them.</li>
+<li><strong>Output:</strong> Prints the optimal capacity and production levels for each scenario.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Integer Variables:</strong> If the first-stage or second-stage variables were integer, you would set <code>domain=Integers</code> or <code>domain=Binary</code> in the <code>Var</code> definition.  The solver choice (<code>gurobi</code>, <code>cplex</code>, etc.) becomes even more critical when dealing with integer variables.</li>
+<li><strong>Solver Choice:</strong>  Solvers like Gurobi or CPLEX are generally much more efficient for solving MILPs than open-source solvers like GLPK.</li>
+<li><strong>Scenario Generation:</strong>  The quality of the stochastic programming solution depends heavily on the quality and representativeness of the scenarios. Scenario generation techniques (e.g., sampling, scenario reduction) are important in practice.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the complexity of solving a two-stage stochastic MILP change as the number of scenarios increases, and what techniques can be used to mitigate this?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
