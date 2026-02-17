@@ -1,5 +1,5 @@
 {
-  "next_index": 29,
+  "next_index": 30,
   "total_topics": 43,
-  "last_topic": "Stochastic Dual Dynamic Programming (SDDP): multistage convex problems"
+  "last_topic": "SDDP.jl in Practice: stages, state variables, and policy graphs"
 }

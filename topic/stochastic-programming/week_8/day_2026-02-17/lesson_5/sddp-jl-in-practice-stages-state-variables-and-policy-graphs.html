@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDDP.jl in Practice: stages, state variables, and policy graphs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-sddpjl-in-practice-stages-state-variables-and-policy-graphs">Topic: SDDP.jl in Practice: stages, state variables, and policy graphs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>SDDP.jl is a Julia package for solving multistage stochastic linear programs using Stochastic Dual Dynamic Programming (SDDP). When applying SDDP.jl, understanding the concepts of stages, state variables, and policy graphs is crucial for formulating and solving problems effectively.</p>
+<ul>
+<li>
+<p><strong>Stages:</strong> A stage represents a point in time where a decision needs to be made. SDDP explicitly models the problem as a sequence of these stages. Decisions made at one stage influence the future state and are made under uncertainty, which is resolved stage-by-stage. The problem is "decomposed" into these stages. The goal is to find a sequence of decisions across all stages that minimizes the expected cost over the planning horizon.</p>
+</li>
+<li>
+<p><strong>State Variables:</strong> State variables represent the information that carries over from one stage to the next. They link the stages together, reflecting the impact of past decisions and realized uncertainties on the current stage's optimization problem. They encapsulate the relevant aspects of the past that affect future decisions. Examples include inventory levels, reservoir water levels, or capital stock. Each stage takes the current state as input and outputs an updated state that is passed on to the subsequent stage. SDDP.jl manages the backward induction through these state variables.</p>
+</li>
+<li>
+<p><strong>Policy Graphs (Implicit):</strong> The policy graph isn't a data structure explicitly managed by the user in SDDP.jl, but it's the <em>conceptual</em> representation of the decision-making process learned by the algorithm. It implicitly represents the optimal policy at each stage based on the possible states. SDDP builds up the <em>cut representation</em> of the cost-to-go function.  In essence, the algorithm solves the problem backward, starting from the last stage and working its way back to the first, approximating the optimal value function (the cost-to-go function) for each possible state at each stage. This value function is approximated by a series of linear cuts. The optimal policy at any given stage is then derived from this approximated value function and the current state. While not explicitly visualized by SDDP.jl in standard usage, understanding this implicit policy graph is fundamental to interpreting the results. Each cut in the cost-to-go function represents an extreme point solution that may be optimal for a given state. Thus, given a state, you can evaluate the different cuts to determine the optimal action.</p>
+</li>
+</ul>
+<p>In practice, to use SDDP.jl, you define the stage-wise optimization problems, specifying the objective function, constraints, and how state variables evolve between stages. SDDP.jl then iteratively samples scenarios and generates cuts (linear approximations of the value function) to approximate the optimal policy.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a water reservoir management problem over a 5-year planning horizon (5 stages).  At the beginning of each year (stage), a decision must be made about how much water to release for irrigation and power generation, considering uncertain inflow (rainfall) into the reservoir.</p>
+<ul>
+<li><strong>Stages:</strong> Each year represents a stage (stage 1 to stage 5).</li>
+<li><strong>State Variable:</strong> The water level of the reservoir at the beginning of each year is the state variable. It's influenced by the previous year's decisions (release amount), rainfall (uncertainty), and evaporation (deterministic).</li>
+<li><strong>Policy Graph (Implicit):</strong> The algorithm learns the optimal water release policy for each stage depending on the current reservoir water level.  For example, if the reservoir is full, the policy might dictate releasing a large amount to avoid spillage and potential flood damage.  If the reservoir is low, the policy might restrict releases to conserve water for future use. The learned value functions at each stage capture this policy graph.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While SDDP.jl is a Julia package, it's often used in conjunction with other tools, and its results can certainly be consumed by Python. Here's how you could <em>simulate</em> or <em>evaluate</em> a policy learned by SDDP.jl <em>within</em> Python, assuming you have the cuts (value function approximations) exported from the Julia SDDP.jl model. This shows how you <em>use</em> the result of SDDP, not how you <em>run</em> SDDP from Python. Running SDDP from Python requires interfacing with Julia.</p>
+<p>First, we assume that somehow you have managed to transfer the cuts computed by SDDP.jl to Python. This involves reading them from a file, or via a shared database, or an API. We assume that the cuts are in a <code>cuts</code> variable, formatted like a list of (alpha, beta) pairs for each stage. <code>alpha</code> is a vector of coefficients for the state variable, and <code>beta</code> is a scalar intercept for the cut.</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+
+def evaluate_policy(cuts, initial_state, inflows):
+    &quot;&quot;&quot;
+    Simulates the reservoir management policy over time, given the SDDP cuts.
+
+    Args:
+        cuts: A list of lists of (alpha, beta) pairs for each stage.
+              Each inner list represents the cuts for a particular stage.
+              alpha is a numpy array, beta is a scalar.
+        initial_state: The initial water level of the reservoir.
+        inflows: A list of inflows (rainfall) for each year (stage).
+
+    Returns:
+        A list of reservoir water levels at the beginning of each stage,
+        a list of release amounts for each stage, and a list of costs for each stage.
+    &quot;&quot;&quot;
+
+    state = initial_state
+    states = [state]
+    releases = []
+    costs = []
+    num_stages = len(cuts)
+
+    for stage in range(num_stages):
+        stage_cuts = cuts[stage]
+
+        # 1. Determine the optimal release amount by minimizing the cost-to-go function + current cost
+        best_release = None
+        min_cost = float('inf')
+
+        # Simple linear program to determine the optimal release. This is a naive implementation.
+        # In a real use case, you'd replace this with a proper LP solver like `scipy.optimize.linprog`
+        # that incorporates release bounds, power generation costs, etc.
+        # This is for demonstration purposes only.
+
+        for release in np.linspace(0, state, 100):  # Try 100 different release amounts
+            current_cost = release  # Simple cost function: cost is equal to release amount.
+
+            # Evaluate the cost-to-go function (value function) for this release.
+            cost_to_go = float('inf') # Start assuming infinite cost-to-go
+            for alpha, beta in stage_cuts:
+              potential_cost_to_go = alpha @ np.array([state - release + inflows[stage]]) + beta
+              cost_to_go = min(cost_to_go, potential_cost_to_go) # Keep the minimum
+
+            total_cost = current_cost + cost_to_go
+
+            if total_cost &lt; min_cost:
+                min_cost = total_cost
+                best_release = release
+        #print(f&quot;Stage {stage+1}: state {state}, best release {best_release}, min_cost {min_cost}&quot;)
+        # 2. Update the state based on the release and the inflow
+        release = best_release #take the best release from the optimization
+        releases.append(release)
+        costs.append(min_cost)  #The cost including the cost to go is the &quot;minimum total cost&quot;
+
+        state = state - release + inflows[stage]  # State transition
+        states.append(state) #Add next state to list of states
+
+    return states, releases, costs
+
+# Example Usage (assuming you have `cuts` loaded from SDDP.jl):
+# Note that this is a highly simplified and illustrative example.
+# A real application would involve:
+#   - Reading cuts from a file (e.g., CSV, JSON)
+#   - More complex stage-wise optimization within the simulation loop
+#   - Realistic cost functions, constraints, and inflow scenarios.
+
+#Dummy Cuts data (alpha, beta)
+dummy_cuts = [
+    [ (np.array([0.5]), 10.0), (np.array([0.7]), 12.0) ],  # Stage 1 cuts
+    [ (np.array([0.6]), 8.0), (np.array([0.8]), 11.0) ],   # Stage 2 cuts
+    [ (np.array([0.4]), 9.0), (np.array([0.9]), 13.0) ],  # Stage 3 cuts
+    [ (np.array([0.3]), 7.0), (np.array([0.5]), 10.0) ],   # Stage 4 cuts
+    [ (np.array([0.2]), 6.0), (np.array([0.4]), 9.0) ]    # Stage 5 cuts
+]
+
+initial_reservoir_level = 50.0
+inflow_scenarios = [10.0, 12.0, 8.0, 15.0, 5.0]
+
+reservoir_levels, release_amounts, total_costs = evaluate_policy(dummy_cuts, initial_reservoir_level, inflow_scenarios)
+
+print(&quot;Reservoir Levels:&quot;, reservoir_levels)
+print(&quot;Release Amounts:&quot;, release_amounts)
+print(&quot;Total Costs:&quot;, total_costs)
+</code></pre>
+
+<p>This code <em>simulates</em> how the system would evolve given a policy learned by SDDP.jl and the given inflow scenarios. The key point is that the simulation <em>uses</em> the output (cuts) from SDDP.jl which has been used to approximate the policy graph.</p>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>The Python code provided is a <strong>simplified illustration</strong>. It does <em>not</em> run SDDP.jl itself.  It assumes you have already solved the problem with SDDP.jl and obtained the cuts.</li>
+<li>In practice, transferring the cuts from Julia to Python requires a suitable data format (e.g., CSV, JSON, Arrow) and a method to read that data in Python. The example uses manually specified <code>dummy_cuts</code>.</li>
+<li>The stage-wise optimization within the simulation loop would typically involve a proper linear programming solver (<code>scipy.optimize.linprog</code>) to handle constraints and costs more realistically. The example just iterates over possible releases.</li>
+<li>The complexity of the simulation depends heavily on the complexity of the underlying system you are modeling.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the state variable definition influence the performance and accuracy of the SDDP.jl algorithm? Specifically, can you describe how adding or removing state variables affects the computational burden and the quality of the resulting policy?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
