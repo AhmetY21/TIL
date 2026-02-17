@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word2Vec: Negative Sampling and Optimization</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-word2vec-negative-sampling-and-optimization">Topic: Word2Vec: Negative Sampling and Optimization</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Word2Vec is a group of techniques to learn word embeddings. These embeddings are dense, low-dimensional vector representations of words that capture semantic relationships between them. Negative sampling is a crucial optimization technique used within the Skip-gram and Continuous Bag-of-Words (CBOW) models of Word2Vec.</p>
+<p><strong>The problem without negative sampling:</strong> The standard Skip-gram and CBOW models attempt to maximize the probability of predicting context words given a target word (Skip-gram) or predicting a target word given its context words (CBOW).  This involves iterating through the entire vocabulary for each training sample and calculating probabilities using softmax, which is computationally expensive, especially with large vocabularies.  Updating the model parameters after each word encountered also slows training.</p>
+<p><strong>What negative sampling does:</strong> Negative sampling addresses this inefficiency by reformulating the task as a binary classification problem. Instead of updating weights for every word in the vocabulary, it only updates weights for:</p>
+<ul>
+<li><strong>The "positive" sample:</strong> The actual context-target word pair from the training data.</li>
+<li><strong>A few "negative" samples:</strong> Randomly selected words from the vocabulary that are <em>not</em> in the context of the target word.  These negative samples represent words that <em>should not</em> be predicted.</li>
+</ul>
+<p>The model learns to distinguish between these positive and negative samples.  In essence, it's trained to assign high probabilities to the positive sample and low probabilities to the negative samples.</p>
+<p><strong>How we can use it:</strong></p>
+<ol>
+<li><strong>Faster Training:</strong>  Dramatically reduces the computational cost, especially for large vocabularies, enabling the training of Word2Vec models on massive datasets.</li>
+<li><strong>Word Embeddings:</strong>  The resulting word embeddings capture semantic relationships. Similar words will have similar vector representations.  These embeddings can be used in various downstream NLP tasks.</li>
+<li><strong>Downstream Tasks:</strong> Common applications of these word embeddings include:<ul>
+<li><strong>Text classification:</strong> Using word embeddings as features to classify documents.</li>
+<li><strong>Sentiment analysis:</strong> Determining the sentiment expressed in a piece of text.</li>
+<li><strong>Machine translation:</strong> Mapping words between different languages based on their embeddings.</li>
+<li><strong>Information retrieval:</strong> Finding documents relevant to a given query based on the semantic similarity of words.</li>
+<li><strong>Recommender systems:</strong>  Representing users and items as embeddings to predict user preferences.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Optimization:</strong></p>
+<p>Beyond negative sampling, other optimization techniques are used to enhance Word2Vec performance. These include:</p>
+<ul>
+<li><strong>Subsampling of Frequent Words:</strong>  Words like "the," "a," and "is" occur very frequently and provide less information. Subsampling reduces the frequency of these words during training, which can improve the quality of embeddings for less frequent words.  A word <em>w</em> is discarded with probability <code>P(w) = 1 - sqrt(t/f(w))</code>, where <code>f(w)</code> is the frequency of the word and <code>t</code> is a chosen threshold (typically around 1e-5).</li>
+<li><strong>Hierarchical Softmax:</strong>  Another alternative to negative sampling, hierarchical softmax uses a binary tree to represent the vocabulary. The probability of a word is calculated by traversing the tree, which reduces the computational complexity from O(V) to O(log V), where V is the vocabulary size. While hierarchical softmax can be effective, negative sampling is often preferred in practice.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Building a movie recommendation system.</p>
+<p><strong>Problem:</strong> We want to recommend movies to users based on their past viewing history.</p>
+<p><strong>Word2Vec Solution:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong> Treat each user's viewing history as a "sentence" of movies.</li>
+<li><strong>Word2Vec Training:</strong> Train a Word2Vec model (either CBOW or Skip-gram with negative sampling) on this dataset of user viewing histories, treating movies as "words".</li>
+<li><strong>Movie Embeddings:</strong> The resulting word embeddings represent each movie as a vector. Movies with similar audiences or themes will have similar vector representations.</li>
+<li><strong>Recommendation:</strong> To recommend movies to a user, find the movies they have already watched, average their embeddings, and then find other movies with embeddings that are close to the average user embedding.  Distance can be calculated using cosine similarity.</li>
+</ol>
+<p>This allows the system to recommend movies that are similar to those the user has enjoyed in the past, even if those movies don't share actors, genres, or keywords directly.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from gensim.models import Word2Vec
+import nltk
+from nltk.corpus import brown
+
+# Download the Brown corpus if you haven't already
+try:
+    brown.words()
+except LookupError:
+    nltk.download('brown')
+
+# Load the Brown corpus
+sentences = brown.sents()
+
+# Train Word2Vec model with negative sampling
+model = Word2Vec(sentences, vector_size=100, window=5, min_count=5, workers=4, sg=1, negative=10) # sg=1 for Skip-gram, negative=10 for 10 negative samples
+
+# Access word vectors
+vector = model.wv['king']
+print(vector)
+
+# Find similar words
+similar_words = model.wv.most_similar('king', topn=5)
+print(similar_words)
+
+# Save and load the model
+model.save(&quot;word2vec.model&quot;)
+loaded_model = Word2Vec.load(&quot;word2vec.model&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>gensim.models.Word2Vec</code></strong>:  This is the main class for training Word2Vec models in Python.</li>
+<li><strong><code>sentences</code></strong>: The training data. It should be a list of lists, where each inner list represents a sentence (a list of words).  The Brown corpus is used as an example.</li>
+<li><strong><code>vector_size</code></strong>: The dimensionality of the word vectors.</li>
+<li><strong><code>window</code></strong>: The maximum distance between the current and predicted word within a sentence.</li>
+<li><strong><code>min_count</code></strong>: Ignores all words with total frequency lower than this.</li>
+<li><strong><code>workers</code></strong>: Number of worker threads to train the model (parallel processing).</li>
+<li><strong><code>sg</code></strong>:  Training algorithm: 1 for Skip-gram; otherwise, CBOW.</li>
+<li><strong><code>negative</code></strong>: Specifies how many "noise words" should be drawn (usually between 5-20).  If set to 0, no negative sampling is used.</li>
+<li><strong><code>model.wv['king']</code></strong>: Accesses the vector representation of the word "king".</li>
+<li><strong><code>model.wv.most_similar('king', topn=5)</code></strong>: Finds the 5 words that are most similar to "king" based on cosine similarity.</li>
+<li><strong><code>model.save("word2vec.model")</code></strong>: Saves the trained model to disk.</li>
+<li><strong><code>loaded_model = Word2Vec.load("word2vec.model")</code></strong>: Loads a saved model from disk.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the number of negative samples affect the quality and training time of the Word2Vec embeddings? What are the trade-offs?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
