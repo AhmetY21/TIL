@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Front-Door Identification (When Confounding is Unobserved)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-front-door-identification-when-confounding-is-unobserved">Topic: Front-Door Identification (When Confounding is Unobserved)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Front-door identification is a causal inference technique used to identify the causal effect of a treatment <em>X</em> on an outcome <em>Y</em> when there is unobserved confounding between <em>X</em> and <em>Y</em>. It leverages a mediator <em>Z</em> on the causal pathway from <em>X</em> to <em>Y</em> to bypass the unobserved confounder.</p>
+<p><strong>How it works:</strong></p>
+<p>The front-door criterion relies on three key assumptions:</p>
+<ol>
+<li><em>X</em> causally influences <em>Z</em> (i.e., <em>X</em> -&gt; <em>Z</em>).</li>
+<li><em>Z</em> causally influences <em>Y</em> (i.e., <em>Z</em> -&gt; <em>Y</em>).</li>
+<li>All back-door paths from <em>Z</em> to <em>Y</em> are blocked (relative to <em>X</em>). This typically requires observing all confounders of <em>Z</em> and <em>Y</em> (denoted <em>W</em>).  Critically, there can still be unobserved confounding between <em>X</em> and <em>Y</em> itself.</li>
+</ol>
+<p><strong>The Front-Door Formula:</strong></p>
+<p>If the front-door criterion holds, the causal effect of <em>X</em> on <em>Y</em> is identifiable and can be calculated using the following formula:</p>
+<p>P(y | do(x)) = Σ<sub>z</sub> P(z | x) Σ<sub>x'</sub> P(y | x', z) P(x')</p>
+<p>Where:</p>
+<ul>
+<li>P(y | do(x)) is the causal effect of setting <em>X</em> to <em>x</em> on <em>Y</em>.</li>
+<li>P(z | x) is the probability of <em>Z</em> given <em>X</em>. This is identifiable from observational data.</li>
+<li>P(y | x', z) is the probability of <em>Y</em> given <em>X</em> and <em>Z</em>. This is also identifiable from observational data.</li>
+<li>P(x') is the marginal probability of <em>X</em>.</li>
+<li>Σ<sub>z</sub>  and  Σ<sub>x'</sub> denote summation over all possible values of <em>Z</em> and <em>X'</em>, respectively. If <em>Z</em> and/or <em>X</em> are continuous, these become integrals.</li>
+</ul>
+<p><strong>How we use it:</strong></p>
+<p>The front-door criterion allows us to estimate a causal effect when direct identification of the causal effect is impossible due to unobserved confounding.  We essentially break the causal pathway <em>X</em> -&gt; <em>Y</em> into two parts: <em>X</em> -&gt; <em>Z</em> and <em>Z</em> -&gt; <em>Y</em>, and estimate these components using observational data and the front-door assumptions. We then combine these estimates to obtain the overall causal effect.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine studying the effect of a new advertising campaign (<em>X</em>) on product sales (<em>Y</em>).  There might be unobserved factors (e.g., overall economic conditions, brand loyalty) that influence both the advertising campaign's effectiveness and the product sales themselves. These are unobserved confounders.</p>
+<p>However, you believe the advertising campaign primarily affects sales <em>through</em> increased customer awareness (<em>Z</em>). You can measure customer awareness, and you can also control for other factors that might influence both customer awareness and product sales, such as existing marketing efforts (<em>W</em>).</p>
+<p>In this scenario:</p>
+<ul>
+<li><em>X</em>: Advertising campaign</li>
+<li><em>Y</em>: Product sales</li>
+<li><em>Z</em>: Customer awareness</li>
+<li>Unobserved Confounder: Economic Conditions, Brand Loyalty</li>
+<li><em>W</em>: Existing marketing efforts</li>
+</ul>
+<p>If we assume that <em>X</em> only affects <em>Y</em> <em>through</em> <em>Z</em>, and we have blocked all back-door paths from <em>Z</em> to <em>Y</em> by controlling for <em>W</em>, the front-door criterion is satisfied. We can then use the front-door formula to estimate the causal effect of the advertising campaign on product sales, even with the unobserved confounding.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single function specifically named "frontdoor_adjustment" in common causal inference libraries, you can implement the front-door formula using existing tools from libraries like <code>causalinference</code>, <code>DoWhy</code>, or <code>pgmpy</code>. Here's an example using <code>pgmpy</code>:</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.models import BayesianNetwork
+
+# Generate some example data (replace with your actual data)
+np.random.seed(42)
+n_samples = 1000
+X = np.random.randint(0, 2, n_samples)  # Advertising Campaign (0 or 1)
+U = np.random.normal(0, 1, n_samples)   # Unobserved Confounder
+Z = X + 0.5 * U + np.random.normal(0, 0.5, n_samples) # Awareness
+W = np.random.randint(0, 2, n_samples) # Existing Marketing
+Y = 2 * Z + 0.3 * X + 0.7* W + U + np.random.normal(0, 1, n_samples) # Sales
+
+data = pd.DataFrame({'X': X, 'Y': Y, 'Z': Z, 'W':W})
+data['X'] = data['X'].astype(int)
+data['W'] = data['W'].astype(int)
+
+# Discretize Z and Y for simplicity with MaximumLikelihoodEstimator (optional, but helps with estimation)
+data['Z'] = pd.qcut(data['Z'], q=3, labels=False)
+data['Y'] = pd.qcut(data['Y'], q=3, labels=False)
+
+
+# Define the Bayesian Network structure reflecting the causal diagram
+model = BayesianNetwork([('X', 'Z'), ('Z', 'Y'), ('X', 'Y'), ('W','Y')])
+
+
+# Learn parameters from the data using Maximum Likelihood Estimation
+model.fit(data, estimator=MaximumLikelihoodEstimator)
+
+
+# Implement the Front-Door Formula
+def frontdoor_adjustment(model, data, x_value):
+    &quot;&quot;&quot;
+    Calculates the causal effect of X on Y using the front-door criterion.
+    &quot;&quot;&quot;
+    y_values = data['Y'].unique()
+    x_values = data['X'].unique()
+    z_values = data['Z'].unique()
+
+    total_effect = 0
+    for z in z_values:
+        p_z_given_x = model.predict_probability({'X': x_value})['Z'][z]
+
+
+        inner_sum = 0
+        for x_prime in x_values:
+            p_y_given_xprime_z = model.predict_probability({'X': x_prime, 'Z': z, 'W':data['W']})['Y'] #Predict Y|X',Z,W (Note, W must be provided as evidence)
+            p_x_prime = np.mean(data['X'] == x_prime)
+
+            inner_sum += p_y_given_xprime_z * p_x_prime
+
+        total_effect += p_z_given_x * inner_sum[y_values[0]] # Select the first value of y. This needs to be incorporated into an outer loop to get the full distribution.
+
+    return total_effect
+
+# Example usage:  Estimate the causal effect of setting X=1 vs X=0
+effect_of_x_1 = frontdoor_adjustment(model, data, 1)
+effect_of_x_0 = frontdoor_adjustment(model, data, 0)
+causal_effect = effect_of_x_1 - effect_of_x_0
+
+print(f&quot;Causal Effect of X=1 vs X=0 on Y (approximately): {causal_effect}&quot;)
+</code></pre>
+
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example.  Real-world implementations would involve more robust estimation techniques, especially when dealing with continuous variables.  Propensity score weighting or g-computation could be more appropriate.</li>
+<li>The BayesianNetwork approach provides a framework, but implementing the full front-door formula requires carefully extracting conditional probabilities from the fitted model.  This example uses <code>.predict_probability()</code> which assumes categorical/discrete variables for easier computation.  Discretization may introduce bias.</li>
+<li>This code does <em>not</em> fully compute P(y|do(x)). It calculates the probability of the <em>first</em> Y value, given do(X=x), for both X=1 and X=0, then it returns the difference between these values. To obtain the full P(y|do(x)) distribution, you would need to loop through all values of 'y' and perform a similar calculation for each.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the identifiability of the front-door criterion change if the mediator <em>Z</em> is also affected by unobserved confounders that also affect <em>Y</em>?  Specifically, what conditions are necessary for the front-door criterion to <em>still</em> hold in the presence of unobserved confounding between <em>Z</em> and <em>Y</em>?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
