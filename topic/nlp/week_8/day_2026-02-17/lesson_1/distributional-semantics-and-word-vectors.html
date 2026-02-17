@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distributional Semantics and Word Vectors</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-distributional-semantics-and-word-vectors">Topic: Distributional Semantics and Word Vectors</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Distributional Semantics</strong> is a theory of meaning that proposes that words which occur in similar contexts tend to have similar meanings. In other words, "you shall know a word by the company it keeps" (J.R. Firth). This contrasts with other approaches that might focus on defining words through logical relationships or using ontologies. The <em>distribution</em> refers to the observed occurrences of a word in relation to other words within a corpus.</p>
+<p><strong>Word Vectors (also known as Word Embeddings)</strong> are numerical representations of words in a high-dimensional space, capturing semantic and syntactic relationships learned from large text corpora based on distributional semantics. Each dimension of the vector corresponds to a specific feature or aspect of the word's meaning, though these dimensions are often not directly interpretable.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Semantic Similarity:</strong> We can calculate the similarity (e.g., cosine similarity) between word vectors to determine how closely related two words are in meaning. This is used for tasks like identifying synonyms, finding related terms, and clustering words into semantic categories.</li>
+<li><strong>Word Analogy:</strong> We can perform vector arithmetic to solve analogies like "king - man + woman = queen". This demonstrates that word vectors capture relational information.</li>
+<li><strong>Improved NLP Task Performance:</strong> Word vectors are often used as features in various NLP tasks such as text classification, machine translation, question answering, and sentiment analysis, significantly improving their accuracy compared to using one-hot encoded representations.</li>
+<li><strong>Information Retrieval:</strong> Word vectors can be used to enhance search results by retrieving documents that contain semantically similar words to the query, even if the exact words are not present.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're building a chatbot for an e-commerce website selling electronics. A user types, "I need a good camera for travel photography."  Without distributional semantics, the chatbot might struggle if the product descriptions don't explicitly use the phrase "travel photography". However, with pre-trained word vectors:</p>
+<ol>
+<li>The chatbot converts the user query into word vectors.</li>
+<li>It calculates the cosine similarity between the word vector for "travel" and the word vectors in the product descriptions.</li>
+<li>It identifies products whose descriptions contain words that are semantically similar to "travel," such as "adventure," "vacation," "outdoors," etc.</li>
+<li>It also calculates the cosine similarity between the word vector for "camera" and word vectors in the product descriptions.</li>
+<li>By combining the similarity scores (e.g., by averaging them), the chatbot can identify cameras that are best suited for travel photography based on the semantic meaning of the query, even if the product descriptions use different wording.</li>
+</ol>
+<p>This allows the chatbot to provide more relevant and helpful product recommendations to the user.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>gensim</code> library in Python to work with pre-trained word vectors (e.g., Word2Vec, GloVe, FastText). Here's an example using a pre-trained Word2Vec model:</p>
+<pre class="codehilite"><code class="language-python">import gensim.downloader as api
+from gensim.models import KeyedVectors
+
+# Load a pre-trained Word2Vec model (this downloads the model if it's not already present)
+wv = api.load('word2vec-google-news-300')
+
+# Calculate the cosine similarity between two words
+similarity = wv.similarity('king', 'queen')
+print(f&quot;Similarity between 'king' and 'queen': {similarity}&quot;)
+
+# Find the most similar words to a given word
+similar_words = wv.most_similar('travel', topn=5)
+print(f&quot;Words most similar to 'travel': {similar_words}&quot;)
+
+# Solve an analogy: king - man + woman = ?
+result = wv.most_similar(positive=['woman', 'king'], negative=['man'], topn=1)
+print(f&quot;Analogy result: {result}&quot;)
+
+# Check if a word is in the vocabulary
+if 'camera' in wv:
+    camera_vector = wv['camera']
+    print(f&quot;Vector for 'camera': {camera_vector[:10]}...&quot;)  # Print the first 10 dimensions
+else:
+    print(&quot;'camera' not found in the vocabulary.&quot;)
+</code></pre>
+
+<p>This code snippet demonstrates loading a pre-trained model, calculating word similarity, finding similar words, solving analogies, and accessing a word vector. Remember to install <code>gensim</code> first: <code>pip install gensim</code>.  The <code>word2vec-google-news-300</code> model is large (around 1.6GB), so downloading it may take some time.  Alternatively, you can use smaller models like <code>glove-wiki-gigaword-100</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of corpus used to train word vectors affect their performance on downstream NLP tasks? Specifically, what are the potential benefits and drawbacks of using a very general corpus (e.g., Wikipedia) versus a more specialized corpus (e.g., biomedical literature) for tasks in a specific domain (e.g., clinical text analysis)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
