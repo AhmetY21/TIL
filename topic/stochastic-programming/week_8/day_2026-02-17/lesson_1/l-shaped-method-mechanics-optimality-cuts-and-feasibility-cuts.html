@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L-shaped Method Mechanics: optimality cuts and feasibility cuts</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-l-shaped-method-mechanics-optimality-cuts-and-feasibility-cuts">Topic: L-shaped Method Mechanics: optimality cuts and feasibility cuts</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The L-shaped method is a decomposition algorithm specifically designed to solve two-stage stochastic linear programming problems with recourse. These problems have the general form:</p>
+<p><code>min  c'x + Q(x)</code>
+<code>s.t. Ax = b</code>
+<code>x &gt;= 0</code></p>
+<p>where:</p>
+<ul>
+<li><code>x</code> is the first-stage decision vector (chosen before the uncertainty is revealed).</li>
+<li><code>c</code> is the cost vector for the first-stage decision.</li>
+<li><code>A</code> and <code>b</code> define the constraints for the first-stage decision.</li>
+<li><code>Q(x)</code> is the <em>recourse function</em>, representing the expected cost of the optimal second-stage decisions taken <em>after</em> the uncertainty is realized and the first-stage decision <code>x</code> is fixed.  The key is that calculating <code>Q(x)</code> is typically computationally expensive.</li>
+</ul>
+<p>The core idea of the L-shaped method is to approximate <code>Q(x)</code> with a set of linear inequalities (cuts) and iteratively refine this approximation.  The method involves solving a master problem and a set of subproblems, generating <em>optimality cuts</em> and <em>feasibility cuts</em> based on the solutions.</p>
+<p><strong>Optimality Cuts (Benders Cuts):</strong>  These cuts provide a lower bound approximation to the recourse function <code>Q(x)</code>. They are derived from the dual solutions of the second-stage subproblems.  If, for a given <code>x</code>, the second-stage problem is feasible and bounded, we can define an optimality cut of the form:</p>
+<p><code>θ &gt;= α + β'x</code></p>
+<p>where:</p>
+<ul>
+<li><code>θ</code> represents an approximation of <code>Q(x)</code> (an auxiliary variable added to the master problem).</li>
+<li><code>α</code> and <code>β</code> are coefficients derived from the dual solutions of the second-stage subproblems. Specifically, <code>α = Σ_ω p_ω π_ω'T_ω</code> and <code>β = Σ_ω p_ω π_ω'W_ω</code>. Here, <code>ω</code> indexes the scenarios, <code>p_ω</code> are the scenario probabilities, <code>π_ω</code> are the dual variables corresponding to the second-stage constraints, and <code>T_ω</code> and <code>W_ω</code> are matrices from the second-stage formulation described below.</li>
+</ul>
+<p><strong>Feasibility Cuts:</strong>  These cuts ensure that the first-stage solution <code>x</code> leads to a feasible second-stage problem for all scenarios.  If, for a given <code>x</code>, a second-stage problem is <em>infeasible</em>, we generate a feasibility cut of the form:</p>
+<p><code>0 &gt;= γ + δ'x</code></p>
+<p>where <code>γ</code> and <code>δ</code> are coefficients derived from the dual solutions of the infeasibility form of the second-stage subproblems. Specifically, <code>γ = Σ_ω p_ω v_ω'h_ω</code> and <code>δ = Σ_ω p_ω v_ω'T_ω</code>.  Here, <code>v_ω</code> are the dual variables related to infeasibility, and <code>h_ω</code> and <code>T_ω</code> are relevant matrices from the second-stage formulation.  These cuts effectively exclude first-stage decisions <code>x</code> that would lead to infeasible second-stage problems under any scenario.</p>
+<p><strong>Second-Stage Problem Formulation (for context):</strong></p>
+<p>For each scenario <code>ω</code>, the second-stage problem is:</p>
+<p><code>min q_ω'y_ω</code>
+<code>s.t. W_ω y_ω = h_ω - T_ω x</code>
+<code>y_ω &gt;= 0</code></p>
+<p>where:</p>
+<ul>
+<li><code>y_ω</code> is the second-stage decision variable.</li>
+<li><code>q_ω</code> is the cost vector for the second-stage decision.</li>
+<li><code>W_ω</code>, <code>T_ω</code>, and <code>h_ω</code> are matrices and vectors defining the second-stage constraints.</li>
+</ul>
+<p><strong>Usage:</strong></p>
+<p>The L-shaped method is used to find the optimal first-stage decision <code>x</code> while considering the expected costs and feasibility of the second-stage decisions under various scenarios. It iteratively improves the approximation of the recourse function until a stopping criterion is met (e.g., a small gap between the lower and upper bounds on the optimal objective value).</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain network design problem. A company needs to decide where to build distribution centers (first-stage decision <code>x</code>). The demand in different regions is uncertain (different scenarios).  After building the distribution centers, the company must decide how much product to ship from each distribution center to each customer to meet the demand (second-stage decision <code>y</code>).</p>
+<ul>
+<li><code>x</code>: Binary variables indicating whether to build a distribution center at a specific location.</li>
+<li><code>c</code>: Cost of building a distribution center.</li>
+<li><code>y</code>: Quantity of product shipped from each distribution center to each customer.</li>
+<li><code>q</code>: Transportation cost per unit shipped.</li>
+<li>The uncertainty lies in the customer demand for each region. Scenarios represent different demand levels.</li>
+</ul>
+<p>The L-shaped method can be used to determine the optimal locations for the distribution centers, considering the expected transportation costs under different demand scenarios and ensuring that the company can meet the demand in all scenarios.  Feasibility cuts would prevent the algorithm from selecting distribution center locations that cannot satisfy demand in some scenarios.  Optimality cuts would refine the estimated cost of the second-stage recourse based on the chosen distribution center locations.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import gurobipy as gp
+from gurobipy import GRB
+import numpy as np
+
+
+def l_shaped_method(c, A, b, W, T, h, q, scenarios, probabilities, epsilon=1e-6, max_iterations=100):
+    &quot;&quot;&quot;
+    Implements the L-shaped method for two-stage stochastic linear programming.
+
+    Args:
+        c: First-stage cost vector.
+        A: First-stage constraint matrix.
+        b: First-stage constraint vector.
+        W: A list of second-stage constraint matrices (one for each scenario).
+        T: A list of matrices linking first-stage and second-stage decisions (one for each scenario).
+        h: A list of second-stage right-hand-side vectors (one for each scenario).
+        q: A list of second-stage cost vectors (one for each scenario).
+        scenarios: Number of scenarios.
+        probabilities: A list of scenario probabilities.
+        epsilon: Optimality tolerance.
+        max_iterations: Maximum number of iterations.
+
+    Returns:
+        x_optimal: Optimal first-stage decision vector.
+        theta_optimal: Optimal value of the recourse function approximation.
+        lower_bound: Lower bound on the optimal objective value.
+        upper_bound: Best upper bound seen.
+        iteration: Number of iterations performed.
+    &quot;&quot;&quot;
+    n_x = len(c)  # Number of first-stage variables
+
+    # Initialize master problem
+    master_model = gp.Model(&quot;MasterProblem&quot;)
+    x = master_model.addVars(n_x, vtype=GRB.CONTINUOUS, name=&quot;x&quot;)  # Changed from BINARY for demonstration
+    theta = master_model.addVar(vtype=GRB.CONTINUOUS, name=&quot;theta&quot;) # Auxiliary variable
+    master_model.setObjective(sum(c[i] * x[i] for i in range(n_x)) + theta, GRB.MINIMIZE)
+
+    # First-stage constraints
+    for i in range(len(b)):
+        master_model.addConstr(sum(A[i][j] * x[j] for j in range(n_x)) == b[i], name=f&quot;first_stage_{i}&quot;)
+
+    # Non-negativity constraints
+    for i in range(n_x):
+        master_model.addConstr(x[i] &gt;= 0, name=f&quot;x_nonneg_{i}&quot;)
+
+    optimality_cuts = []
+    feasibility_cuts = []
+
+    lower_bound = -float('inf')
+    upper_bound = float('inf')
+
+    for iteration in range(max_iterations):
+        master_model.optimize()
+
+        if master_model.status != GRB.OPTIMAL:
+            print(&quot;Master problem infeasible or unbounded.  Check data.&quot;)
+            return None, None, None, None, iteration
+
+        x_val = [x[i].x for i in range(n_x)]
+        theta_val = theta.x
+        current_objective = master_model.objVal
+
+        Q_x = 0.0 # Expected second-stage cost
+
+        # Solve subproblems for each scenario
+        infeasible_scenario_found = False
+        for omega in range(scenarios):
+            subproblem = gp.Model(f&quot;Subproblem_Scenario_{omega}&quot;)
+            y = subproblem.addVars(len(q[omega]), vtype=GRB.CONTINUOUS, name=&quot;y&quot;)
+
+            subproblem.setObjective(sum(q[omega][j] * y[j] for j in range(len(q[omega]))), GRB.MINIMIZE)
+
+            # Recourse constraints
+            rhs = h[omega] - np.dot(T[omega], x_val)
+
+            for i in range(len(rhs)):
+                subproblem.addConstr(sum(W[omega][i][j] * y[j] for j in range(len(q[omega]))) == rhs[i], name=f&quot;recourse_{i}&quot;)
+
+            for i in range(len(q[omega])):
+                subproblem.addConstr(y[i] &gt;= 0, name=f&quot;y_nonneg_{i}&quot;)
+            subproblem.Params.OutputFlag = 0 # Suppress output
+
+            subproblem.optimize()
+
+            if subproblem.status == GRB.OPTIMAL:
+                Q_x += probabilities[omega] * subproblem.objVal
+            elif subproblem.status == GRB.INFEASIBLE:
+                # Generate feasibility cut
+                print(f&quot;Infeasible subproblem in scenario {omega}, generating feasibility cut.&quot;)
+                infeasible_scenario_found = True
+                subproblem.Params.OutputFlag = 1
+                subproblem.computeIIS() # Irreducible Inconsistent Subsystem
+                infeas_constr = None
+                for constr in subproblem.getConstrs():
+                  if constr.IISConstr:
+                    infeas_constr = constr
+                    break
+                # Dualize the infeasible subproblem to derive the feasibility cut
+                # (This part would involve formulating and solving the dual, which is omitted for brevity but is crucial)
+                # v_val = dual variables for constraints  W_omega y_omega = h_omega - T_omega x_val
+                # Assume the dual values are available: v_val = ...
+                # γ = sum(probabilities[omega] * v_val[i] * h[omega][i])
+                # δ = sum(probabilities[omega] * sum(v_val[i] * T[omega][i][j] for j in range(n_x)) )
+
+                # For demonstration purposes, create a dummy feasibility cut. In reality, calculate gamma and delta.
+                gamma = 1.0  # Example value, needs to be calculated
+                delta = np.ones(n_x)  # Example values, needs to be calculated
+
+                feasibility_cut = master_model.addConstr(sum(delta[i] * x[i] for i in range(n_x)) &lt;= -gamma, name=&quot;feasibility_cut&quot;)
+                feasibility_cuts.append(feasibility_cut)
+
+                master_model.remove(theta) # Remove the recourse approximation variable
+                master_model = gp.Model(&quot;MasterProblem&quot;)
+                x = master_model.addVars(n_x, vtype=GRB.CONTINUOUS, name=&quot;x&quot;)
+                # Add all cuts to the Master Problem
+                for cut in feasibility_cuts:
+                    master_model.addConstr(cut)
+                master_model.setObjective(sum(c[i] * x[i] for i in range(n_x)), GRB.MINIMIZE)
+
+                # First-stage constraints
+                for i in range(len(b)):
+                    master_model.addConstr(sum(A[i][j] * x[j] for j in range(n_x)) == b[i], name=f&quot;first_stage_{i}&quot;)
+
+                # Non-negativity constraints
+                for i in range(n_x):
+                    master_model.addConstr(x[i] &gt;= 0, name=f&quot;x_nonneg_{i}&quot;)
+                break  # No need to solve other subproblems if one is infeasible
+
+        if infeasible_scenario_found:
+          print(&quot;Skipping optimality cut generation since a feasibility cut was generated&quot;)
+          continue # Move to the next iteration
+
+        # Generate optimality cut
+        if abs(Q_x - theta_val) &gt; epsilon:
+            print(f&quot;Generating optimality cut, Q_x = {Q_x}, theta = {theta_val}&quot;)
+            # Dualize the feasible subproblems to derive the optimality cut
+            # (This part would involve formulating and solving the dual, which is omitted for brevity but is crucial)
+            # pi_val = dual variables for constraints W_omega y_omega = h_omega - T_omega x_val
+
+            # Assume the dual values are available: pi_val = ...
+            # alpha = sum(probabilities[omega] * sum(pi_val[i] * h[omega][i]))
+            # beta = sum(probabilities[omega] * sum(pi_val[i] * T[omega][i][j] for j in range(n_x)) )
+
+            # For demonstration purposes, create a dummy optimality cut. In reality, calculate alpha and beta.
+            alpha = Q_x # Expected Value
+            beta = np.zeros(n_x) # Dummy value for x
+            optimality_cut = master_model.addConstr(theta &gt;= alpha + sum(beta[i] * x[i] for i in range(n_x)), name=&quot;optimality_cut&quot;)
+            optimality_cuts.append(optimality_cut)
+
+            lower_bound = current_objective
+        else:
+            # Optimal solution found
+            upper_bound = current_objective
+            print(&quot;Optimal solution found (within tolerance).&quot;)
+            break
+
+
+    x_optimal = [x[i].x for i in range(n_x)]
+    theta_optimal = theta.x if &quot;theta&quot; in locals() else 0
+    return x_optimal, theta_optimal, lower_bound, upper_bound, iteration
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Initialization:</strong> Sets up the master problem with first-stage variables <code>x</code>, an auxiliary variable <code>theta</code> to represent the recourse function, and initial constraints.</li>
+<li><strong>Iteration:</strong> The main loop iterates until a stopping criterion is met (maximum iterations or a sufficiently small gap between lower and upper bounds).</li>
+<li><strong>Master Problem Solution:</strong> Solves the current master problem to obtain a candidate first-stage solution <code>x_val</code>.</li>
+<li><strong>Subproblem Solution:</strong> For each scenario, a second-stage subproblem is solved with the first-stage variables fixed to the <code>x_val</code> obtained from the master problem.</li>
+<li><strong>Feasibility Cut Generation:</strong> If a subproblem is infeasible, a feasibility cut is generated based on the dual variables of the infeasible subproblem's constraints. This cut is added to the master problem to exclude the current <code>x_val</code> from future consideration. <em>Important: The computation of the cut coefficients <code>gamma</code> and <code>delta</code> requires solving the dual problem of the infeasible subproblem.</em> The code checks the IIS of the infeasible subproblem.</li>
+<li><strong>Optimality Cut Generation:</strong> If all subproblems are feasible, an optimality cut is generated. The cut approximates the recourse function <code>Q(x)</code> based on the dual variables of the subproblems' constraints. <em>Important: The computation of the cut coefficients <code>alpha</code> and <code>beta</code> requires solving the dual problem of the feasible subproblems.</em></li>
+<li><strong>Stopping Criterion:</strong>  The algorithm checks if the approximation of <code>Q(x)</code> is close enough. If so, it terminates.</li>
+<li><strong>Output:</strong> Returns the optimal first-stage solution, the lower and upper bounds on the optimal objective value, and the number of iterations performed.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Dual Solution:</strong> The generation of both optimality and feasibility cuts critically depends on solving the <em>dual</em> of the subproblems and extracting the dual variable values.  The provided code includes placeholders for these calculations.  You must implement the dualization and solution steps.</li>
+<li><strong>Gurobi:</strong> This implementation uses the Gurobi solver. You'll need a Gurobi license and the <code>gurobipy</code> package installed.</li>
+<li><strong>Simplifications:</strong> For clarity, the code omits certain common enhancements to the L-shaped method, such as:<ul>
+<li><strong>Stabilization techniques:</strong>  To improve convergence.</li>
+<li><strong>Pareto-optimality cuts:</strong> To generate stronger cuts.</li>
+</ul>
+</li>
+<li><strong>Binary Variables</strong>: The example assumes <code>x</code> are continuous for simplicity. If <code>x</code> are binary, <code>vtype=GRB.BINARY</code> should be used, and branch-and-cut is needed, making the algorithm more complex.</li>
+<li><strong>Missing Data</strong>: Replace the dummy data with your own stochastic linear program.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can the L-shaped method be extended to handle more than two stages of stochastic programming? What are the challenges and potential approaches?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
