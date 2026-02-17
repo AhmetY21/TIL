@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synthetic Control (SCM) Basics</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-synthetic-control-scm-basics">Topic: Synthetic Control (SCM) Basics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Synthetic Control Method (SCM) is a statistical method used to estimate the effect of an intervention or treatment in a single treated unit (e.g., a country, a state, a company) when there is no clear-cut control group available. Instead of relying on a single untreated unit as a control, SCM constructs a <em>synthetic control</em> – a weighted average of multiple untreated units – that closely resembles the treated unit <em>before</em> the intervention.</p>
+<p>The key idea is to choose weights for the control units such that the synthetic control mimics the pre-intervention trajectory of the treated unit as closely as possible with respect to relevant covariates and outcome variable. The difference between the observed outcome of the treated unit after the intervention and the predicted outcome based on the synthetic control is then taken as the estimated treatment effect.</p>
+<p>Formally, let:</p>
+<ul>
+<li><em>Y<sub>it</sub></em>: Outcome for unit <em>i</em> at time <em>t</em>.</li>
+<li><em>T<sub>0</sub></em>: The time of intervention.</li>
+<li><em>D<sub>it</sub></em>: Indicator variable, 1 if unit <em>i</em> is treated and <em>t</em> ≥ <em>T<sub>0</sub></em>, 0 otherwise.</li>
+<li><em>N</em>: Total number of units.</li>
+<li><em>N<sub>0</sub></em>: Number of control units.</li>
+<li><em>N<sub>1</sub></em>: Number of treated units (usually 1).</li>
+<li><em>X<sub>i</sub></em>: Vector of pre-intervention covariates for unit <em>i</em>.</li>
+<li><em>W = (w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>N<sub>0</sub></sub>)</em>: Vector of weights for the control units, where Σw<sub>i</sub> = 1 and w<sub>i</sub> ≥ 0.</li>
+</ul>
+<p>The synthetic control is then:  Σ w<sub>i</sub> * Y<sub>it</sub> for the control units.  The weights <em>W</em> are chosen to minimize the difference between <em>X<sub>1</sub></em> (covariates of the treated unit) and Σ w<sub>i</sub> * X<sub>i</sub> (weighted average of control units' covariates).  Often, this is done by minimizing a distance metric like the mean squared error (MSE) between the pre-intervention outcomes of the treated unit and the synthetic control.</p>
+<p>The estimated treatment effect at time <em>t</em> after the intervention is then:</p>
+<p>δ<sub>t</sub> = Y<sub>1t</sub> - Σ w<sub>i</sub> * Y<sub>it</sub> (for control units).</p>
+<p>We can use SCM to:</p>
+<ul>
+<li>Estimate the causal effect of a policy change (e.g., a tobacco control law, a tax increase).</li>
+<li>Evaluate the impact of a major event (e.g., a terrorist attack, a natural disaster).</li>
+<li>Analyze the effects of a new technology or innovation.</li>
+<li>Assess the performance of a company after a major strategic shift.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the example of California's Proposition 99, a tobacco control program implemented in 1988. We want to estimate the effect of Proposition 99 on per capita cigarette sales in California.  We have data on cigarette sales and other relevant covariates (e.g., income, education levels, pre-existing tobacco control measures) for California and other U.S. states from 1970 to 2000.</p>
+<p>Using SCM, we would:</p>
+<ol>
+<li><strong>Define the treated unit:</strong> California.</li>
+<li><strong>Define the control units:</strong> The remaining U.S. states.</li>
+<li><strong>Define the pre-intervention period:</strong> 1970-1987.</li>
+<li><strong>Define the post-intervention period:</strong> 1988-2000.</li>
+<li><strong>Choose relevant covariates:</strong> Income, education, pre-intervention cigarette sales.</li>
+<li><strong>Find the weights <em>W</em>:</strong> Determine the weights for each control state that minimize the difference between California's pre-intervention characteristics (covariates and cigarette sales) and the weighted average of the control states' characteristics.  This results in the "synthetic California."</li>
+<li><strong>Calculate the treatment effect:</strong> Compare the actual per capita cigarette sales in California after 1988 with the predicted sales based on the synthetic California.  The difference is the estimated effect of Proposition 99.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>SynthControl</code> package in Python is commonly used for implementing SCM.</p>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+from synthcontrol import SynthControl
+
+# Sample data (replace with your actual data)
+# Create dummy data for demonstration purposes.
+np.random.seed(42)
+
+years = np.arange(1970, 2001)
+n_states = 10
+california_index = 0  # California is the first state
+
+data = pd.DataFrame(index=years)
+for i in range(n_states):
+    data[f'state_{i}'] = np.random.randn(len(years)).cumsum() + i*10 # Simulate different trajectories
+
+# Create a covariate (e.g., income)
+covariate_data = pd.DataFrame(index = years)
+for i in range(n_states):
+  covariate_data[f'state_{i}'] = np.random.rand(len(years)) + i*5 # Simulate Income data
+
+
+# Define intervention year
+intervention_year = 1988
+
+# Prepare data for SynthControl
+Y = data.values
+X = covariate_data.values
+treatment_unit = california_index
+treated_period = np.where(years &gt;= intervention_year)[0]
+control_units = [i for i in range(n_states) if i != california_index]
+pre_period = np.where(years &lt; intervention_year)[0]
+
+# Fit the Synthetic Control model
+
+sc = SynthControl(Y, X, treatment_unit, treated_period, control_units, pre_period)
+sc.train()
+
+# Get the estimated treatment effect
+treatment_effect = sc.effect
+
+print(&quot;Estimated Treatment Effect:\n&quot;, treatment_effect)
+
+
+# You can also plot the results
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 6))
+plt.plot(years, data[f'state_{california_index}'], label='California (Actual)')
+plt.plot(years, sc.synthetic_outcome, label='Synthetic California')
+plt.axvline(x=intervention_year, color='r', linestyle='--', label='Intervention')
+plt.xlabel('Year')
+plt.ylabel('Cigarette Sales (Simulated)')
+plt.title('Synthetic Control: California Cigarette Sales')
+plt.legend()
+plt.show()
+
+# Get the weights assigned to the control units
+weights = sc.weights
+print(&quot;\nWeights assigned to control units:&quot;)
+for i, weight in enumerate(weights):
+    print(f&quot;State {control_units[i]}: {weight:.4f}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Import <code>pandas</code>, <code>numpy</code>, and <code>SynthControl</code>.</li>
+<li><strong>Create Sample Data:</strong>  This is the most important part. You'll replace this with your actual data. The data needs to be in a <code>pandas DataFrame</code> format suitable for <code>SynthControl</code>.  Crucially, the data should be organized with time points as rows and units (states) as columns.</li>
+<li><strong>Define Key Parameters:</strong>  Specify the intervention year, the index of the treated unit (California), and which units are considered controls.</li>
+<li><strong>Prepare Data for <code>SynthControl</code>:</strong>  The <code>SynthControl</code> class takes the data as a NumPy array. It also takes the index of the treated unit, the indices of the treated period (post-intervention), the control units, and the pre-intervention period.</li>
+<li><strong>Fit the Model:</strong> Create a <code>SynthControl</code> object and train it using <code>sc.train()</code>.  The weights are chosen to minimize the MSE in the pre-intervention period, given the selected covariates.</li>
+<li><strong>Get Treatment Effect:</strong>  <code>sc.effect</code> provides the estimated treatment effect. This is a vector of the differences between California's observed outcome and the synthetic control's predicted outcome for each year <em>after</em> the intervention.</li>
+<li><strong>Plot the Results (Optional):</strong>  The code includes plotting to visualize the actual outcome for the treated unit and the synthetic control.</li>
+<li><strong>Get Weights:</strong> The weights assigned to each control unit are stored in <code>sc.weights</code>. These weights show the relative importance of each control state in constructing the synthetic control.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Data Preparation:</strong> The quality of your data is critical. Ensure your data is clean, complete, and properly formatted.</li>
+<li><strong>Covariate Selection:</strong>  Carefully choose covariates that are predictive of the outcome and are not affected by the intervention. This is a crucial step.</li>
+<li><strong>Placebo Tests:</strong> Conduct placebo tests (e.g., applying the SCM to other states as if they were treated) to assess the robustness of your results. This can help determine if the observed effect is truly due to the intervention or simply due to chance.</li>
+<li><strong>Sensitivity Analysis:</strong>  Explore how the results change with different choices of covariates and pre-intervention periods.</li>
+<li><strong>Package Installation:</strong> You may need to install the <code>SynthControl</code> package: <code>pip install synthcontrol</code></li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do I assess the uncertainty or statistical significance of the treatment effects estimated by SCM, given that it's a method designed for single treated units and doesn't readily provide standard errors in the traditional sense? What are some common approaches to addressing this?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
