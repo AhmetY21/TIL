@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastText: Handling Out-of-Vocabulary Words</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-fasttext-handling-out-of-vocabulary-words">Topic: FastText: Handling Out-of-Vocabulary Words</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>FastText is a word embedding and text classification library developed by Facebook AI Research. Its key advantage, particularly relevant here, is its ability to handle Out-of-Vocabulary (OOV) words. Unlike models like Word2Vec that assign a vector only to known words from the training vocabulary, FastText represents each word as an aggregate of character n-grams.</p>
+<p>Here's how it works:</p>
+<ol>
+<li>
+<p><strong>Character n-grams:</strong> FastText breaks down each word into a sequence of character n-grams. For example, the word "apple" might be represented by the n-grams "<ap", "app", "ppl", "ple", "le>".  The angle brackets typically mark the beginning and end of the word.</p>
+</li>
+<li>
+<p><strong>Embedding each n-gram:</strong>  Each of these n-grams is then associated with its own embedding vector, similar to how Word2Vec assigns vectors to whole words.</p>
+</li>
+<li>
+<p><strong>Word representation:</strong> The vector representation of a word is the sum (or average) of the embedding vectors of all its constituent n-grams.</p>
+</li>
+<li>
+<p><strong>Handling OOV words:</strong> When encountering an OOV word, FastText doesn't assign a zero vector. Instead, it breaks down the OOV word into its constituent n-grams, retrieves their embedding vectors, and combines them to create a vector representation for the unknown word. This allows FastText to generate reasonable embeddings for words it has never seen before, based on the similarity of their character-level structure to known words.</p>
+</li>
+</ol>
+<p>We can use this to improve performance in scenarios where the vocabulary is limited or rapidly changing or when handling noisy text containing typos. By leveraging subword information, FastText provides more robust and generalizable word representations. It reduces the impact of rare words by associating them with similar subword features found in other words.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a customer support chatbot trained on a specific product vocabulary. Now, imagine a user types a question containing a misspelled word, or a new slang term related to the product. Traditional word embedding models might fail to understand the user's intent because the misspelled word or slang term is an OOV word.</p>
+<p>FastText, however, can handle this scenario more effectively. It can break down the misspelled word or slang term into character n-grams and use the learned embeddings of these n-grams to create a meaningful representation for the unknown word. This allows the chatbot to still understand the user's question and provide a relevant answer.</p>
+<p>Specifically, scenarios where FastText excels include:</p>
+<ul>
+<li><strong>Social Media Analysis:</strong> Social media often contains slang, misspellings, and evolving vocabulary.</li>
+<li><strong>E-commerce Product Search:</strong> Users might misspell product names or use informal language.</li>
+<li><strong>Low-Resource Languages:</strong> Languages with limited training data can benefit from FastText's ability to generalize from subword information.</li>
+<li><strong>Bioinformatics:</strong> Biological sequences can be treated as strings of characters, and FastText can be used to find similarities between them.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import fasttext
+
+# Example demonstrating loading a pre-trained model and getting the vector for an OOV word
+
+# Download a pre-trained model (e.g., from https://fasttext.cc/docs/en/pretrained-vectors.html)
+# Replace &quot;path/to/model.bin&quot; with the actual path to the downloaded model.
+# For this example, let's assume you downloaded a model and named it &quot;model.bin&quot; in the same directory.
+model_path = &quot;model.bin&quot;  # Or the full path if not in the current directory.
+
+try:
+    model = fasttext.load_model(model_path)
+except ValueError as e:
+    print(f&quot;Error loading the model: {e}. Make sure the model file exists and is a valid FastText model.&quot;)
+    print(&quot;You may need to download a pre-trained model from https://fasttext.cc/docs/en/pretrained-vectors.html and place it in the current directory.&quot;)
+    exit()  # Exit the script if the model fails to load
+
+# Example OOV word
+oov_word = &quot;unseenword&quot;
+
+# Get the vector representation for the OOV word
+vector = model.get_word_vector(oov_word)
+
+# Print the vector (it will be a numpy array)
+print(f&quot;Vector for '{oov_word}':&quot;)
+print(vector)
+
+# You can also get the nearest neighbors to the OOV word:
+try:
+    neighbors = model.get_nearest_neighbors(oov_word)
+    print(f&quot;\nNearest neighbors to '{oov_word}':&quot;)
+    print(neighbors)
+except ValueError as e:
+    print(f&quot;Error getting nearest neighbors: {e}. This can happen if the word embedding model doesn't support nearest neighbor functionality or if there are other model-specific constraints.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>fasttext.load_model(model_path)</code>:</strong> Loads a pre-trained FastText model.  Crucially, you need to <em>have</em> a pre-trained model. You can download these from the official FastText website. The code includes a <code>try-except</code> block to handle potential <code>ValueError</code> exceptions when loading the model (e.g., if the file doesn't exist or is corrupted). An error message gives helpful instructions on where to find pretrained models.</li>
+<li><strong><code>model.get_word_vector(oov_word)</code>:</strong> Retrieves the vector representation for the given word (even if it's an OOV word).</li>
+<li><strong><code>model.get_nearest_neighbors(oov_word)</code>:</strong> (Optional) Retrieves the nearest neighbors to the given word based on cosine similarity in the embedding space.  A <code>try-except</code> block is used here to handle cases where the loaded model might not support this method (depending on how it was trained). The docstrings for the fasttext library can explain which models support which methods.</li>
+</ol>
+<p><strong>Important:</strong> This code assumes you have a pre-trained FastText model available at the specified <code>model_path</code>.  Training a FastText model from scratch using Python is also possible, but this example focuses on the OOV word handling aspect with a pre-trained model. Training would involve using <code>fasttext.train_unsupervised()</code> or <code>fasttext.train_supervised()</code>.
+Also, pre-trained models are very large (GBs). Download one with a language appropriate for your task.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the n-gram size (e.g., 3-grams, 5-grams) affect the performance of FastText, especially when handling OOV words in morphologically rich languages (like Turkish or Finnish)? How do we determine the optimal n-gram size for a specific task and language?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
