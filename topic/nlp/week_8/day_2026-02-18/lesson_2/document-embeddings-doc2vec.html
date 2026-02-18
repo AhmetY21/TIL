@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Embeddings (Doc2Vec)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-document-embeddings-doc2vec">Topic: Document Embeddings (Doc2Vec)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Document embeddings (also known as Doc2Vec or Paragraph Vector) are vector representations of entire documents. Unlike word embeddings which represent individual words, doc embeddings capture the semantic meaning of a document as a whole. Doc2Vec is an unsupervised learning technique that learns fixed-length feature representations from variable-length pieces of texts, such as sentences, paragraphs, or entire documents.</p>
+<p>There are two main architectures for Doc2Vec:</p>
+<ul>
+<li>
+<p><strong>Distributed Memory Model of Paragraph Vectors (PV-DM):</strong>  Similar to Word2Vec's Continuous Bag-of-Words (CBOW) model.  PV-DM predicts a target word given the context words and a document ID. The document ID is treated as another word and contributes to the prediction. The model learns to associate a vector with each document ID, representing the document's meaning. In essence, the document vector acts as a memory that remembers what the document is missing.</p>
+</li>
+<li>
+<p><strong>Distributed Bag of Words version of Paragraph Vector (PV-DBOW):</strong> Similar to Word2Vec's Skip-gram model. PV-DBOW predicts words in a document based solely on the document ID. The model is trained to predict words randomly sampled from the document given the document vector.  This model typically works better for larger datasets.</p>
+</li>
+</ul>
+<p>We can use document embeddings in several ways:</p>
+<ul>
+<li><strong>Document Similarity:</strong>  Calculate the cosine similarity between the document embeddings to find documents that are semantically similar.</li>
+<li><strong>Document Classification:</strong>  Use the document embeddings as features in a classification model to predict the category or label of a document.</li>
+<li><strong>Information Retrieval:</strong>  Embed a search query and compare it to embeddings of documents in a corpus to retrieve relevant documents.</li>
+<li><strong>Clustering:</strong>  Group documents based on the similarity of their document embeddings.</li>
+<li><strong>Recommendation Systems:</strong> Recommend documents based on their similarity to documents a user has interacted with.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're building a system to categorize customer support tickets. You have a large dataset of past tickets, each containing a text description of the customer's issue.  Using Doc2Vec, you can:</p>
+<ol>
+<li>Train a Doc2Vec model on your historical ticket data. This will create a document embedding for each ticket.</li>
+<li>For a new, incoming ticket, you can infer its document embedding using the trained Doc2Vec model.</li>
+<li>Compare the new ticket's embedding to the embeddings of past tickets.</li>
+<li>Based on the similarity, you can automatically categorize the new ticket (e.g., "Billing Issue", "Technical Support", "Order Inquiry"). This can save time and improve the efficiency of your support team.  Furthermore, you could route the ticket to an appropriate support agent based on historical patterns of handling similar ticket types.</li>
+</ol>
+<p>Another scenario:</p>
+<p>You are building a news aggregation website. You want to cluster news articles based on their topic, even if they don't share many of the same keywords. By using Doc2Vec to create document embeddings, you can cluster articles based on semantic similarity rather than just keyword overlap. This can lead to more relevant and coherent news clusters.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>gensim</code> library in Python to implement Doc2Vec.</p>
+<pre class="codehilite"><code class="language-python">from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from nltk.tokenize import word_tokenize
+import nltk
+nltk.download('punkt')
+
+# Sample documents
+documents = [
+    &quot;This is the first document about NLP.&quot;,
+    &quot;The second document discusses machine learning techniques.&quot;,
+    &quot;Document number three focuses on deep learning models.&quot;,
+    &quot;This document explores natural language processing applications.&quot;
+]
+
+# Tokenize the documents and tag them
+tagged_data = [TaggedDocument(words=word_tokenize(_d.lower()), tags=[str(i)]) for i, _d in enumerate(documents)]
+
+# Initialize and train the Doc2Vec model (PV-DM)
+model_dm = Doc2Vec(tagged_data, vector_size=20, window=2, min_count=1, epochs=100, dm=1) # dm=1 for PV-DM
+
+# Initialize and train the Doc2Vec model (PV-DBOW)
+model_dbow = Doc2Vec(tagged_data, vector_size=20, window=2, min_count=1, epochs=100, dm=0) # dm=0 for PV-DBOW
+
+# Infer vector for a new document
+new_doc = &quot;New document about text analysis.&quot;
+new_vector_dm = model_dm.infer_vector(word_tokenize(new_doc.lower()))
+new_vector_dbow = model_dbow.infer_vector(word_tokenize(new_doc.lower()))
+
+# Print the vector
+print(&quot;PV-DM Vector:&quot;, new_vector_dm)
+print(&quot;PV-DBOW Vector:&quot;, new_vector_dbow)
+
+# Find similar documents based on PV-DM
+similar_doc_dm = model_dm.dv.most_similar([new_vector_dm], topn=len(documents))
+print(&quot;PV-DM Similar Documents:&quot;, similar_doc_dm)
+
+# Find similar documents based on PV-DBOW
+similar_doc_dbow = model_dbow.dv.most_similar([new_vector_dbow], topn=len(documents))
+print(&quot;PV-DBOW Similar Documents:&quot;, similar_doc_dbow)
+
+# Save and load the model
+model_dm.save(&quot;doc2vec_model_dm.model&quot;)
+loaded_model_dm = Doc2Vec.load(&quot;doc2vec_model_dm.model&quot;)
+
+model_dbow.save(&quot;doc2vec_model_dbow.model&quot;)
+loaded_model_dbow = Doc2Vec.load(&quot;doc2vec_model_dbow.model&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Import necessary libraries: <code>Doc2Vec</code>, <code>TaggedDocument</code> from <code>gensim</code>, <code>word_tokenize</code> from <code>nltk</code>, and <code>nltk</code>. The nltk package needs to download the punkt tokenizer models.</li>
+<li><strong>Prepare Data:</strong>  Create a list of <code>TaggedDocument</code> objects. Each <code>TaggedDocument</code> consists of a list of tokens (words) and a list of tags (document IDs).  Here, we use the index of the document as the tag.  The text is converted to lowercase and tokenized.</li>
+<li><strong>Initialize and Train:</strong> Initialize the <code>Doc2Vec</code> model.<ul>
+<li><code>vector_size</code>: Dimensionality of the document vectors.</li>
+<li><code>window</code>: Maximum distance between the current and predicted word within a sentence.</li>
+<li><code>min_count</code>: Ignores all words with total frequency lower than this.</li>
+<li><code>epochs</code>: Number of iterations (passes) over the training corpus.</li>
+<li><code>dm</code>: Defines the training algorithm. If <code>dm=1</code>, distributed memory model 'PV-DM' is used. Otherwise, distributed bag of words 'PV-DBOW' is employed.</li>
+</ul>
+</li>
+<li><strong>Infer Vector:</strong> Use <code>infer_vector()</code> to get the document embedding for a new (unseen) document. This performs several iterations of training on the new document to fine-tune its embedding.</li>
+<li><strong>Find Similar Documents:</strong>  Use <code>model.dv.most_similar()</code> to find the documents most similar to the new document, based on the cosine similarity of their embeddings. <code>dv</code> is the Docvecs array which stores the learned document embeddings.</li>
+<li><strong>Save and Load:</strong>  The <code>save()</code> and <code>load()</code> methods allow you to persist and retrieve the trained model.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do you choose the best value for the <code>vector_size</code> hyperparameter in Doc2Vec?  Are there any rules of thumb or specific strategies for optimization?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
