@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastText: Handling Out-of-Vocabulary Words</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-fasttext-handling-out-of-vocabulary-words">Topic: FastText: Handling Out-of-Vocabulary Words</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>FastText is a word embedding and text classification library developed by Facebook AI. One of its key advantages, particularly compared to models like Word2Vec, is its ability to handle <strong>out-of-vocabulary (OOV)</strong> words, i.e., words that were not seen during the training phase.</p>
+<p>Instead of treating words as indivisible units, FastText represents each word as a bag of <strong>character n-grams</strong>. An n-gram is a contiguous sequence of <em>n</em> characters within a word.  For instance, for the word "where" and n=3, we would have the n-grams "<wh", "whe", "her", "ere", "re>" where "&lt;" and "&gt;" denote the beginning and end of the word respectively.</p>
+<p>How does this help with OOV words?</p>
+<ol>
+<li>
+<p><strong>Vector Representation:</strong> FastText learns vector representations for each of these n-grams during training.  The vector representation of a word is then the sum (or average) of the vector representations of its constituent n-grams.</p>
+</li>
+<li>
+<p><strong>Handling OOV Words:</strong>  When encountering an OOV word, FastText breaks it down into its character n-grams. Since many of these n-grams are likely to have been seen during training (even if the entire word hasn't), FastText can compute a vector representation for the OOV word based on the learned vectors of its n-grams. This allows FastText to provide a reasonable embedding even for words it has never encountered before.</p>
+</li>
+</ol>
+<p>We can use FastText to generate word embeddings for a vocabulary, perform text classification tasks, and handle situations where new, unseen words are likely to appear in the input text. This is crucial for real-world applications dealing with dynamically evolving language, misspelled words, or specialized terminology.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a customer support chatbot trained on a dataset of common queries and responses. Now, imagine a user types a query containing a new slang term or a misspelled word. Traditional word embedding models like Word2Vec might fail to understand the user's intent because they cannot generate a vector representation for the OOV word.</p>
+<p>In this scenario, FastText shines. Even if the chatbot hasn't seen the exact word "n00b" (a slang term for "newbie") before, FastText can break it down into n-grams like "n00", "00b", "ob". If those n-grams were present in the training data (within other words, perhaps), FastText can approximate a vector representation for "n00b", enabling the chatbot to understand the query, potentially infer that it means "newbie", and provide a relevant response.</p>
+<p>This ability to handle OOV words makes FastText highly suitable for applications such as:</p>
+<ul>
+<li><strong>Chatbots:</strong> Understanding user queries with slang, misspellings, or new terms.</li>
+<li><strong>Search Engines:</strong>  Handling misspelled search queries.</li>
+<li><strong>Social Media Analysis:</strong>  Processing user-generated content containing informal language and neologisms.</li>
+<li><strong>Document Classification:</strong>  Classifying documents that may contain domain-specific vocabulary or abbreviations.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example of how to use FastText in Python using the <code>fasttext</code> library:</p>
+<pre class="codehilite"><code class="language-python">import fasttext
+
+# Create a dummy training file
+with open(&quot;train.txt&quot;, &quot;w&quot;) as f:
+  f.write(&quot;This is a sentence. This is another sentence.  This is a longer sentence.\n&quot;)
+  f.write(&quot;The cat sat on the mat.\n&quot;)
+  f.write(&quot;The dog is barking loudly.\n&quot;)
+
+# Train a FastText model
+model = fasttext.train_unsupervised('train.txt', model='cbow') # or 'skipgram'
+
+# Get the vector representation of a known word
+vector = model.get_word_vector(&quot;cat&quot;)
+print(f&quot;Vector for 'cat': {vector[:5]}...&quot;) #Print first 5 elements for brevity
+
+# Get the vector representation of an OOV word
+oov_vector = model.get_word_vector(&quot;unknownword&quot;)
+print(f&quot;Vector for 'unknownword': {oov_vector[:5]}...&quot;) #Print first 5 elements for brevity
+
+# Save the model
+model.save_model(&quot;model_filename.bin&quot;)
+
+# Load a pre-trained model
+loaded_model = fasttext.load_model(&quot;model_filename.bin&quot;)
+
+# You can also use pre-trained word vectors from FastText.  For example, using the English model:
+# import fasttext.util
+# ft = fasttext.load_model('cc.en.300.bin') #Download the appropriate language from: https://fasttext.cc/docs/en/pretrained-vectors.html
+# vector_example = ft.get_word_vector(&quot;example&quot;)
+# print(f&quot;Vector for 'example' from pre-trained model: {vector_example[:5]}...&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>fasttext.train_unsupervised()</code>:</strong> This function trains a FastText model on a text file.  The <code>model</code> parameter specifies the architecture ("cbow" for Continuous Bag of Words, or "skipgram" for Skip-gram). The 'train.txt' file must contain the training data.</li>
+<li><strong><code>model.get_word_vector(word)</code>:</strong> This method returns the vector representation of a given word. Even if the word is not in the vocabulary, FastText will attempt to create a vector based on its n-grams.</li>
+<li><strong><code>model.save_model()</code> and <code>fasttext.load_model()</code>:</strong>  These functions save and load a trained FastText model to/from a file.</li>
+<li><strong>Loading pre-trained models:</strong> Demonstrates loading a pre-trained model for a language.  You'll need to download the appropriate <code>.bin</code> file from the FastText website. These pre-trained models are very powerful and can be used directly without further training on your data (though fine-tuning can improve performance).</li>
+</ol>
+<p><strong>Note:</strong> You will need to install the <code>fasttext</code> library: <code>pip install fasttext</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the n-gram size (the 'n' in n-grams) affect the performance of FastText, especially in terms of handling OOV words and computational efficiency?  Are there any guidelines or methods for selecting an appropriate n-gram size for a specific task and dataset?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
