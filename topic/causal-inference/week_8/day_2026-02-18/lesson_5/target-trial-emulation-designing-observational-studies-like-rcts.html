@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Target Trial Emulation (Designing Observational Studies like RCTs)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-target-trial-emulation-designing-observational-studies-like-rcts">Topic: Target Trial Emulation (Designing Observational Studies like RCTs)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Target Trial Emulation (TTE) is a framework for designing observational studies to more closely mimic the design and analysis of a randomized controlled trial (RCT). The fundamental idea is to explicitly define the <em>target trial</em> – the ideal RCT you would conduct if you could – and then to structure your observational data analysis to emulate that trial's design and analysis steps as closely as possible, given the constraints of observational data.</p>
+<p><strong>What is it?</strong></p>
+<p>TTE involves a series of design choices informed by the target trial protocol.  These include:</p>
+<ul>
+<li><strong>Eligibility criteria:</strong> Defining the inclusion and exclusion criteria for the population you are studying, just as in an RCT.</li>
+<li><strong>Treatment assignment:</strong> Specifying the intervention(s) and control condition(s) being compared. This often requires careful operationalization of what constitutes treatment in observational data.</li>
+<li><strong>Treatment start time (index date):</strong> Defining when the intervention starts or when individuals enter the "trial."  This is critical for avoiding immortal time bias.</li>
+<li><strong>Follow-up period:</strong> Specifying the duration of follow-up, and ensuring complete data collection for all individuals.</li>
+<li><strong>Outcome:</strong> Clearly defining the outcome of interest.</li>
+<li><strong>Censoring rules:</strong> Defining how censoring will be handled (e.g., loss to follow-up, death).</li>
+<li><strong>Statistical analysis:</strong> Choosing an analysis plan (e.g., intention-to-treat, per-protocol) that aligns with the target trial and addresses potential confounding.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>We can use TTE to:</p>
+<ul>
+<li><strong>Structure observational analyses to address causal questions:</strong> By explicitly defining the target trial, we clarify the causal estimand and the assumptions needed for causal inference.</li>
+<li><strong>Improve transparency and reproducibility:</strong>  The target trial protocol provides a detailed blueprint for the observational analysis.</li>
+<li><strong>Facilitate communication:</strong>  By framing the observational analysis as an emulation of an RCT, it can be easier to communicate the findings to clinicians and policymakers.</li>
+<li><strong>Identify potential biases:</strong>  The process of emulating a trial can highlight potential sources of bias in the observational data, such as confounding, selection bias, and measurement error.</li>
+<li><strong>Improve study design:</strong> TTE helps to identify potential pitfalls in the observational study design and guide decisions on data collection and analysis.</li>
+<li><strong>Interpret the results:</strong> by making explicit the hypothetical study, TTE guides interpretation and generalizability.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine we want to investigate the effect of starting a statin medication on the risk of cardiovascular events in older adults using electronic health record (EHR) data.</p>
+<p><strong>Target Trial:</strong></p>
+<ul>
+<li><strong>Eligibility criteria:</strong> Individuals aged 65 or older without a prior history of cardiovascular disease.</li>
+<li><strong>Treatment assignment:</strong> Randomly assign eligible individuals to either:<ul>
+<li>Initiate statin therapy</li>
+<li>Continue usual care (no statin initiation)</li>
+</ul>
+</li>
+<li><strong>Treatment start time (index date):</strong> The date of randomization.</li>
+<li><strong>Follow-up period:</strong> 5 years.</li>
+<li><strong>Outcome:</strong> First occurrence of a major adverse cardiovascular event (MACE, e.g., heart attack, stroke).</li>
+<li><strong>Censoring rules:</strong> Censoring due to death, loss to follow-up, or discontinuation of statin therapy (for an intention-to-treat analysis).</li>
+<li><strong>Statistical analysis:</strong> Cox proportional hazards regression to estimate the hazard ratio for MACE in the statin group compared to the usual care group.</li>
+</ul>
+<p><strong>Observational Emulation:</strong></p>
+<p>Using EHR data, we would:</p>
+<ol>
+<li><strong>Identify eligible individuals:</strong>  Apply the same age and exclusion criteria as the target trial.</li>
+<li><strong>Define treatment initiation:</strong> Determine the date of first statin prescription as the "index date" for the treated group. For the "untreated" group, we need to choose an <em>analogous</em> index date.  This could be a random date within the enrollment period for patients not prescribed statins.</li>
+<li><strong>Follow individuals:</strong> Track the occurrence of MACE over a 5-year period, starting from the index date.</li>
+<li><strong>Address confounding:</strong> Use methods like inverse probability of treatment weighting (IPTW) or propensity score matching to balance measured confounders between the groups (e.g., age, comorbidities, other medications).</li>
+<li><strong>Handle censoring:</strong>  Account for censoring events in the statistical analysis (e.g., using Cox regression).</li>
+<li><strong>Analyze data:</strong> Conduct a Cox proportional hazards regression, adjusting for any remaining confounders and using robust standard errors.</li>
+<li><strong>Interpret results:</strong> Carefully consider whether the assumptions of the analysis (e.g., no unmeasured confounding) are plausible in the observational setting.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from lifelines import CoxPHFitter
+from lifelines.utils import concordance_index
+
+def target_trial_emulation(data, treatment_col, outcome_col, time_col, confounders, weights = None):
+  &quot;&quot;&quot;
+  Emulates a target trial using observational data and propensity score weighting.
+
+  Args:
+    data: Pandas DataFrame containing the data.
+    treatment_col: Name of the column representing treatment assignment (1=treated, 0=untreated).
+    outcome_col: Name of the column representing the outcome event (1=event, 0=no event).
+    time_col: Name of the column representing time to event.
+    confounders: List of column names representing confounders to adjust for.
+    weights: Optional Pandas Series of weights (e.g., inverse probability of treatment weights).
+             If None, propensity score weighting will be performed.
+
+  Returns:
+    A Lifelines CoxPHFitter object containing the results of the Cox regression.
+  &quot;&quot;&quot;
+
+  if weights is None:
+    # Estimate propensity scores
+    X = data[confounders]
+    y = data[treatment_col]
+    propensity_model = LogisticRegression(solver='liblinear', random_state=42)
+    propensity_model.fit(X, y)
+    propensity_scores = propensity_model.predict_proba(X)[:, 1]
+
+    # Calculate inverse probability of treatment weights (IPTW)
+    data['propensity_score'] = propensity_scores
+    data['iptw'] = np.where(data[treatment_col] == 1, 1 / data['propensity_score'], 1 / (1 - data['propensity_score']))
+    weights = data['iptw']
+  else:
+    data['iptw'] = weights #Ensure there's an iptw column, even if externally provided.
+
+  # Fit Cox proportional hazards model
+  cph = CoxPHFitter()
+  cph.fit(data, duration_col=time_col, event_col=outcome_col, formula= f&quot;{treatment_col} + {' + '.join(confounders)}&quot;, weights_col='iptw') #include confounders in model
+  return cph
+
+
+# Example Usage (with dummy data):
+if __name__ == '__main__':
+  # Create dummy data
+  np.random.seed(42)
+  n = 200
+  data = pd.DataFrame({
+      'age': np.random.randint(65, 85, n),
+      'gender': np.random.randint(0, 2, n),  # 0=male, 1=female
+      'comorbidity': np.random.randint(0, 3, n),
+      'treatment': np.random.binomial(1, 0.5, n),
+      'time': np.random.exponential(5, n),
+      'event': np.random.binomial(1, 0.2, n)
+  })
+
+  # Define variables
+  treatment_col = 'treatment'
+  outcome_col = 'event'
+  time_col = 'time'
+  confounders = ['age', 'gender', 'comorbidity']
+
+  # Emulate the target trial
+  cox_model = target_trial_emulation(data, treatment_col, outcome_col, time_col, confounders)
+
+  # Print the results
+  cox_model.print_summary()
+
+  #Access individual variables
+  print(cox_model.summary)
+
+  # Get the hazard ratio for the treatment
+  hr = cox_model.hazard_ratios_
+  print(f&quot;\nHazard Ratio for Treatment: {hr}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>target_trial_emulation(data, treatment_col, outcome_col, time_col, confounders, weights)</code>:</strong>  This function takes the data, column names for treatment, outcome, time, and a list of confounders as input. It also accepts pre-calculated weights; if not provided, it calculates IPTW.</p>
+</li>
+<li>
+<p><strong>Propensity Score Estimation (if <code>weights is None</code>):</strong></p>
+<ul>
+<li>A logistic regression model is used to estimate the propensity scores (the probability of receiving treatment given the confounders).</li>
+<li>Inverse probability of treatment weights (IPTW) are calculated based on the propensity scores.</li>
+</ul>
+</li>
+<li>
+<p><strong>Cox Proportional Hazards Regression:</strong></p>
+<ul>
+<li>The <code>CoxPHFitter</code> from the <code>lifelines</code> package is used to fit a Cox model. Critically, the function now includes confounders directly into the Cox model formula. This is crucial for properly estimating effect sizes and hazard ratios after IPTW.</li>
+<li>The <code>weights_col</code> argument specifies the column containing the IPTW.</li>
+</ul>
+</li>
+<li>
+<p><strong>Example Usage:</strong></p>
+<ul>
+<li>Dummy data is created for demonstration purposes.  <em>Remember to replace this with your actual data.</em></li>
+<li>The <code>target_trial_emulation</code> function is called with the appropriate arguments.</li>
+<li>The summary of the Cox model is printed, which includes hazard ratios, confidence intervals, and p-values.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Assumptions:</strong> This code assumes that the necessary assumptions for causal inference (e.g., no unmeasured confounding, positivity, consistency) hold.  Carefully consider the plausibility of these assumptions in your specific application.</li>
+<li><strong>Positivity:</strong> Ensure there is sufficient overlap in the confounder distributions between the treated and untreated groups. This can be assessed by examining the propensity scores.  Extreme propensity scores (very close to 0 or 1) can indicate a violation of the positivity assumption and can lead to unstable IPTW.</li>
+<li><strong>Model Specification:</strong> The choice of confounders included in the propensity score model and Cox model is critical.  Use domain knowledge and variable selection techniques to choose the most relevant variables. Consider interaction terms and non-linear relationships if appropriate.</li>
+<li><strong>Diagnostics:</strong> After fitting the Cox model, perform diagnostics to check the proportional hazards assumption.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does target trial emulation relate to the potential outcomes framework, and how can the emulation framework help clarify the assumptions needed for causal inference using potential outcomes?
+Target trial emulation directly relates to the potential outcomes framework (also known as the Rubin causal model) by providing a structured approach to operationalize and estimate causal effects defined within that framework. The emulation framework makes explicit how we aim to estimate the average treatment effect (ATE), average treatment effect on the treated (ATT), or other causal estimands defined using potential outcomes.</p>
+<p>Here's a breakdown of the relationship:</p>
+<ul>
+<li>
+<p><strong>Potential Outcomes Framework:</strong> This framework conceptualizes causality by imagining two potential outcomes for each individual: the outcome that would occur if they received the treatment (Y1) and the outcome that would occur if they did not receive the treatment (Y0).  The causal effect is the difference between these two potential outcomes. Because we can only observe one of these potential outcomes for any given individual, the fundamental problem of causal inference arises.</p>
+</li>
+<li>
+<p><strong>Target Trial Emulation as Operationalizing Potential Outcomes:</strong> TTE provides a structured way to <em>estimate</em> the average difference between Y1 and Y0.</p>
+<ul>
+<li><strong>Eligibility Criteria:</strong> Defining the eligibility criteria focuses the analysis on a specific population for whom we want to estimate the causal effect.  This clarifies the <em>population</em> for which the estimated ATE or ATT is relevant.</li>
+<li><strong>Treatment Assignment:</strong> The target trial explicitly defines the interventions being compared, thereby defining what "treatment" and "no treatment" <em>mean</em> in the context of potential outcomes.  This is crucial for specifying Y1 and Y0.</li>
+<li><strong>Treatment Start Time (Index Date) and Follow-up:</strong> These elements define the time frame over which the potential outcomes are measured. It ensures that the counterfactual (e.g., what <em>would</em> have happened if someone had received treatment from this moment) is clearly defined.</li>
+<li><strong>Censoring Rules:</strong> Explicitly defining how censoring is handled addresses potential biases due to loss to follow-up, which can differentially affect treated and untreated groups. This acknowledges that we may not observe complete potential outcomes for all individuals.</li>
+<li><strong>Statistical Analysis:</strong> The chosen analysis method (e.g., IPTW, propensity score matching) aims to address confounding, a major barrier to estimating causal effects with observational data. These methods aim to create pseudo-randomization, allowing us to approximate the conditions of the target trial.</li>
+</ul>
+</li>
+</ul>
+<p><strong>How TTE Clarifies Assumptions:</strong></p>
+<p>The target trial emulation framework helps clarify the assumptions needed for causal inference within the potential outcomes framework because it forces researchers to explicitly consider the conditions under which the observed data can be used to estimate the desired causal effect.  Specifically, TTE highlights the importance of these assumptions:</p>
+<ul>
+<li>
+<p><strong>Exchangeability (No Unmeasured Confounding):</strong> This assumption states that, conditional on the measured confounders, treatment assignment is independent of potential outcomes. In simpler terms, after accounting for the observed differences between the treated and untreated groups, there are no other unmeasured factors that would systematically influence both treatment and the outcome. TTE highlights the need to carefully consider and measure all relevant confounders. The selection of confounders for IPTW or other adjustment methods directly addresses this assumption.  If the target trial design includes randomization <em>conditional</em> on covariates, TTE demands we emulate that conditioning in our observational analysis.</p>
+</li>
+<li>
+<p><strong>Positivity (Overlap):</strong> This assumption states that for every combination of confounder values, there must be a non-zero probability of receiving both treatment and no treatment. TTE forces a researcher to consider whether there is sufficient overlap between the treatment groups with respect to the confounders.  If there is no overlap (e.g., a subgroup only receives treatment), then causal inference is not possible within that subgroup.  The propensity score diagnostics in the Python code example address this.</p>
+</li>
+<li>
+<p><strong>Consistency:</strong> This assumption states that an individual's potential outcome under their observed treatment assignment is equal to their observed outcome. This means that the treatment actually received corresponds to the treatment intended by the counterfactual. TTE encourages researchers to define the treatment and control conditions precisely and to address potential violations of consistency due to variations in treatment implementation or adherence.  This highlights the importance of defining the treatment intervention (Y1) and the control (Y0) clearly, in a way that actually corresponds to what a real individual receives.</p>
+</li>
+</ul>
+<p>In summary, target trial emulation provides a practical and structured approach for applying the potential outcomes framework to observational data. It forces researchers to explicitly define the target trial, identify and address potential biases, and critically evaluate the assumptions needed for causal inference. By framing the observational analysis as an emulation of an RCT, TTE promotes transparency, reproducibility, and more reliable causal inferences.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
