@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distributionally Robust Stochastic Programming (DRO-SP) — high level view</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-distributionally-robust-stochastic-programming-dro-sp-high-level-view">Topic: Distributionally Robust Stochastic Programming (DRO-SP) — high level view</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Distributionally Robust Stochastic Programming (DRO-SP) addresses the limitations of traditional Stochastic Programming (SP) by acknowledging the uncertainty inherent in estimating the probability distribution of the uncertain parameters. In standard SP, we assume a known probability distribution for the uncertain parameters and optimize against its expectation. However, this assumed distribution might be inaccurate or incomplete, leading to suboptimal decisions in reality. DRO-SP tackles this by considering a <em>set</em> of plausible probability distributions (an ambiguity set) around the estimated distribution and seeking a solution that performs well across <em>all</em> distributions within that set.</p>
+<p>Formally, DRO-SP problems typically take the form:</p>
+<pre class="codehilite"><code>minimize   sup_{P ∈ U} E_P[f(x, ξ)]
+subject to g(x) &lt;= 0
+         x ∈ X
+</code></pre>
+
+<p>Where:</p>
+<ul>
+<li><code>x</code> is the decision variable.</li>
+<li><code>ξ</code> is the uncertain parameter.</li>
+<li><code>f(x, ξ)</code> is the objective function, dependent on the decision <code>x</code> and the uncertain parameter <code>ξ</code>.  We want to minimize the <em>worst-case</em> expected value of this function.</li>
+<li><code>g(x)</code> &lt;= 0 represents constraints on the decision variable <code>x</code>.</li>
+<li><code>X</code> represents the feasible set for <code>x</code>.</li>
+<li><code>P</code> is a probability distribution of <code>ξ</code>.</li>
+<li><code>U</code> is the ambiguity set, a set of plausible probability distributions for <code>ξ</code>.  We are optimizing against the <em>worst</em> distribution <em>within</em> this set.</li>
+<li><code>E_P[f(x, ξ)]</code> represents the expected value of <code>f(x, ξ)</code> with respect to the probability distribution <code>P</code>.</li>
+</ul>
+<p>Essentially, DRO-SP aims to find the decision <code>x</code> that minimizes the <em>worst-case</em> expected cost (or maximizes the <em>worst-case</em> expected reward) across all probability distributions within the ambiguity set <code>U</code>. The key here is the <code>sup_{P ∈ U}</code>, which represents the worst-case expectation.</p>
+<p>We can use DRO-SP when:</p>
+<ul>
+<li>The true distribution of uncertain parameters is unknown or difficult to estimate accurately.</li>
+<li>There is concern about model risk or the impact of distribution misspecification.</li>
+<li>We need a solution that is robust against deviations from the estimated distribution.</li>
+<li>We want to explicitly control the level of conservatism in our decision-making.</li>
+</ul>
+<p>Common choices for the ambiguity set <code>U</code> include:</p>
+<ul>
+<li><em>Moment-based ambiguity sets:</em>  Distributions that match certain moments (e.g., mean and covariance) of the empirical distribution.</li>
+<li><em>Distance-based ambiguity sets:</em> Distributions that are "close" to a reference distribution (e.g., the empirical distribution) according to some distance metric (e.g., Wasserstein distance, Kullback-Leibler divergence, Chi-squared distance).</li>
+<li><em>Kernel-based ambiguity sets:</em> Define the ambiguity set based on kernel functions, allowing for capturing complex dependencies.</li>
+</ul>
+<p>The choice of ambiguity set dictates the computational tractability of the DRO-SP problem. Some ambiguity sets lead to problems that can be reformulated as tractable convex programs (e.g., linear programs, conic quadratic programs, or semidefinite programs).</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a portfolio optimization problem.  A fund manager wants to allocate capital to different assets to maximize the expected return while minimizing risk. Traditional SP might assume a specific distribution for asset returns (e.g., multivariate normal).  However, asset returns can be highly volatile and exhibit non-normal behavior, and historical data might not accurately reflect future market conditions.</p>
+<p>Using DRO-SP, the fund manager can define an ambiguity set around the historical return distribution.  For instance, they could use a moment-based ambiguity set, ensuring that the plausible distributions have means and covariances close to those observed historically.  Or, they could use a Wasserstein distance-based ambiguity set centered around a baseline distribution estimated from market data.</p>
+<p>By solving the DRO-SP problem, the fund manager obtains a portfolio allocation that is robust against various plausible scenarios for asset returns, not just the single one assumed in standard SP. This leads to a more conservative but potentially more reliable portfolio that is less vulnerable to unexpected market shocks or model misspecification. The DRO-SP model would explicitly minimize the <em>worst-case</em> expected return across all distributions within the chosen ambiguity set.  This protects against unforeseen adverse scenarios more effectively than relying on a single assumed distribution.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single, dedicated Python library specifically for "DRO-SP", you can implement DRO-SP models using existing optimization libraries like:</p>
+<ul>
+<li><strong>Pyomo:</strong> A powerful algebraic modeling language for optimization.  It allows you to formulate DRO-SP problems explicitly and solve them with various solvers.</li>
+<li><strong>CVXPY:</strong> A Python-embedded modeling language for convex optimization problems.  Many DRO-SP formulations can be recast as convex problems, making CVXPY a suitable choice.</li>
+<li><strong>Gurobi/CPLEX:</strong> Commercial optimization solvers with robust Python interfaces. These solvers can handle the reformulated convex programs arising from many DRO-SP formulations.</li>
+</ul>
+<p>Here's a simplified conceptual example using Pyomo and assuming a Wasserstein ambiguity set, noting that specific reformulations would depend on the problem structure and solver capabilities. This is a <em>very</em> high-level illustration as the full implementation requires handling the duality to reformulate the robust counterpart:</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+# Example: Portfolio optimization with Wasserstein ambiguity set
+
+# Data (simplified)
+num_assets = 3
+expected_returns = np.array([0.1, 0.15, 0.08])  # Estimated returns
+covariance_matrix = np.array([[0.01, 0.005, 0], [0.005, 0.0225, 0.002], [0, 0.002, 0.0064]])
+budget = 1
+rho = 0.1  # Radius of the Wasserstein ball (conservatism parameter)
+
+# Pyomo model
+model = pyo.ConcreteModel()
+
+# Decision variables: Portfolio allocation
+model.x = pyo.Var(range(num_assets), domain=pyo.NonNegativeReals)
+
+# Objective: Maximize worst-case expected return
+#  NOTE: This is a simplified representation.  The Wasserstein DRO
+#  requires reformulation using duality, which is omitted here for brevity.
+#  In practice, you would replace this with the dual reformulation.
+#  This is illustrative.
+def objective_rule(model):
+    # This is NOT the actual DRO objective. It needs reformulation.
+    return sum(expected_returns[i] * model.x[i] for i in range(num_assets))  - rho * pyo.sumsqr(model.x) # Penaliize based on conservativeness. Again, illustrative.
+model.objective = pyo.Objective(rule=objective_rule, sense=pyo.maximize)
+
+# Constraint: Budget constraint
+def budget_rule(model):
+    return sum(model.x[i] for i in range(num_assets)) &lt;= budget
+model.budget_constraint = pyo.Constraint(rule=budget_rule)
+
+# Solve the model (using a suitable solver like Gurobi)
+solver = pyo.SolverFactory('gurobi') # You'll need Gurobi installed
+results = solver.solve(model)
+
+# Print the optimal portfolio allocation
+if results.solver.termination_condition == pyo.TerminationCondition.optimal:
+    for i in range(num_assets):
+        print(f&quot;Asset {i+1}: {model.x[i].value}&quot;)
+else:
+    print(&quot;Solver did not find an optimal solution.&quot;)
+</code></pre>
+
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>The code above is a <em>highly simplified</em> representation of a DRO-SP model. It <em>does not</em> include the crucial dual reformulation needed for solving the Wasserstein DRO problem tractably.</li>
+<li>Implementing a full DRO-SP model requires understanding the duality theory associated with the chosen ambiguity set.</li>
+<li>You would typically need to consult research papers or textbooks on DRO to derive the appropriate reformulation for your specific problem.</li>
+<li>The <code>rho</code> parameter controls the level of robustness; higher values lead to more conservative solutions.</li>
+<li>The example uses a quadratic penalty as a placeholder. Actual dual reforms typically require introduction of additional variables and constraints.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the key computational challenges in solving DRO-SP problems, and what techniques are used to address them? For example, how does the size of the ambiguity set affect the computational complexity?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
