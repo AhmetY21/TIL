@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modeling Stochastic Programs in Pyomo: extensive form (two-stage)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-modeling-stochastic-programs-in-pyomo-extensive-form-two-stage">Topic: Modeling Stochastic Programs in Pyomo: extensive form (two-stage)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The extensive form is a method for solving two-stage stochastic programs by explicitly representing all possible scenarios and formulating a deterministic equivalent of the original stochastic problem.</p>
+<p><strong>What is it?</strong></p>
+<p>A two-stage stochastic program involves making decisions in two stages:</p>
+<ul>
+<li><strong>First-stage decisions (Here-and-Now decisions):</strong> These decisions must be made <em>before</em> the realization of any uncertain parameters (e.g., demand, costs).</li>
+<li><strong>Second-stage decisions (Wait-and-See decisions):</strong> These decisions are made <em>after</em> observing the realization of the uncertain parameters. They serve to mitigate the consequences of the first-stage decisions given the observed scenario.</li>
+</ul>
+<p>The extensive form transforms the stochastic program into a large, deterministic optimization problem.  For each possible scenario, it defines separate decision variables for the second stage.  The objective function minimizes the expected value of the total cost (first-stage cost plus the average second-stage cost over all scenarios).  Constraints ensure feasibility in both the first and second stages, considering each scenario individually.</p>
+<p><strong>How can we use it?</strong></p>
+<p>The extensive form is useful when:</p>
+<ul>
+<li>The number of scenarios is relatively small.</li>
+<li>We need to obtain the optimal first-stage decisions, knowing that we will react optimally in the second stage to any possible outcome.</li>
+<li>We have a good understanding of the probability distribution of the uncertain parameters.</li>
+</ul>
+<p>The extensive form provides the exact optimal solution to the stochastic program (given the specified scenarios and probabilities). However, it can become computationally intractable for problems with a large number of scenarios due to the rapid increase in the number of variables and constraints.</p>
+<p><strong>Mathematical Formulation:</strong></p>
+<p>Let:</p>
+<ul>
+<li><code>x</code>: First-stage decision variables</li>
+<li><code>y_s</code>: Second-stage decision variables for scenario <code>s</code></li>
+<li><code>ξ_s</code>: Realization of uncertain parameters in scenario <code>s</code></li>
+<li><code>p_s</code>: Probability of scenario <code>s</code></li>
+<li><code>Q</code>: Set of all scenarios</li>
+<li><code>c</code>: Cost vector for first-stage decisions</li>
+<li><code>q_s</code>: Cost vector for second-stage decisions in scenario <code>s</code></li>
+<li><code>T</code>: Matrix relating first-stage decisions to second-stage constraints</li>
+<li><code>W</code>: Matrix of second-stage technology coefficients</li>
+<li><code>h_s</code>: Right-hand side of second-stage constraints in scenario <code>s</code></li>
+<li><code>A</code>: Matrix of first-stage technology coefficients</li>
+<li><code>b</code>: Right-hand side of first-stage constraints</li>
+</ul>
+<p>The extensive form can be formulated as:</p>
+<pre class="codehilite"><code>min  c'x + Σ_{s ∈ Q} p_s * q_s'y_s
+subject to:
+   Ax &lt;= b                              (First-stage constraints)
+   Tx + Wy_s &lt;= h_s  for all s ∈ Q       (Second-stage constraints, scenario-specific)
+   x &gt;= 0
+   y_s &gt;= 0  for all s ∈ Q
+</code></pre>
+
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Inventory Management with Demand Uncertainty</strong></p>
+<p>A retailer needs to decide how many units of a product to order <em>now</em> (first-stage decision) before knowing the actual demand.  The demand is uncertain and can take on a few discrete values (scenarios).  <em>After</em> observing the actual demand, the retailer can decide how much to sell or discard excess inventory to meet the demand (second-stage decision).</p>
+<ul>
+<li><strong>First-stage decision (x):</strong>  Number of units to order.</li>
+<li><strong>Second-stage decisions (y_s):</strong> Number of units to sell and Number of units to discard in scenario <code>s</code>.</li>
+<li><strong>Uncertain parameters (ξ_s):</strong> Demand in scenario <code>s</code>.</li>
+<li><strong>Objective:</strong> Minimize the expected total cost, including ordering cost, holding cost for unsold items, and lost sales penalty if demand exceeds the available inventory.</li>
+<li><strong>Constraints:</strong> Inventory balance constraints for each scenario, non-negativity constraints.</li>
+</ul>
+<p>In this scenario, the extensive form allows the retailer to determine the optimal order quantity (first-stage) by considering all possible demand scenarios and the optimal second-stage responses (selling or discarding) for each scenario, weighted by their probabilities.  A simpler but less accurate approach might use an expected value demand without explicitly optimizing across possible scenario outcomes.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+
+# Define the model
+model = ConcreteModel()
+
+# --- Problem Data ---
+# Number of scenarios
+num_scenarios = 3
+
+# Scenario probabilities
+model.p = Param(range(num_scenarios), initialize={0: 0.3, 1: 0.4, 2: 0.3})
+
+# Demands for each scenario
+model.demand = Param(range(num_scenarios), initialize={0: 10, 1: 15, 2: 20})
+
+# Ordering cost
+ordering_cost = 5
+
+# Selling price
+selling_price = 10
+
+# Discard cost (per unit)
+discard_cost = 1
+
+# --- First Stage Variables ---
+model.x = Var(domain=NonNegativeReals) # Order quantity
+
+# --- Second Stage Variables ---
+model.y_sell = Var(range(num_scenarios), domain=NonNegativeReals) # Quantity sold
+model.y_discard = Var(range(num_scenarios), domain=NonNegativeReals) # Quantity discarded
+
+# --- Objective Function ---
+def objective_rule(model):
+  first_stage_cost = ordering_cost * model.x
+  second_stage_cost = sum(model.p[s] * (selling_price * model.y_sell[s] - discard_cost * model.y_discard[s]) for s in range(num_scenarios))
+  return first_stage_cost - second_stage_cost # Selling price is revenue. Discounting revenue to be subtracted from cost.
+
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+# --- Constraints ---
+# Demand satisfaction constraints for each scenario
+def demand_satisfaction_rule(model, s):
+  return model.y_sell[s] &lt;= model.demand[s]
+
+model.demand_satisfaction = Constraint(range(num_scenarios), rule=demand_satisfaction_rule)
+
+# Inventory balance constraints for each scenario
+def inventory_balance_rule(model, s):
+  return model.x == model.y_sell[s] + model.y_discard[s]
+
+model.inventory_balance = Constraint(range(num_scenarios), rule=inventory_balance_rule)
+
+
+# --- Solve the model ---
+solver = SolverFactory('glpk')  # or any other suitable solver
+solver.solve(model)
+
+# --- Print the results ---
+print(&quot;Optimal Order Quantity:&quot;, model.x.value)
+for s in range(num_scenarios):
+  print(f&quot;Scenario {s}: Sell = {model.y_sell[s].value}, Discard = {model.y_discard[s].value}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Model Definition:</strong>  A <code>ConcreteModel</code> is created to represent the optimization problem.</li>
+<li><strong>Problem Data:</strong> The scenario probabilities, demands, and cost parameters are defined as <code>Param</code> objects.</li>
+<li><strong>Variables:</strong><ul>
+<li><code>model.x</code>: The first-stage decision variable representing the order quantity.</li>
+<li><code>model.y_sell</code> and <code>model.y_discard</code>: Second-stage decision variables representing the quantity sold and discarded for each scenario.</li>
+</ul>
+</li>
+<li><strong>Objective Function:</strong> The objective function minimizes the expected total cost, which includes the ordering cost minus selling revenue plus discard cost across all scenarios. The summation of weighted scenario costs is handled explicitly. Note the costs are added, but the revenue is subtracted (equivalently, negative costs can be used for revenues).</li>
+<li><strong>Constraints:</strong><ul>
+<li><code>demand_satisfaction</code>: Ensures that the quantity sold in each scenario does not exceed the demand.</li>
+<li><code>inventory_balance</code>: Ensures that the order quantity equals the sum of the quantity sold and discarded in each scenario.</li>
+</ul>
+</li>
+<li><strong>Solving:</strong> The model is solved using the <code>glpk</code> solver.</li>
+<li><strong>Results:</strong> The optimal order quantity and the quantities sold and discarded for each scenario are printed.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can the extensive form be adapted to handle more complex two-stage stochastic programming problems, such as those with continuous probability distributions or a very large number of discrete scenarios, and what are the limitations of these adaptations?  What alternative approaches are commonly used when the extensive form becomes intractable?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
