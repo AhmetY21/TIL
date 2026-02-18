@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time-Varying Treatments and Time-Varying Confounding</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-time-varying-treatments-and-time-varying-confounding">Topic: Time-Varying Treatments and Time-Varying Confounding</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Time-varying treatments and time-varying confounding arise in longitudinal studies where both the treatment an individual receives and the confounding variables that affect both treatment and outcome change over time.  Critically, <strong>past treatments can influence future confounders, and these future confounders can, in turn, affect future treatments and the outcome.</strong> This creates a complex feedback loop that standard regression or propensity score matching approaches cannot adequately handle. This is because these methods can lead to bias by inappropriately conditioning on variables that are <em>intermediate</em> between treatment and outcome (i.e., are caused by past treatment), thereby blocking causal pathways.</p>
+<p>More formally:</p>
+<ul>
+<li><strong>Time-Varying Treatment:</strong> A treatment that is administered (or experienced) at multiple time points (t = 1, 2, ..., T) and can vary for each individual and time point. We represent the treatment at time <em>t</em> as A<sub>t</sub>.</li>
+<li><strong>Time-Varying Confounding:</strong> A confounding variable (or set of variables) that also changes over time and influences both the treatment and outcome at subsequent time points. Importantly, the <em>value</em> of these confounders at time <em>t</em> can be <em>affected</em> by prior treatments. We represent the confounders at time <em>t</em> as L<sub>t</sub>.</li>
+<li><strong>Outcome:</strong> The outcome of interest, measured at the end of the observation period, usually T. We represent the outcome as Y.</li>
+</ul>
+<p>The problem arises because standard methods can mistakenly adjust for variables (L<sub>t</sub>) that lie on the causal pathway from <em>past</em> treatments (A<sub>t-1</sub>) to the outcome (Y).  By adjusting for these intermediate variables, we inadvertently block a portion of the total causal effect of the treatment.</p>
+<p><strong>How can we use it?</strong> Recognizing the presence of time-varying confounding requires careful consideration of the causal relationships between treatment, confounders, and outcome <em>over time</em>. This understanding then informs the selection of appropriate causal inference methods designed to handle this type of confounding. Methods like g-computation, inverse probability of treatment weighting (IPTW) using marginal structural models, and targeted maximum likelihood estimation (TMLE) are commonly employed. These methods aim to estimate the counterfactual outcome under different treatment regimes by correctly accounting for the dynamic nature of the confounders and the treatments. Essentially, they aim to simulate what would have happened if everyone had followed a specific treatment plan.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a study investigating the effect of a specific exercise program (A) on weight loss (Y) over a year (52 weeks, indexed by <em>t</em>).</p>
+<ul>
+<li><strong>Time-Varying Treatment (A<sub>t</sub>):</strong> Whether or not a participant participates in the exercise program in a given week. This could be binary (yes/no) or a measure of intensity (e.g., hours per week).</li>
+<li><strong>Time-Varying Confounding (L<sub>t</sub>):</strong> An individual's diet in a given week, their stress level, their baseline fitness level, and their motivation level.  These factors are all known to influence both participation in the exercise program and weight loss.  Crucially, participation in the exercise program in <em>previous</em> weeks (A<sub>t-1</sub>) can <em>affect</em> a participant's diet and motivation in <em>subsequent</em> weeks (L<sub>t</sub>). For example, someone who regularly exercises might be more motivated to eat healthily (diet and motivation are part of L<sub>t</sub>).</li>
+<li><strong>Outcome (Y):</strong> Weight loss at the end of the year.</li>
+</ul>
+<p>If we simply regress weight loss on participation in the exercise program, we will likely get a biased estimate of the true effect. This is because we are not accounting for the fact that previous exercise can affect diet and motivation, which in turn affect weight loss. Adjusting for diet and motivation <em>without</em> accounting for their dependence on past exercise would block an important causal pathway through which exercise affects weight loss. G-computation, IPTW, or TMLE would be more appropriate here to estimate the effect of different exercise strategies (e.g., exercising every week vs. not exercising at all) on weight loss.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single "one-size-fits-all" Python function to solve this, libraries like <code>dowhy</code>, <code>statsmodels</code>, and <code>linearmodels</code> can be used in conjunction with custom code to implement methods like g-computation or IPTW for time-varying treatments and confounders.</p>
+<p>Here's a basic example illustrating IPTW using <code>statsmodels</code> and conceptualized as a function:</p>
+<pre class="codehilite"><code class="language-python">import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import pandas as pd
+
+def iptw_estimation(df, treatment_col, confounders_cols):
+    &quot;&quot;&quot;
+    Estimates the average treatment effect using inverse probability of treatment weighting (IPTW)
+    for time-varying treatments and confounders. This is a simplified conceptual illustration.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing treatment, confounders, and outcome data.  Needs columns:
+                         'id' (unique identifier for each individual),
+                         'time' (time period),
+                         treatment_col (treatment variable name),
+                         confounders_cols (list of confounder variable names),
+                         'outcome' (outcome variable name)
+        treatment_col (str): Name of the column representing the treatment variable.
+        confounders_cols (list): List of column names representing the confounder variables.
+
+    Returns:
+        float: Estimated average treatment effect.  Returns None if the model fails to converge.
+    &quot;&quot;&quot;
+
+    # 1. Estimate propensity scores for each time point
+    df['propensity_score'] = None # initialize
+    for t in df['time'].unique():
+        data_t = df[df['time'] == t]
+        try: # needed because propensity scores can be 0 or 1
+            formula = f&quot;{treatment_col} ~ &quot; + &quot; + &quot;.join(confounders_cols)
+            model = smf.glm(formula=formula, data=data_t, family=sm.families.Binomial()).fit()
+            df.loc[df['time'] == t, 'propensity_score'] = model.predict(data_t)
+        except:
+            print(f&quot;Propensity score model failed to converge for time {t}.  Returning None.&quot;)
+            return None
+
+
+    # 2. Calculate weights
+    # Note: This is a simplified example and requires handling of 0 or 1 propensity scores.
+    # Proper handling often involves trimming or using a stabilized weight.
+    df['weight'] = 1.0
+    for t in df['time'].unique():
+        df.loc[df['time'] == t, 'weight'] = df.loc[df['time'] == t, 'weight'] / df.loc[df['time'] == t, 'propensity_score']
+
+    # 3. Estimate the treatment effect using weighted regression
+    try:
+        weighted_model = smf.wls(formula=f&quot;outcome ~ {treatment_col}&quot;, data=df, weights=df['weight']).fit()
+        treatment_effect = weighted_model.params[treatment_col]
+        return treatment_effect
+    except:
+        print(&quot;Weighted regression model failed to converge. Returning None.&quot;)
+        return None
+
+# Example Usage (Illustrative)
+
+# Create some dummy data
+data = {'id': [1, 1, 2, 2],
+        'time': [1, 2, 1, 2],
+        'treatment': [0, 1, 1, 0],
+        'confounder1': [1, 2, 3, 4],
+        'confounder2': [5, 6, 7, 8],
+        'outcome': [2, 4, 6, 8]}
+df = pd.DataFrame(data)
+df['outcome'] = df['outcome'] + df['treatment'] # Treatment effect
+
+treatment_column = 'treatment'
+confounder_columns = ['confounder1', 'confounder2']
+
+ate = iptw_estimation(df.copy(), treatment_column, confounder_columns)  #use copy to not change dataframe in place
+
+if ate is not None:
+    print(f&quot;Estimated Average Treatment Effect (ATE): {ate}&quot;)
+else:
+    print(&quot;IPTW estimation failed.&quot;)
+</code></pre>
+
+<p><strong>Important Considerations for IPTW (and why this is a simplified illustration):</strong></p>
+<ul>
+<li><strong>Positivity/Overlap:</strong> IPTW requires the <em>positivity</em> assumption to hold: that there is a non-zero probability of receiving each treatment value at each time point, <em>conditional on the confounders</em>. If propensity scores are too close to 0 or 1, the weights become extremely large and the variance of the estimate explodes. Solutions include trimming weights or using stabilized weights.</li>
+<li><strong>Stabilized Weights:</strong> Stabilized weights can improve the stability of the IPTW estimator. They involve estimating a numerator for the weight that reflects the marginal probability of treatment.</li>
+<li><strong>Model Misspecification:</strong> The IPTW estimator is sensitive to misspecification of the propensity score model. Diagnostics and sensitivity analyses are crucial.</li>
+<li><strong>Zero Propensity Scores:</strong> If any individual has a propensity score of exactly 0, the weight becomes infinite.  Solutions include trimming (setting a maximum weight) or using stabilized weights with truncation.</li>
+</ul>
+<p>This code provides a starting point for understanding how IPTW can be implemented. It is highly recommended to consult more comprehensive resources and libraries dedicated to causal inference for robust and reliable analyses. Libraries like <code>causalml</code> might also provide helpful tools. The <code>statsmodels</code> library is used here to perform the regression tasks that are the core of the algorithm. The general approach is to first use logistic regression (<code>smf.glm</code>) to calculate the propensity scores, then an ordinary least squares regression (<code>smf.wls</code>) weighted by the previously calculated propensity scores to get an estimate of the ATE.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that g-computation, IPTW, and TMLE are all methods for handling time-varying treatments and confounders, what are the key advantages and disadvantages of each, and how would you choose the most appropriate method for a given research question and dataset?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
