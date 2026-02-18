@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integer Recourse Challenges: nonconvexity, cut strengthening, and heuristics</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-integer-recourse-challenges-nonconvexity-cut-strengthening-and-heuristics">Topic: Integer Recourse Challenges: nonconvexity, cut strengthening, and heuristics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Integer recourse challenges arise in stochastic programming problems where some decision variables in the <em>recourse</em> or <em>second-stage</em> problem are required to be integers.  Let's break down the components:</p>
+<ul>
+<li>
+<p><strong>Stochastic Programming:</strong> Deals with optimization problems where some parameters are uncertain (random variables).  We often model uncertainty using scenarios, each with an associated probability.</p>
+</li>
+<li>
+<p><strong>Recourse/Second-Stage Problem:</strong> After observing the realization of the random variables (i.e., which scenario occurred), we can take corrective actions (recourse) to mitigate the impact of the uncertainty. These corrective actions are represented by the second-stage decision variables. The first stage decision is made <em>before</em> knowing the realization of the random variable, the second stage decision is made <em>after</em>.</p>
+</li>
+<li>
+<p><strong>Integer Recourse:</strong>  This means that at least some of the second-stage (recourse) decision variables must take integer values (0, 1, 2, ...). This is common in situations where you're deciding on the number of items to produce, the number of facilities to open, the number of vehicles to dispatch, etc.</p>
+</li>
+</ul>
+<p><strong>Challenges and Nonconvexity:</strong></p>
+<p>The integer constraints in the recourse problem introduce significant challenges compared to continuous recourse. The main issue is <strong>nonconvexity</strong>. When the second-stage problem is an integer program, the resulting objective function (after integrating over all possible scenarios) becomes a piecewise linear, non-convex function.  This makes the overall problem significantly harder to solve.</p>
+<p><strong>Cut Strengthening:</strong></p>
+<p>Cut strengthening techniques aim to improve the linear programming (LP) relaxation of the problem. This is important because many solution algorithms rely on solving LP relaxations. By adding valid inequalities ("cuts") that tighten the LP relaxation without cutting off any integer solutions, we can obtain a better approximation of the feasible region and speed up the solution process.</p>
+<p><strong>Heuristics:</strong></p>
+<p>Due to the complexity of solving integer recourse problems exactly, especially for large instances, heuristic methods are often employed. Heuristics provide good, but not necessarily optimal, solutions within a reasonable amount of time. Examples include:</p>
+<ul>
+<li><strong>Relax-and-Fix:</strong>  Iteratively fix subsets of integer variables to their values in the LP relaxation, solve the resulting smaller problem, and repeat.</li>
+<li><strong>Local Search:</strong> Starting from a feasible solution, explore the neighborhood of that solution by making small changes (e.g., flipping the value of one integer variable).</li>
+<li><strong>Decomposition-based Heuristics:</strong> Decompose the problem into smaller subproblems that are easier to solve and iteratively coordinate the solutions.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Understanding these concepts is crucial for modeling and solving realistic stochastic programming problems where integer decisions are necessary in the recourse phase. By recognizing the challenges, we can choose appropriate solution techniques and potentially develop customized algorithms tailored to the specific problem structure. Cut strengthening helps reduce the integrality gap, while heuristics offer practical solutions for large-scale problems.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Supply Chain Disruptions with Facility Location Decisions:</strong></p>
+<p>Imagine a company that needs to decide where to locate distribution centers (DCs) to serve its customers. Demand is uncertain due to potential market fluctuations and supply chain disruptions.  Let's say a natural disaster could damage one or more of the DCs.</p>
+<ul>
+<li>
+<p><strong>First-stage Decision:</strong>  The company must choose which DCs to open <em>before</em> knowing whether a disaster will occur. These are binary decisions (0 = don't open, 1 = open).</p>
+</li>
+<li>
+<p><strong>Uncertainty:</strong>  The location and severity of the natural disaster are uncertain. Each scenario represents a different disaster scenario (e.g., earthquake in region A, flood in region B, no disaster).</p>
+</li>
+<li>
+<p><strong>Second-stage (Recourse) Decisions:</strong>  <em>After</em> a disaster occurs, the company can decide how much to ship from each open DC to each customer to meet demand.  A crucial aspect is that the company may need to <strong>open additional temporary DCs</strong> (e.g., mobile units) to compensate for the damaged facilities. These decisions of <em>how many</em> temporary facilities to open at given locations are <em>integer</em> recourse variables. These decisions are made <em>after</em> we know which scenario happened (the disaster).</p>
+</li>
+</ul>
+<p><strong>Challenges:</strong></p>
+<ul>
+<li>The integer constraint on the number of temporary DCs leads to a nonconvex problem.</li>
+<li>Solving this problem exactly can be computationally expensive, especially with many potential disaster scenarios and DC locations.</li>
+</ul>
+<p><strong>Solution Approaches:</strong></p>
+<ul>
+<li>Cut strengthening could be used to add valid inequalities that exploit the structure of the supply chain network and the integer recourse decisions.</li>
+<li>A heuristic could be developed that combines a sampling approach (to handle the uncertainty) with a local search algorithm to improve the DC location and shipment decisions.</li>
+<li>Relax-and-fix could be used by fixing facility locations, solving the recourse subproblem and iterating to find good location assignments.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a full solution requires a Mixed Integer Programming (MIP) solver and is too complex to implement here in full, I can demonstrate using <code>pyomo</code> how to model a simple two-stage stochastic program with integer recourse and introduce a cut:</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+def create_model(num_scenarios):
+    model = pyo.ConcreteModel()
+
+    # Scenario probabilities (uniform for simplicity)
+    model.Scenarios = range(num_scenarios)
+    model.prob = {s: 1/num_scenarios for s in model.Scenarios}
+
+    # First-stage variable (binary - open/close facility)
+    model.x = pyo.Var(within=pyo.Binary)
+
+    # Second-stage variables (integer - units to ship)
+    model.y = pyo.Var(model.Scenarios, within=pyo.NonNegativeIntegers) # Integer Recourse
+
+    # Parameters (for simplicity, fixed)
+    model.demand = 10
+    model.capacity = 5
+
+    # Objective function (minimize cost)
+    def obj_rule(model):
+        return model.x + sum(model.prob[s] * model.y[s] for s in model.Scenarios)
+    model.obj = pyo.Objective(rule=obj_rule, sense=pyo.MINIMIZE)
+
+    # Constraints
+
+    # First-stage capacity constraint (simplified)
+    def cap_rule(model):
+        return model.x * model.capacity &gt;= model.demand/2  # Open facility can supply at least half of demand
+    model.capacity_con = pyo.Constraint(rule=cap_rule)
+
+
+    # Second-stage constraints (scenario-dependent)
+    def demand_rule(model, s):
+        # y[s] represents how many units are met in scenario s
+        # This allows for unsatisfied demand
+        return model.y[s] &lt;= model.demand
+    model.demand_con = pyo.Constraint(model.Scenarios, rule=demand_rule)
+
+    def supply_rule(model, s):
+        # In each scenario, the production cannot exceed facility capacity if open,
+        #  + any additional supply if the facility is not open
+        return model.y[s] &lt;= model.x * model.capacity + (1-model.x) * 10
+    model.supply_con = pyo.Constraint(model.Scenarios, rule=supply_rule)
+
+    # **Cut Strengthening Example:**  Add a valid inequality
+    # This cut says that on average, the amount supplied in the second stage
+    #  should at least cover a portion of the demand
+    def cut_rule(model):
+        return sum(model.prob[s] * model.y[s] for s in model.Scenarios) &gt;= model.demand * 0.4 # Require 40% average demand coverage
+    model.cut = pyo.Constraint(rule=cut_rule)
+
+    return model
+
+# Example Usage:
+num_scenarios = 5
+model = create_model(num_scenarios)
+
+# Solve the model using a MIP solver (e.g., Gurobi, CPLEX)
+solver = pyo.SolverFactory('gurobi')  # Replace with your solver
+results = solver.solve(model)
+
+# Print results
+if results.solver.termination_condition == pyo.TerminationCondition.optimal:
+    print(&quot;Optimal Solution Found&quot;)
+    print(f&quot;First-stage decision (x): {pyo.value(model.x)}&quot;)
+    for s in model.Scenarios:
+        print(f&quot;Second-stage decision (y[{s}]): {pyo.value(model.y[s])}&quot;)
+    print(f&quot;Objective value: {pyo.value(model.obj)}&quot;)
+else:
+    print(&quot;Solver did not find an optimal solution&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Model Definition:</strong> The <code>create_model</code> function defines the stochastic program using <code>pyomo</code>. <code>model.x</code> is the first-stage binary decision, and <code>model.y</code> are the second-stage <em>integer</em> decisions.</li>
+<li><strong>Scenarios:</strong> The model incorporates multiple scenarios, each with an equal probability.</li>
+<li><strong>Objective Function:</strong> The objective is to minimize the sum of the first-stage cost and the expected second-stage cost (using scenario probabilities).</li>
+<li><strong>Constraints:</strong> The model includes capacity constraints for the first-stage decision and scenario-dependent constraints for the second-stage decisions.</li>
+<li><strong>Cut Strengthening:</strong> A cut is added to improve the LP relaxation.  This particular cut requires that, on average across scenarios, the total supply must cover a fraction of the total demand. This is a simplified example of a cut.  More sophisticated cuts can be derived using techniques from integer programming.</li>
+<li><strong>Solving:</strong> The example uses <code>gurobi</code> as the solver (you'll need to have it installed and configured correctly). You can replace it with another MIP solver like <code>cplex</code>.</li>
+<li><strong>Results:</strong> The code prints the values of the first-stage and second-stage variables, as well as the optimal objective value.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a <em>very</em> simplified example.  Real-world stochastic programs can be much more complex, with many more variables, scenarios, and constraints.</li>
+<li>The effectiveness of cut strengthening depends heavily on the specific problem structure. Finding good cuts can be challenging and may require domain expertise.</li>
+<li>Heuristics are often necessary for large-scale instances that cannot be solved to optimality within a reasonable time.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of scenario generation technique (e.g., Monte Carlo sampling, scenario trees, moment-based approaches) affect the computational complexity and solution quality when dealing with integer recourse problems in stochastic programming? Furthermore, how can we adapt cut generation and heuristic techniques to leverage specific properties of the chosen scenario generation method?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
