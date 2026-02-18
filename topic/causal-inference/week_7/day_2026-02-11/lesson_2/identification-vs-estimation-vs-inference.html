@@ -107,14 +107,33 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content" tabindex="-1">
 
 
 <h1 id="topic-identification-vs-estimation-vs-inference">Topic: Identification vs Estimation vs Inference</h1>
@@ -210,6 +229,7 @@ print(refute_results)
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do different causal identification assumptions impact the choice of estimation methods and the validity of causal inference? For example, how would using a different causal structure (e.g., including instrumental variables or mediators) change the estimation strategy?</p>
 
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
