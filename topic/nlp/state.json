@@ -1,5 +1,5 @@
 {
-  "next_index": 36,
+  "next_index": 37,
   "total_topics": 100,
-  "last_topic": "Document Embeddings (Doc2Vec)"
+  "last_topic": "Visualizing Embeddings (t-SNE, PCA)"
 }
