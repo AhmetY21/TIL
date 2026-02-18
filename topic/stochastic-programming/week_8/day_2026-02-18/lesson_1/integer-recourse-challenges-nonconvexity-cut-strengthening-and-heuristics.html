@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integer Recourse Challenges: nonconvexity, cut strengthening, and heuristics</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-integer-recourse-challenges-nonconvexity-cut-strengthening-and-heuristics">Topic: Integer Recourse Challenges: nonconvexity, cut strengthening, and heuristics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In Stochastic Programming, <em>integer recourse</em> refers to a situation where, after observing the realization of a random event (the "first stage"), we must make <em>integer</em> decisions (the "second stage" or "recourse").  This is in contrast to continuous recourse, where we can adjust our decisions continuously in response to the observed random event.  The "challenges" in the title stem from the combination of uncertainty (stochastic programming) and integer variables, which leads to significant computational difficulties.</p>
+<p>More formally, consider a two-stage stochastic program:</p>
+<p>min  c'x + E[Q(x, ξ)]
+s.t. Ax = b
+x ∈ X</p>
+<p>where:</p>
+<ul>
+<li>x is the first-stage decision vector (often continuous, but can be integer).</li>
+<li>c'x represents the cost associated with the first-stage decision.</li>
+<li>ξ is a random variable representing the uncertain parameters (e.g., demand, prices).</li>
+<li>Q(x, ξ) is the recourse function:  Q(x, ξ) = min q'y s.t. Wy = h - Tx, y ∈ Y, y ∈ Z^n<ul>
+<li>y is the second-stage (recourse) decision vector (integer).</li>
+<li>q'y is the cost associated with the second-stage decision.</li>
+<li>Wy = h - Tx represents the constraints that must be satisfied given the first-stage decision x and the realization of the random variable ξ.  Here, W, T, and h are often functions of ξ.</li>
+<li>Y defines the feasible region for y.</li>
+<li>Z^n denotes that y must be integer-valued.</li>
+</ul>
+</li>
+<li>E[Q(x, ξ)] is the expected value of the recourse function over the distribution of the random variable ξ.</li>
+<li>A, b define the constraints on the first-stage decision.</li>
+<li>X defines the feasible region for x (can be continuous or integer).</li>
+</ul>
+<p><strong>Challenges and Key Concepts:</strong></p>
+<ul>
+<li><strong>Nonconvexity:</strong>  The expected recourse function E[Q(x, ξ)] is often <em>nonconvex</em> even if Q(x, ξ) is convex <em>for a fixed</em> ξ. The expected value operation mixes scenarios leading to non-convexities. This makes the overall optimization problem much harder to solve because local optima can trap standard optimization algorithms.</li>
+<li><strong>Cut Strengthening:</strong> Traditional cutting plane methods designed for integer linear programming often perform poorly in the context of stochastic programming with integer recourse. Cut strengthening techniques are employed to generate stronger cuts (valid inequalities) that more effectively prune the feasible region and improve convergence. These cuts exploit the specific structure of the stochastic programming problem. Examples include:<ul>
+<li><em>L-shaped cuts</em> (also known as Benders decomposition cuts). These cuts decompose the problem into a master problem (first stage) and subproblems (second stage) and generate constraints based on the dual solutions of the subproblems.  Strengthening involves improving these cuts.</li>
+<li><em>Mixed-integer Gomory cuts</em> and other generic mixed-integer programming cuts can be adapted and strengthened to account for the expected value function.</li>
+</ul>
+</li>
+<li><strong>Heuristics:</strong> Due to the computational complexity of solving these problems exactly, heuristic algorithms are frequently used to find good, but not necessarily optimal, solutions.  These heuristics often combine decomposition methods (e.g., Benders decomposition) with local search techniques or metaheuristics (e.g., genetic algorithms, simulated annealing). They also may take advantage of specific problem structure.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Understanding these concepts is crucial for modeling and solving real-world problems that involve making decisions under uncertainty when some of the decisions must be integer-valued. Integer recourse problems arise in numerous applications. The techniques address the computational challenges.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Supply Chain Network Design Under Demand Uncertainty:</strong></p>
+<p>Consider a company designing its supply chain network.  The company must decide where to locate warehouses (first-stage integer decisions).  After observing the actual demand in different regions (the random event), the company must decide how much product to ship from each warehouse to each customer (second-stage integer decisions - you can't ship fractions of products).</p>
+<ul>
+<li><strong>First-stage decision (x):</strong> Binary variables representing whether to open a warehouse at a specific location.  Opening a warehouse incurs a fixed cost (c'x).</li>
+<li><strong>Random variable (ξ):</strong> The uncertain demand at each customer location.  This could be represented by a probability distribution.</li>
+<li><strong>Second-stage decision (y):</strong> Integer variables representing the amount of product shipped from each open warehouse to each customer.</li>
+<li><strong>Recourse function (Q(x, ξ)):</strong> The minimum transportation cost required to satisfy the demand, given the warehouse locations and the observed demand.  Constraints include warehouse capacity, customer demand satisfaction, and non-negativity of shipments (Wy = h - Tx).</li>
+<li><strong>Overall objective:</strong> Minimize the total cost, including the fixed costs of opening warehouses and the expected transportation costs under demand uncertainty.</li>
+</ul>
+<p><strong>Challenges:</strong></p>
+<ul>
+<li>The non-convexity of E[Q(x, ξ)] makes it difficult to find the optimal warehouse locations.</li>
+<li>Finding integer shipping quantities in the second stage can be computationally expensive, especially with a large number of warehouses and customers.</li>
+<li>Standard optimization algorithms may get stuck in local optima, leading to poor solutions.</li>
+</ul>
+<p><strong>Solution approaches:</strong></p>
+<ul>
+<li>Use cut-strengthening techniques, like generating improved L-shaped cuts based on the transportation problem to prune suboptimal warehouse locations.</li>
+<li>Employ heuristic algorithms, such as genetic algorithms or simulated annealing, to explore the solution space and find good warehouse locations. These heuristics can incorporate Benders decomposition to evaluate the recourse costs associated with each candidate warehouse configuration.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While solving large-scale integer recourse problems often requires specialized solvers and modeling languages (e.g., GAMS, AMPL), we can illustrate a simplified version using Pyomo (a Python-based optimization modeling language) with a MILP solver like GLPK, CBC, or Gurobi/CPLEX. This example will be highly simplified, but it will demonstrate the basic structure.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+def create_model(num_scenarios=2, demand_mean=10, demand_std=2):
+    &quot;&quot;&quot;Creates a Pyomo model for a simplified two-stage stochastic program.
+       Assumes a single first-stage integer decision and a single second-stage integer decision.
+    &quot;&quot;&quot;
+    model = ConcreteModel()
+
+    # Parameters
+    model.num_scenarios = num_scenarios
+    np.random.seed(42)
+    model.scenarios = list(range(num_scenarios))
+    model.demand = {s: max(0, int(np.random.normal(demand_mean, demand_std))) for s in model.scenarios} # Non-negative demand
+
+    # First-stage decision (integer): Whether to build a factory (0 or 1)
+    model.build_factory = Var(domain=Binary)
+    factory_cost = 5
+
+    # Second-stage decision (integer): Production quantity for each scenario
+    model.production = Var(model.scenarios, domain=NonNegativeIntegers)
+    production_cost = 1
+
+    # Objective function
+    def objective_rule(model):
+        first_stage_cost = factory_cost * model.build_factory
+        expected_second_stage_cost = sum(production_cost * model.production[s] for s in model.scenarios) / model.num_scenarios
+        return first_stage_cost + expected_second_stage_cost
+
+    model.objective = Objective(rule=objective_rule, sense=minimize)
+
+    # Constraints
+
+    # Production must be at least demand for each scenario if factory is built
+    def production_rule(model, s):
+        if model.build_factory.value is None or model.build_factory.value == 0: #Need build_factory to be set to 1 or 0 for constraint to be activated
+            return Constraint.Skip
+        else:
+            return model.production[s] &gt;= model.demand[s] #Produce at least demand
+
+    model.production_constraint = Constraint(model.scenarios, rule=production_rule)
+
+
+    # If not building the factory then production is 0
+    def no_factory_no_production(model,s):
+        return model.production[s] &lt;= 100 * model.build_factory # Big M constraint.  If factory not built, production is 0
+    model.no_factory = Constraint(model.scenarios, rule=no_factory_no_production)
+    return model
+
+# Example usage:
+model = create_model()
+solver = SolverFactory('glpk')  # Or 'cbc', 'gurobi', 'cplex' if you have them installed
+# We can't use production_rule directly without fixing model.build_factory. This will be done in the solver
+#model.production_constraint = Constraint(model.scenarios, rule=production_rule)
+solver.solve(model)
+
+print(f&quot;Build Factory: {model.build_factory.value}&quot;)
+for s in model.scenarios:
+    print(f&quot;Scenario {s}: Production = {model.production[s].value}, Demand = {model.demand[s]}&quot;)
+print(f&quot;Objective Value: {model.objective()}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>create_model()</code>:</strong> Defines the Pyomo model.</p>
+<ul>
+<li><code>model.build_factory</code>:  A binary variable indicating whether to build a factory.</li>
+<li><code>model.production[s]</code>:  An integer variable representing the production quantity in scenario <code>s</code>.</li>
+<li><code>model.demand[s]</code>:  The demand in scenario <code>s</code>.</li>
+<li><code>objective_rule()</code>: Defines the objective function (factory cost + expected production cost).</li>
+<li><code>production_rule()</code>: Ensures that production meets demand in each scenario IF the factory is built. Note that we needed to evaluate the build_factory.value to either activate or skip this constraint</li>
+<li><code>no_factory_no_production()</code>:  A constraint that forces the production to zero if the factory is not built. A Big-M constraint ensures production = 0 when build_factory = 0.</li>
+</ul>
+</li>
+<li>
+<p><strong>Solving the model:</strong></p>
+<ul>
+<li>We use <code>SolverFactory()</code> to create a solver instance (GLPK in this example).  You may need to install GLPK (e.g., <code>apt-get install glpk</code> on Debian/Ubuntu).</li>
+<li><code>solver.solve(model)</code> solves the optimization problem.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Limitations:</strong></p>
+<ul>
+<li><strong>Simplified Example:</strong> This is a very basic illustration.  Real-world problems are much more complex, with many more decision variables, constraints, and scenarios.</li>
+<li><strong>No Cut Strengthening or Advanced Heuristics:</strong> This code doesn't implement any cut strengthening techniques or advanced heuristics.  Developing these requires more sophisticated modeling and solver control.</li>
+<li><strong>Small Instance:</strong> The computational demands increase rapidly as the problem size grows. GLPK will not be appropriate for large-scale instances. Use more powerful solvers.</li>
+<li><strong>Scaling:</strong> For large problems, consider commercial solvers like Gurobi or CPLEX, which have significantly better performance for mixed-integer programming problems, and consider decomposition algorithms and specialized cut generation.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some practical strategies for generating strong L-shaped cuts in stochastic programming with integer recourse, beyond simply using the dual variables from the subproblem solution? How can we leverage problem-specific information to improve the effectiveness of these cuts?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
