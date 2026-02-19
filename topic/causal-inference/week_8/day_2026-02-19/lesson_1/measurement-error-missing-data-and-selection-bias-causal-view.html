@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Measurement Error, Missing Data, and Selection Bias (Causal View)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-measurement-error-missing-data-and-selection-bias-causal-view">Topic: Measurement Error, Missing Data, and Selection Bias (Causal View)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In causal inference, understanding and addressing measurement error, missing data, and selection bias is crucial for obtaining accurate estimates of causal effects. The causal view emphasizes that these issues should be analyzed within a causal framework, often leveraging causal diagrams (Directed Acyclic Graphs - DAGs) to represent relationships between variables.</p>
+<p><strong>Measurement Error:</strong> This occurs when the observed value of a variable differs from its true value. It can be random or systematic (biased). In a causal framework, we consider how measurement error affects the identification and estimation of causal effects.  The key idea is that measurement error acts as a type of "noise" that can attenuate or distort the estimated effect.  If the error is correlated with other variables in the DAG (e.g., the true value of the measured variable, the treatment, or the outcome), it can create spurious associations and bias causal estimates. Representing measurement error in the DAG is important; we would typically have a node representing the <em>true</em> variable and another node representing the <em>measured</em> variable, with an arrow from the true variable to the measured variable.</p>
+<p><strong>Missing Data:</strong> Data is missing when we do not observe values for certain variables for some individuals. The crucial distinction lies in <em>why</em> the data is missing. Rubin's classification distinguishes between:</p>
+<ul>
+<li><strong>Missing Completely at Random (MCAR):</strong> The probability of missingness is unrelated to any observed or unobserved variables. This is the simplest case.</li>
+<li><strong>Missing at Random (MAR):</strong> The probability of missingness depends only on observed variables. We can condition on these observed variables to correct for the missingness.</li>
+<li><strong>Missing Not at Random (MNAR):</strong> The probability of missingness depends on the unobserved value of the variable that is missing <em>itself</em>. This is the most challenging case because we cannot directly observe the factors influencing missingness.  Causal diagrams help visualize if missingness induces dependence between variables that would otherwise be independent.</li>
+</ul>
+<p>Representing missingness in a DAG can be achieved by introducing a missingness indicator variable (e.g.,  <code>R_Y = 1</code> if Y is missing, 0 otherwise). The arrows into <code>R_Y</code> then indicate the variables influencing the missingness.</p>
+<p><strong>Selection Bias:</strong> This occurs when the sample we analyze is not representative of the population to which we want to generalize our causal findings. Selection bias arises when the process of selecting individuals into the sample is related to both the treatment and the outcome.  This induces a spurious association between the treatment and outcome in the observed sample. Selection bias is represented in a DAG by a collider node (often a selection indicator, <code>S=1</code> if selected, <code>S=0</code> otherwise) that has arrows pointing into it from both the treatment and the outcome (or variables that influence them). Conditioning on this collider induces a relationship between the treatment and the outcome even if they are causally independent in the overall population.</p>
+<p><strong>How can we use it?</strong>
+By representing these issues within a causal framework (using DAGs), we can:</p>
+<ul>
+<li>Identify potential sources of bias.</li>
+<li>Determine what variables need to be adjusted for (e.g., via covariate adjustment, inverse probability weighting, or instrumental variables) to obtain unbiased causal estimates.</li>
+<li>Assess the plausibility of different assumptions about the missing data mechanism (MAR vs. MNAR).</li>
+<li>Conduct sensitivity analyses to assess how robust our conclusions are to different assumptions about the magnitude and nature of measurement error or the MNAR mechanism.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario: Effect of a Job Training Program on Earnings, with Measurement Error, Missing Data, and Selection Bias</strong></p>
+<p>Let's say we are evaluating the impact of a job training program (Treatment, T) on subsequent earnings (Outcome, Y).</p>
+<ul>
+<li>
+<p><strong>Measurement Error:</strong> Earnings (Y) are self-reported and may be subject to measurement error due to recall bias or strategic misreporting.  Let's say there's an underlying "true" earning Y<em>, but we observe Y = Y</em> + error. This error could be correlated with pre-training income (Z).</p>
+</li>
+<li>
+<p><strong>Missing Data:</strong> Some individuals drop out of the study before earnings are measured (missing Y). Suppose individuals with lower motivation (U - an unobserved confounder) are more likely to drop out and also less likely to have high earnings, <em>even if</em> they completed the training.  This is an example of MNAR since the missingness is related to the unobserved value of Y <em>and</em> a confounder.</p>
+</li>
+<li>
+<p><strong>Selection Bias:</strong> Participation in the job training program (T) is not random. Individuals are <em>selected</em> into the program (S=1) based on their skills and unemployment status (Z, observed).  Skills and unemployment status also affect their potential earnings. Therefore, conditioning on being in the <em>selected</em> sample (S=1) induces a relationship between T and Y.</p>
+</li>
+</ul>
+<p>In this scenario, we need to consider the following:</p>
+<ol>
+<li>
+<p><strong>Measurement Error:</strong>  We might try to use an instrumental variable for true earnings (Y*) if one is available.  Alternatively, sensitivity analysis can be used to assess how different levels of measurement error might bias the results.</p>
+</li>
+<li>
+<p><strong>Missing Data:</strong>  We might attempt to use inverse probability weighting (IPW) to correct for missing data if we believe the data are MAR. This requires modeling the probability of observing earnings as a function of observed covariates (Z, T) and weighting the observed data by the inverse of that probability.  If we suspect MNAR, we need more sophisticated methods or sensitivity analysis under different MNAR assumptions.</p>
+</li>
+<li>
+<p><strong>Selection Bias:</strong>  We need to carefully control for variables that influence both selection into the program and earnings (Z).  This could involve covariate adjustment, propensity score methods, or other techniques to address confounding.</p>
+</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.utils import resample
+import statsmodels.api as sm
+
+# Simulate data
+np.random.seed(42)
+n = 1000
+Z = np.random.normal(0, 1, n)  # Observed confounder (skills, unemployment status)
+U = np.random.normal(0, 1, n)  # Unobserved confounder (motivation)
+T_prob = 1 / (1 + np.exp(-Z + 0.5*U)) # Probability of treatment assignment
+T = np.random.binomial(1, T_prob, n)  # Treatment (job training)
+Y_star = 2 + 1*T + 0.5*Z + 0.8*U + np.random.normal(0, 1, n)  # True earnings
+error = np.random.normal(0, 0.5, n) # Measurement error
+Y = Y_star + error # Measured earnings
+
+# Simulate missing data (MNAR)
+missing_prob = 1 / (1 + np.exp(-0.5*U + 0.2*Y_star)) # Probability of missingness depends on U and Y_star
+R_Y = np.random.binomial(1, missing_prob, n) # Missingness indicator
+Y[R_Y == 1] = np.nan
+
+# Simulate selection bias
+select_prob = 1 / (1 + np.exp(-1 + T + 0.5*Z)) # Probability of being selected based on T and Z
+S = np.random.binomial(1, select_prob, n) # Selection indicator
+T_obs = T[S == 1] # Treatement for the selected population
+Y_obs = Y[S == 1] # Earnings for the selected population
+Z_obs = Z[S == 1] # Skills for the selected population
+
+# Create DataFrame
+df = pd.DataFrame({'T': T, 'Y': Y, 'Z': Z, 'U': U, 'Y_star': Y_star, 'R_Y': R_Y, 'S':S})
+df_obs = pd.DataFrame({'T': T_obs, 'Y': Y_obs, 'Z': Z_obs})
+
+# Naive estimate (ignoring measurement error, missing data, and selection bias)
+model_naive = LinearRegression()
+model_naive.fit(df_obs[['T']], df_obs['Y'].fillna(df_obs['Y'].mean()))
+print(&quot;Naive estimate (selected population, missing data imputed with mean):&quot;, model_naive.coef_[0])
+
+# Estimate with IPW for missing data
+df_complete = df.dropna(subset=['Y'])
+X = df_complete[['T', 'Z']]
+y = df_complete['R_Y']
+
+# Fit logistic regression model for propensity to not be missing
+missing_model = LogisticRegression()
+missing_model.fit(X, 1-y)
+
+# Predicted probabilities
+propensity_scores = missing_model.predict_proba(df[['T', 'Z']])[:, 1]
+df['ipw'] = 1 / propensity_scores
+
+# Estimate using IPW
+model_ipw = sm.WLS(df['Y'], sm.add_constant(df['T']), weights=df['ipw'], missing='drop').fit()
+print(&quot;IPW estimate (missing data addressed, but selected population):&quot;, model_ipw.params['T'])
+
+# Estimate using covariate adjustment to partially address selection bias in the IPW population
+model_ca = sm.OLS(df_complete['Y'], sm.add_constant(df_complete[['T', 'Z']]), missing='drop').fit()
+print(&quot;Covariate Adjustment Estimate with IPW in the non-missing population:&quot;, model_ca.params['T'])
+
+# Note that we would need to either simulate from the true underlying distribution
+# after addressing selection and/or use an instrument to remove the effect
+# of measurement error to obtain a more accurate effect estimate.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>
+<p><strong>Data Simulation:</strong>  The code simulates a dataset with treatment, outcome, confounders (observed and unobserved), measurement error, missing data, and selection.  The relationships between variables are defined according to the scenario described above.</p>
+</li>
+<li>
+<p><strong>Naive Estimate:</strong>  This simply regresses the (observed, incomplete) earnings on the treatment, ignoring all the potential biases.  The missing data are filled with the mean, which can introduce bias. It's also done on the selected population.</p>
+</li>
+<li>
+<p><strong>IPW:</strong> Inverse Probability Weighting is used to address the missing data, assuming MAR (conditional on T and Z).  A logistic regression model is fit to predict the probability of <em>not</em> being missing, and weights are calculated as the inverse of these probabilities.  A weighted least squares regression is then used to estimate the treatment effect.  However, the analysis is still performed on the <em>selected</em> population.</p>
+</li>
+<li>
+<p><strong>Covariate Adjustment:</strong> We implement covariate adjustment for Z in the IPW weighted regression. This can reduce bias associated with the selection.</p>
+</li>
+<li>
+<p><strong>Limitations:</strong> This is a simplified illustration. Addressing MNAR and measurement error fully requires more sophisticated techniques or stronger assumptions.</p>
+</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given the Python code provided, how could sensitivity analysis be used to assess the potential impact of <em>unobserved</em> confounding (U) on the estimated causal effect of the job training program, especially when the missingness mechanism is suspected to be MNAR, given we have a model for IPW? Specifically, outline the steps required to conduct a sensitivity analysis to assess how different correlations between U and the missingness indicator R_Y, and U and the outcome Y_star, might affect the IPW adjusted estimate.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
