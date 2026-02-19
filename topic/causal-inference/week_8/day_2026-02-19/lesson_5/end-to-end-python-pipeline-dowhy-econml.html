@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>End-to-End Python Pipeline (DoWhy + EconML)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-end-to-end-python-pipeline-dowhy-econml">Topic: End-to-End Python Pipeline (DoWhy + EconML)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>An end-to-end Python pipeline using DoWhy and EconML streamlines the entire causal inference process, from problem framing and identification to estimation and sensitivity analysis.</p>
+<ul>
+<li>
+<p><strong>DoWhy:</strong>  Focuses on the identification step, explicitly modeling causal assumptions and allowing you to rigorously test whether you can estimate the causal effect you're interested in based on the available data and assumed causal structure. It uses the "Causal Inference: The Book of Why" framework. It lets you:</p>
+<ul>
+<li>Create a causal graph (DAG - Directed Acyclic Graph) representing your assumptions about the causal relationships between variables.</li>
+<li>Identify the causal effect of a treatment variable on an outcome variable using back-door, front-door, and instrumental variable methods.</li>
+<li>Test the robustness of your causal estimates through sensitivity analysis.</li>
+</ul>
+</li>
+<li>
+<p><strong>EconML:</strong> Specializes in estimating heterogeneous treatment effects, i.e., how the causal effect varies across different subgroups of the population.  It provides a suite of machine learning methods designed to handle the challenges of causal inference, such as confounding and selection bias, in observational data. Key Features include:</p>
+<ul>
+<li><strong>Meta-Learners:</strong>  S-Learner, T-Learner, X-Learner that combine machine learning models to estimate the treatment effect.</li>
+<li><strong>Double Machine Learning:</strong> Estimators that leverage orthogonalization techniques to reduce bias.</li>
+<li><strong>Instrumental Variable Methods:</strong> Methods designed for settings where you have an instrument to address endogeneity.</li>
+</ul>
+</li>
+</ul>
+<p>The end-to-end pipeline enables a principled approach to causal inference:</p>
+<ol>
+<li>
+<p><strong>Problem Definition &amp; Causal Graph Construction (DoWhy):</strong>  Define the research question, identify the treatment, outcome, and potential confounders, and represent these relationships in a causal graph (DAG).</p>
+</li>
+<li>
+<p><strong>Identification (DoWhy):</strong> Use DoWhy to determine if the desired causal effect is identifiable given the DAG and available data.  This involves finding a valid adjustment set (e.g., using the back-door criterion) or using front-door identification.</p>
+</li>
+<li>
+<p><strong>Estimation (EconML):</strong>  Use EconML to estimate the average treatment effect (ATE) or conditional average treatment effect (CATE) based on the identified causal effect and the chosen machine learning method. Consider effect heterogeneity.</p>
+</li>
+<li>
+<p><strong>Refutation (DoWhy):</strong> Perform robustness checks and sensitivity analysis using DoWhy to assess how sensitive the estimates are to violations of the causal assumptions (e.g., unobserved confounders).</p>
+</li>
+</ol>
+<p>We can use it to rigorously and reproducibly conduct causal inference on observational data, making it applicable in various fields such as economics, marketing, healthcare, and policy evaluation.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong>  A company wants to understand the impact of a new marketing campaign (the treatment) on sales (the outcome).  They have observational data that includes customer demographics, past purchase history, and whether or not each customer was exposed to the campaign.</p>
+<p><strong>Challenge:</strong>  Customers who are more likely to buy the product <em>anyway</em> might be more likely to be targeted by the marketing campaign. This is confounding. There are probably unobserved confounders too (e.g., word-of-mouth marketing effectiveness).</p>
+<p><strong>Pipeline Steps:</strong></p>
+<ol>
+<li>
+<p><strong>Causal Graph:</strong> Create a DAG to represent the relationships between campaign exposure, sales, customer demographics, purchase history, and potential unobserved confounders.</p>
+</li>
+<li>
+<p><strong>Identification:</strong> Use DoWhy to determine if the effect of the campaign on sales can be identified using the back-door criterion. We may need to adjust for customer demographics and purchase history.</p>
+</li>
+<li>
+<p><strong>Estimation:</strong> Use EconML to estimate the average treatment effect (ATE) of the campaign on sales.  Furthermore, we can estimate the CATE to understand which customer segments respond best to the campaign (e.g., younger vs. older customers).</p>
+</li>
+<li>
+<p><strong>Refutation:</strong>  Conduct sensitivity analysis to assess how the estimated effect changes if there is an unobserved confounder that influences both campaign exposure and sales.</p>
+</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import dowhy
+from dowhy import CausalModel
+import econml
+from econml.dml import LinearDML
+import pandas as pd
+import numpy as np
+
+# Generate some synthetic data
+np.random.seed(42)
+n_samples = 500
+data = pd.DataFrame({
+    'age': np.random.randint(20, 60, n_samples),
+    'income': np.random.normal(50000, 20000, n_samples),
+    'campaign': np.random.binomial(1, 0.5, n_samples),  # Treatment: 1 if exposed to campaign, 0 otherwise
+    'sales': 0 # Initialize sales
+})
+
+# Simulate sales based on age, income, campaign, and a hidden confounder (simulated directly)
+hidden_confounder = np.random.normal(0, 1, n_samples)
+data['sales'] = 100 + 0.5 * data['age'] + 0.001 * data['income'] + 50 * data['campaign'] + 20 * hidden_confounder + np.random.normal(0, 5, n_samples)
+
+# 1. Causal Model
+model = CausalModel(
+    data=data,
+    treatment='campaign',
+    outcome='sales',
+    graph=&quot;&quot;&quot;digraph {
+        age -&gt; sales;
+        income -&gt; sales;
+        campaign -&gt; sales;
+        age -&gt; campaign;
+        income -&gt; campaign;
+        U -&gt; campaign;
+        U -&gt; sales;
+    }&quot;&quot;&quot;,
+    common_causes=['age', 'income'],
+    instruments=None,
+    effect_modifiers=['age', 'income']
+)
+
+# 2. Identification
+identified_estimand = model.identify_effect(proceed_when_unidentifiable=True)
+print(identified_estimand)
+
+
+# 3. Estimation
+estimate = model.estimate_effect(identified_estimand,
+                                 method_name=&quot;backdoor.linear_regression&quot;,
+                                 control_value=0,
+                                 treatment_value=1)
+print(estimate)
+
+# Estimate heterogeneous treatment effects using EconML
+# Prepare data
+Y = data['sales'].values
+T = data['campaign'].values
+X = data[['age', 'income']].values
+W = data[['age', 'income']].values # Confounders to adjust for
+
+# Linear DML model (a common and relatively simple choice)
+dml_model = LinearDML(random_state=42, discrete_treatment=True)
+dml_model.fit(Y, T, X=X, W=W)
+
+# Estimate the ATE
+ate = dml_model.ate(X)
+print(f&quot;ATE from EconML: {ate}&quot;)
+
+# Estimate the CATE (effect modifiers are 'age' and 'income')
+cate = dml_model.effect(X) # Returns a vector of CATEs for each sample
+print(f&quot;CATE for the first 5 samples: {cate[:5]}&quot;)
+
+# 4. Refutation (Example: Add Random Common Cause)
+res_random = model.refute_estimate(estimate, method_name=&quot;random_common_cause&quot;)
+print(res_random)
+
+
+# Note: More sophisticated refutation methods exist in DoWhy.  This is just an example.
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we handle situations where the causal graph is unknown or partially known? Can we use causal discovery algorithms within the DoWhy + EconML framework to learn the graph structure from the data and then proceed with causal inference? If so, are there specific considerations or limitations we should be aware of when using automatically learned causal graphs?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
