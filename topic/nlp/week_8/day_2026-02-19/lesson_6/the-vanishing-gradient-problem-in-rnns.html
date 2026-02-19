@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Vanishing Gradient Problem in RNNs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-the-vanishing-gradient-problem-in-rnns">Topic: The Vanishing Gradient Problem in RNNs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The vanishing gradient problem is a challenge encountered during the training of recurrent neural networks (RNNs), particularly when dealing with long sequences. It refers to the exponential decay of gradients as they are backpropagated through time (BPTT) from the output layer to earlier time steps in the network.</p>
+<p><strong>What is it?</strong></p>
+<p>In essence, during backpropagation, the error signal (gradient) used to update the network's weights is multiplied by the derivatives of the activation functions at each time step. If these derivatives are consistently small (e.g., less than 1), the gradient shrinks multiplicatively as it's propagated backward through the network.  This can lead to gradients that become vanishingly small for earlier time steps.</p>
+<p><strong>How can we use it?</strong></p>
+<p>Ironically, "using" the vanishing gradient isn't really about leveraging it directly; it's about mitigating its effects.  Understanding the problem allows us to:</p>
+<ul>
+<li><strong>Choose appropriate architectures:</strong> Recognizing the issue allows us to select network architectures designed to alleviate the problem, such as LSTMs and GRUs.</li>
+<li><strong>Employ gradient clipping:</strong>  This involves setting a threshold for the gradient's magnitude, preventing it from becoming excessively large or small.</li>
+<li><strong>Use better initialization techniques:</strong>  Careful initialization can help avoid regions in the parameter space where derivatives are inherently small.</li>
+<li><strong>Experiment with different activation functions:</strong> ReLU-based activation functions can help to minimize the vanishing gradient problem compared to sigmoid or tanh activation functions (although ReLU activation functions can still suffer from the exploding gradient problem).</li>
+<li><strong>Shorten sequence length:</strong> Truncated backpropagation through time can be employed by limiting the length of sequences processed in each backpropagation pass. This comes at a cost of being less accurate on long sequences.</li>
+</ul>
+<p>Ultimately, the goal is to ensure that the network can learn long-range dependencies in the sequence data by allowing gradients to propagate effectively across many time steps.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a language modeling task where an RNN is trained to predict the next word in a sentence given the preceding words.</p>
+<p><strong>Scenario:</strong> The RNN needs to learn that the pronoun "he" later in the sentence refers to a specific noun (e.g., "John") mentioned much earlier in the sentence.</p>
+<p><strong>Problem:</strong> If the distance between "John" and "he" is large, the gradients from the error signal at the "he" prediction may vanish as they are backpropagated to update the weights associated with the "John" representation.  Consequently, the network struggles to learn the long-range dependency between the noun and the pronoun. It may then fail to correctly predict words that depend on "John." For example, if "John" is followed by the clause "is happy", and the pronoun "he" is used in a later clause, the model may not correctly determine the tense of the later verb based on the earlier context.</p>
+<p>This application scenario illustrates the significant challenge posed by the vanishing gradient problem in tasks requiring long-range dependencies.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a direct Python function that "solves" the vanishing gradient problem, gradient clipping can be implemented.  Here's an example using TensorFlow/Keras:</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Embedding
+
+# Define the model
+model = Sequential()
+model.add(Embedding(input_dim=10000, output_dim=128, input_length=50)) # Vocabulary size 10000, sequence length 50
+model.add(LSTM(128, return_sequences=False)) #return_sequences=False for a single prediction layer
+model.add(Dense(10000, activation='softmax')) # Predict over vocabulary of 10000 words
+
+# Define the optimizer with gradient clipping
+optimizer = tf.keras.optimizers.Adam(clipnorm=1.0) # Clip gradients to a maximum norm of 1.0
+
+# Compile the model
+model.compile(loss='sparse_categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
+# Print model summary
+model.summary()
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>tf.keras.optimizers.Adam(clipnorm=1.0)</code>:</strong> This line defines the Adam optimizer and sets the <code>clipnorm</code> parameter to 1.0. This means that the norm of the gradients will be clipped to a maximum value of 1.0.  If the gradient norm exceeds 1.0, all elements of the gradient will be scaled down proportionally so that the norm is equal to 1.0.</li>
+<li><strong><code>clipvalue</code> (Alternative):</strong> You can also use <code>clipvalue</code> to clip gradients element-wise within a specific range (e.g., -0.5 to 0.5).</li>
+</ul>
+<p>Gradient clipping mitigates the vanishing (and exploding) gradient problems by preventing overly large gradients from disrupting the learning process.  By limiting the range of gradient values, the gradient update steps become smaller, therefore the neural network is trained in a more stable manner.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the exploding gradient problem relate to the vanishing gradient problem, and are the techniques used to address them similar or different?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
