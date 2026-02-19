@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recurrent Neural Networks (RNNs) Architecture</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-recurrent-neural-networks-rnns-architecture">Topic: Recurrent Neural Networks (RNNs) Architecture</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Recurrent Neural Networks (RNNs) are a type of neural network designed to handle sequential data. Unlike traditional feedforward neural networks, RNNs have a "memory" that allows them to use information from previous inputs to influence the current output. This memory is implemented through a recurrent connection that feeds the output of a previous time step back into the input of the current time step.</p>
+<p>Formally, an RNN can be defined as a network where the output at time step <em>t</em>, <em>h<sub>t</sub></em>, depends not only on the input at time step <em>t</em>, <em>x<sub>t</sub></em>, but also on the hidden state from the previous time step, <em>h<sub>t-1</sub></em>. The hidden state acts as a memory, storing information about the past. The equations governing a simple RNN are as follows:</p>
+<ul>
+<li><em>h<sub>t</sub></em> = <em>f</em>( <em>W<sub>xh</sub></em> <em>x<sub>t</sub></em> + <em>W<sub>hh</sub></em> <em>h<sub>t-1</sub></em> + <em>b<sub>h</sub></em> )</li>
+<li><em>y<sub>t</sub></em> = <em>g</em>( <em>W<sub>hy</sub></em> <em>h<sub>t</sub></em> + <em>b<sub>y</sub></em> )</li>
+</ul>
+<p>Where:</p>
+<ul>
+<li><em>x<sub>t</sub></em> is the input at time step <em>t</em>.</li>
+<li><em>h<sub>t</sub></em> is the hidden state at time step <em>t</em>.</li>
+<li><em>y<sub>t</sub></em> is the output at time step <em>t</em>.</li>
+<li><em>W<sub>xh</sub></em> is the weight matrix connecting the input to the hidden state.</li>
+<li><em>W<sub>hh</sub></em> is the weight matrix connecting the previous hidden state to the current hidden state.</li>
+<li><em>W<sub>hy</sub></em> is the weight matrix connecting the hidden state to the output.</li>
+<li><em>b<sub>h</sub></em> is the bias vector for the hidden state.</li>
+<li><em>b<sub>y</sub></em> is the bias vector for the output.</li>
+<li><em>f</em> is an activation function (e.g., sigmoid, tanh, ReLU).</li>
+<li><em>g</em> is an activation function for the output layer (e.g., softmax for classification, linear for regression).</li>
+</ul>
+<p>We can use RNNs for various tasks including:</p>
+<ul>
+<li><strong>Sequence prediction:</strong> Predicting the next element in a sequence (e.g., next word in a sentence).</li>
+<li><strong>Sequence classification:</strong> Assigning a label to an entire sequence (e.g., sentiment analysis).</li>
+<li><strong>Sequence generation:</strong> Generating new sequences (e.g., machine translation, text generation).</li>
+<li><strong>Time series analysis:</strong> Analyzing and predicting patterns in time-dependent data.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a scenario where we want to perform sentiment analysis on movie reviews. We can represent each review as a sequence of words.  An RNN can process the review word by word, maintaining a hidden state that captures the overall sentiment expressed in the review. As the RNN reads each word, the hidden state is updated, taking into account both the current word and the information accumulated from previous words. After processing the entire review, the final hidden state can be used to classify the sentiment as positive, negative, or neutral.  The RNN learns to associate specific words and phrases with different sentiments, allowing it to accurately classify the overall sentiment of the review.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can implement an RNN using libraries like TensorFlow or PyTorch. Here's a basic example using TensorFlow/Keras to create a simple RNN for sequence classification:</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, SimpleRNN, Dense
+
+# Define the model
+model = Sequential()
+
+# Embedding layer to convert words to vectors
+model.add(Embedding(input_dim=10000,  # Vocabulary size
+                    output_dim=32)) # Embedding dimension
+
+# SimpleRNN layer with 32 units
+model.add(SimpleRNN(units=32))
+
+# Dense layer for classification (e.g., binary classification)
+model.add(Dense(units=1, activation='sigmoid'))
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+# Print the model summary
+model.summary()
+
+# Prepare dummy data for training (replace with your actual data)
+import numpy as np
+X_train = np.random.randint(0, 10000, size=(100, 20)) # 100 sequences, each of length 20
+y_train = np.random.randint(0, 2, size=(100, 1))   # 100 labels (0 or 1)
+
+# Train the model
+model.fit(X_train, y_train, epochs=2) # Train for 2 epochs
+
+# Evaluate the model (replace with your actual test data)
+X_test = np.random.randint(0, 10000, size=(50, 20))
+y_test = np.random.randint(0, 2, size=(50, 1))
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f&quot;Loss: {loss}&quot;)
+print(f&quot;Accuracy: {accuracy}&quot;)
+</code></pre>
+
+<p>This code snippet defines a simple RNN model with an embedding layer, a SimpleRNN layer, and a dense output layer. The <code>Embedding</code> layer converts word indices into dense vectors. The <code>SimpleRNN</code> layer is the core of the RNN, and the <code>Dense</code> layer performs the classification. Remember to replace the dummy data with your actual dataset and adjust the hyperparameters (e.g., vocabulary size, embedding dimension, number of RNN units, number of epochs) according to your specific task.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>While RNNs are powerful for processing sequential data, they suffer from the vanishing gradient problem, especially when dealing with long sequences. This makes it difficult for them to learn long-range dependencies. What are some common architectures that address this issue, and how do they work?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
