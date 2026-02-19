@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to Neural Networks for NLP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-introduction-to-neural-networks-for-nlp">Topic: Introduction to Neural Networks for NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In the context of Natural Language Processing (NLP), Neural Networks are computational models inspired by the structure and function of the human brain. They are composed of interconnected nodes (neurons) organized in layers. These layers process input sequentially, transforming it to extract features and make predictions.</p>
+<ul>
+<li>
+<p><strong>What is it?</strong> At their core, neural networks for NLP consist of:</p>
+<ul>
+<li><strong>Input Layer:</strong> Receives the initial data, often represented as numerical vectors (e.g., word embeddings).</li>
+<li><strong>Hidden Layers:</strong> Perform complex computations on the input data through a series of weighted connections, activation functions, and biases.  Multiple hidden layers allow the network to learn increasingly abstract and complex representations of the input.</li>
+<li><strong>Output Layer:</strong> Produces the final prediction based on the processed information. The specific output layer architecture depends on the task (e.g., single output neuron for sentiment classification, multiple output neurons for multi-class classification, sequence of neurons for machine translation).</li>
+<li><strong>Weights and Biases:</strong>  Trainable parameters that determine the strength and influence of connections between neurons. These parameters are adjusted during the training process to minimize the difference between the network's predictions and the actual target values.</li>
+<li><strong>Activation Functions:</strong> Non-linear functions applied to the weighted sum of inputs in each neuron.  Common examples include ReLU (Rectified Linear Unit), Sigmoid, and Tanh.  Activation functions introduce non-linearity, allowing the network to learn complex patterns.</li>
+<li><strong>Loss Function:</strong>  A function that quantifies the difference between the network's predictions and the true values.  The goal of training is to minimize this loss. Common loss functions include cross-entropy for classification and mean squared error for regression.</li>
+<li><strong>Optimizer:</strong> An algorithm (e.g., Adam, SGD) that adjusts the weights and biases to minimize the loss function.</li>
+</ul>
+</li>
+<li>
+<p><strong>How can we use it?</strong> We can use neural networks for NLP to:</p>
+<ul>
+<li><strong>Text Classification:</strong> Determine the category or topic of a text document (e.g., sentiment analysis, spam detection).</li>
+<li><strong>Machine Translation:</strong> Translate text from one language to another.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identify and classify named entities (e.g., people, organizations, locations) in text.</li>
+<li><strong>Question Answering:</strong> Answer questions based on a given text passage.</li>
+<li><strong>Text Generation:</strong> Generate new text, such as summaries, articles, or dialogue.</li>
+<li><strong>Part-of-Speech (POS) Tagging:</strong> Assign grammatical tags (e.g., noun, verb, adjective) to each word in a sentence.</li>
+<li><strong>Language Modeling:</strong> Predict the next word in a sequence, which is crucial for many NLP tasks.</li>
+<li><strong>Semantic Similarity:</strong> Determine the similarity between two text snippets.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider <strong>Sentiment Analysis</strong>.  Imagine a company wants to automatically analyze customer reviews to understand how customers feel about their products or services.  They have a large dataset of customer reviews, each labeled with a sentiment score (positive, negative, or neutral).</p>
+<p>A neural network can be trained to classify the sentiment of each review. The process would involve:</p>
+<ol>
+<li>
+<p><strong>Data Preprocessing:</strong> Cleaning the text (removing irrelevant characters, converting to lowercase), tokenization (splitting the text into words), and creating numerical representations of the words (e.g., using word embeddings like Word2Vec, GloVe, or FastText).</p>
+</li>
+<li>
+<p><strong>Model Building:</strong>  Designing a neural network architecture suitable for text classification. A simple option is a recurrent neural network (RNN) or a long short-term memory (LSTM) network to capture the sequential information in the text.  A convolutional neural network (CNN) can also be used.</p>
+</li>
+<li>
+<p><strong>Training:</strong> Feeding the preprocessed data to the neural network and adjusting the weights and biases to minimize the loss function (e.g., cross-entropy loss).</p>
+</li>
+<li>
+<p><strong>Evaluation:</strong> Evaluating the performance of the trained model on a held-out test set to assess its accuracy.</p>
+</li>
+<li>
+<p><strong>Deployment:</strong>  Integrating the trained model into a system that automatically classifies new customer reviews as they come in.  This allows the company to monitor customer sentiment in real-time and identify potential issues quickly.</p>
+</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using TensorFlow/Keras to build a simple neural network for sentiment analysis (using a very simplified example):</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Flatten, Dense
+
+# Sample data (replace with a real dataset)
+sentences = [
+    &quot;This movie is great!&quot;,
+    &quot;I really enjoyed this film.&quot;,
+    &quot;The acting was terrible.&quot;,
+    &quot;I didn't like it at all.&quot;
+]
+labels = [1, 1, 0, 0]  # 1 for positive, 0 for negative
+
+# Tokenization and Vocabulary Creation
+tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=100) # Max number of words to keep
+tokenizer.fit_on_texts(sentences)
+word_index = tokenizer.word_index
+
+sequences = tokenizer.texts_to_sequences(sentences)
+
+# Padding to make all sequences the same length
+max_length = max([len(s) for s in sequences])
+padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(sequences, maxlen=max_length)
+
+# Model Definition
+model = Sequential([
+    Embedding(len(word_index) + 1, 8, input_length=max_length), # Embedding layer
+    Flatten(), # Flatten to connect to dense layer
+    Dense(1, activation='sigmoid') # Output layer (sigmoid for binary classification)
+])
+
+# Compilation
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Training
+model.fit(padded_sequences, labels, epochs=10)
+
+# Example Prediction
+test_sentence = &quot;This movie was amazing!&quot;
+test_sequence = tokenizer.texts_to_sequences([test_sentence])
+padded_test_sequence = tf.keras.preprocessing.sequence.pad_sequences(test_sequence, maxlen=max_length)
+prediction = model.predict(padded_test_sequence)
+print(f&quot;Prediction for '{test_sentence}': {prediction[0][0]}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong>Data Preparation:</strong> This code creates a small sample dataset and tokenizes the text using <code>Tokenizer</code>. It also pads the sequences to ensure they have the same length.  Real-world applications will use much larger and more diverse datasets and more sophisticated preprocessing techniques.</p>
+</li>
+<li>
+<p><strong>Embedding Layer:</strong> The <code>Embedding</code> layer converts words into dense vectors of a fixed size (8 in this case).  It learns word representations during training.</p>
+</li>
+<li>
+<p><strong>Flatten Layer:</strong>  The <code>Flatten</code> layer converts the 2D output of the embedding layer into a 1D vector.</p>
+</li>
+<li>
+<p><strong>Dense Layer:</strong> A fully connected layer with a sigmoid activation function is used for binary classification (positive or negative sentiment).</p>
+</li>
+<li>
+<p><strong>Training:</strong> The model is trained on the padded sequences and labels using the Adam optimizer and binary cross-entropy loss.</p>
+</li>
+<li>
+<p><strong>Prediction:</strong>  The code demonstrates how to use the trained model to predict the sentiment of a new sentence.</p>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li>This is a very basic example.  Real-world sentiment analysis systems often use more complex architectures (e.g., LSTMs, Transformers), pre-trained word embeddings, and more sophisticated data preprocessing techniques.</li>
+<li>Using proper dataset splits (training, validation, testing) is crucial to avoid overfitting.</li>
+<li>Hyperparameter tuning (e.g., number of hidden units, learning rate) is important for optimizing performance.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different types of neural network architectures (e.g., RNNs, CNNs, Transformers) compare in their suitability for different NLP tasks, and what are the key advantages and disadvantages of each?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
