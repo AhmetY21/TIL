@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>External Validity: Transportability and Generalization</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-external-validity-transportability-and-generalization">Topic: External Validity: Transportability and Generalization</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>External Validity</strong> refers to the extent to which the findings from a causal study conducted in one population or setting (the <em>source population</em>) can be generalized or <em>transported</em> to a different population or setting (the <em>target population</em>). It addresses the question: "Will this causal effect that I observed in one place hold true in another place?".</p>
+<p>Two related, but subtly different, concepts are often considered together:</p>
+<ul>
+<li>
+<p><strong>Generalization:</strong> This refers to whether the observed causal effect would still hold in a new sample drawn <em>from the same source population</em> where the original study was conducted.  It's about the stability of the effect within the <em>same</em> population.  It is more closely tied to statistical sampling and confidence intervals.</p>
+</li>
+<li>
+<p><strong>Transportability:</strong> This focuses on whether the observed causal effect in the source population can be <em>transported</em> and applied to a <em>different</em> target population. This involves considering systematic differences between the two populations (e.g., different demographics, environments, interventions).  It requires understanding what factors (or <em>covariates</em>) are crucial for the causal effect and whether their distributions are the same or different between the source and target populations.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li>
+<p><strong>Planning interventions:</strong> If we have evidence of a successful intervention in one area, understanding external validity helps us determine whether it's likely to succeed in a different area.  We can use causal inference tools to adjust for differences in populations and predict the effect in the target population.</p>
+</li>
+<li>
+<p><strong>Policy making:</strong> Policies designed based on studies in one region might not be effective in another if the underlying causal mechanisms differ. Transportability analysis helps policymakers understand the potential limitations of applying research findings across different contexts.</p>
+</li>
+<li>
+<p><strong>Resource allocation:</strong> When limited resources are available, understanding external validity allows decision-makers to prioritize interventions in populations where they are most likely to be effective.</p>
+</li>
+<li>
+<p><strong>Identifying effect modifiers:</strong> Identifying variables that interact with the causal effect (effect modifiers) is crucial for assessing external validity.  If the distribution of these effect modifiers differs between source and target populations, the causal effect will likely differ as well.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> A randomized controlled trial (RCT) is conducted in a wealthy suburb to evaluate the effectiveness of a new after-school tutoring program on students' math scores. The RCT finds a statistically significant positive effect: students who participated in the tutoring program showed a substantial improvement in their math scores compared to a control group.</p>
+<p>Now, a school district in a low-income urban area wants to implement the same tutoring program.</p>
+<p><strong>Challenge:</strong>  Simply assuming the program will work equally well in the urban area is a leap of faith. The populations differ in several key aspects:</p>
+<ul>
+<li><strong>Socioeconomic status:</strong>  Students in the wealthy suburb likely have more access to resources outside of school, like private tutors and supportive home environments.</li>
+<li><strong>Teacher quality:</strong> The quality of teachers in the schools may vary across the regions.</li>
+<li><strong>Parental involvement:</strong> Levels of parental involvement in their children's education might be different.</li>
+<li><strong>Access to technology:</strong> Access to computers and internet at home may be limited in the urban area.</li>
+</ul>
+<p><strong>Transportability Analysis:</strong></p>
+<p>To assess transportability, we need to consider:</p>
+<ol>
+<li>
+<p><strong>Identify potential effect modifiers:</strong> Variables like socioeconomic status, parental involvement, and prior academic performance could modify the effect of the tutoring program.</p>
+</li>
+<li>
+<p><strong>Compare distributions:</strong> Determine if the distributions of these effect modifiers are significantly different between the suburban (source) and urban (target) populations.</p>
+</li>
+<li>
+<p><strong>Estimate the effect in the target population:</strong> Using techniques like re-weighting or standardization, adjust the causal effect observed in the suburban population to account for the differences in the distribution of the effect modifiers in the urban population.  This provides an <em>estimate</em> of the effect we might expect in the target population.</p>
+</li>
+</ol>
+<p>If the analysis suggests that the positive effect observed in the suburb is significantly diminished in the urban area after accounting for the differences in effect modifiers, the school district should be cautious about implementing the program without modifications or additional support tailored to the specific needs of the urban students. They might consider running a small pilot program to evaluate the program's effectiveness in their context.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While directly coding transportability is complex and requires strong assumptions, we can illustrate a simplified re-weighting approach using Python with the <code>causalinference</code> package (although more sophisticated methods exist). This example demonstrates the core idea, but it is a vast oversimplification of actual transportability analyses.</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import pandas as pd
+from causalinference import CausalModel
+
+# Simulate data for the source population (suburb)
+np.random.seed(42) # for reproducibility
+n_source = 200
+X_source = np.random.normal(size=(n_source, 2))  # Features (e.g., SES, Parental Involvement)
+T_source = np.random.binomial(1, 0.5, size=n_source)  # Treatment (Tutoring program: 1=Yes, 0=No)
+Y_source = 2*T_source + X_source[:, 0] + np.random.normal(size=n_source) # Outcome (Math score)
+
+df_source = pd.DataFrame({'Y': Y_source, 'T': T_source, 'X1': X_source[:, 0], 'X2': X_source[:, 1]})
+
+
+# Simulate data for the target population (urban)
+n_target = 200
+X_target = np.random.normal(loc=0.5, scale=1.5, size=(n_target, 2))  # Features with different distributions
+T_target = np.random.binomial(1, 0.5, size=n_target)
+Y_target = 2*T_target + X_target[:, 0] + np.random.normal(size=n_target)
+
+df_target = pd.DataFrame({'Y': Y_target, 'T': T_target, 'X1': X_target[:, 0], 'X2': X_target[:, 1]})
+
+
+
+# Simple re-weighting (IPW)
+def inverse_propensity_weighting(data, treatment, covariates):
+    from sklearn.linear_model import LogisticRegression
+    X = data[covariates]
+    y = data[treatment]
+    model = LogisticRegression(solver='liblinear').fit(X, y)
+    propensity_scores = model.predict_proba(X)[:, 1]  # Prob of treatment
+    weights = np.where(y == 1, 1 / propensity_scores, 1 / (1 - propensity_scores))
+    return weights
+
+# Estimate ATE in source population
+cm_source = CausalModel(
+    Y=df_source['Y'].values,
+    T=df_source['T'].values,
+    X=df_source[['X1', 'X2']].values
+)
+cm_source.estimate_via_ols(adjust_confounders=True)
+ate_source = cm_source.estimates['ols'].ate
+print(f&quot;ATE in Source Population: {ate_source}&quot;)
+
+
+# Re-weight source data to resemble target data's covariate distribution
+source_weights = inverse_propensity_weighting(df_source, 'T', ['X1', 'X2']) # calculate the weights *within* the source population using source covariates
+weighted_cm_source = CausalModel(
+    Y=df_source['Y'].values,
+    T=df_source['T'].values,
+    X=df_source[['X1', 'X2']].values,
+)
+weighted_cm_source.estimate_via_ols(adjust_confounders=True, weights=source_weights) # provide the weights to ols function
+weighted_ate_source = weighted_cm_source.estimates['ols'].ate
+print(f&quot;Weighted ATE in Source Population (attempting to approximate the target): {weighted_ate_source}&quot;)
+
+
+# Compare to ATE in Target Population for benchmark
+cm_target = CausalModel(
+    Y=df_target['Y'].values,
+    T=df_target['T'].values,
+    X=df_target[['X1', 'X2']].values
+)
+cm_target.estimate_via_ols(adjust_confounders=True)
+ate_target = cm_target.estimates['ols'].ate
+
+print(f&quot;ATE in Target Population (for comparison): {ate_target}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>We simulate data for source and target populations, where the covariate distributions (<code>X1</code>, <code>X2</code>) differ.</li>
+<li>We estimate the average treatment effect (ATE) in both source and target popualtions using the CausalModel package.</li>
+<li>We use Inverse Propensity Weighting (IPW) within the source popualtion. The propensity scores model the probablity of receiving the treatment given the observed covariates. We re-weight the samples so that the weighted distributions in the source popualtion match those in the target population. We then estimate the ATE on the re-weighted source population samples.</li>
+<li>We compare the original ATE in the source population, the re-weighted ATE from the source popualtion, and the ATE in the target population.  This provides a <em>very rough</em> indication of whether the effect is likely to be transportable. The re-weighted ATE provides an <em>estimate</em> of what the treatment effect would be in the target population.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified illustration. True transportability analyses require more sophisticated methods and careful consideration of causal assumptions (e.g., positivity, no unmeasured confounders, consistency across populations).</li>
+<li>The choice of covariates is crucial.  The re-weighting only adjusts for observed differences.  Unobserved differences or incorrect causal models can lead to biased results.</li>
+<li>This example uses OLS regression for simplicity. More robust methods like targeted maximum likelihood estimation (TMLE) are often preferred.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the concept of "domain adaptation" in machine learning relate to the challenges of transportability in causal inference, and what are some methods used in domain adaptation that could potentially be adapted for use in causal transportability analyses?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
