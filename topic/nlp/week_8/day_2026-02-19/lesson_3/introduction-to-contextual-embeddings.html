@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to Contextual Embeddings</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-introduction-to-contextual-embeddings">Topic: Introduction to Contextual Embeddings</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Contextual embeddings are vector representations of words where the meaning of each word is determined by its surrounding context in a sentence. Unlike static word embeddings (e.g., Word2Vec, GloVe), where each word has a single, fixed vector representation regardless of the sentence it appears in, contextual embeddings allow for different representations of the same word based on the specific context in which it is used.</p>
+<p><strong>What is it?</strong></p>
+<p>A contextual embedding model takes a sequence of words (a sentence or document) as input and produces a vector representation for each word in that sequence. These vectors capture not just the intrinsic meaning of the word but also its meaning within the specific context of the input. These models are typically large, pre-trained neural networks (often based on the Transformer architecture).</p>
+<p><strong>How can we use it?</strong></p>
+<p>Contextual embeddings can be used in a wide range of NLP tasks, including:</p>
+<ul>
+<li><strong>Text classification:</strong> Using the embeddings as input features for a classifier. This allows the classifier to understand nuanced meanings.</li>
+<li><strong>Named entity recognition (NER):</strong> Determining whether a word is a named entity and what type of entity it is, taking context into account.</li>
+<li><strong>Question answering:</strong> Understanding the question and the context of the passage to identify the correct answer.</li>
+<li><strong>Sentiment analysis:</strong> Determining the sentiment expressed in a text, accounting for the context in which words are used.</li>
+<li><strong>Machine translation:</strong> Generating more accurate and fluent translations by understanding the meaning of words in context.</li>
+<li><strong>Text summarization:</strong> Creating more concise and informative summaries by capturing the core meaning of the text.</li>
+<li><strong>Sentence similarity:</strong> Determining how similar two sentences are in meaning, even if they use different words.</li>
+</ul>
+<p>The core idea is to leverage the contextual information captured in the embeddings to improve the performance of downstream NLP tasks.  Instead of directly training models from scratch for each task, we can use pre-trained contextual embedding models and fine-tune them on the specific task's data, which significantly reduces training time and improves performance, especially when labeled data is scarce.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the word "bank".  In static word embeddings, the word "bank" would have a single vector representation that attempts to capture all its potential meanings. However, the word "bank" can have several different meanings:</p>
+<ul>
+<li><strong>Financial institution:</strong> "I deposited the check at the bank."</li>
+<li><strong>River bank:</strong> "We sat on the bank of the river."</li>
+</ul>
+<p>Using static word embeddings, a model would struggle to distinguish between these two usages. However, with contextual embeddings, the model can analyze the surrounding words and understand the intended meaning. In the first sentence, words like "deposited" and "check" provide context that indicates "bank" refers to a financial institution. In the second sentence, words like "river" and "sat" provide context that indicates "bank" refers to the edge of a river.</p>
+<p>Therefore, a contextual embedding model would generate different vector representations for "bank" in each of these sentences, reflecting the distinct meanings it has within each context.  This allows downstream tasks, such as sentiment analysis or part-of-speech tagging, to be performed with greater accuracy. For example, a sentiment analysis task would not incorrectly associate a negative sentiment with a sentence about a river bank simply because the word "bank" is sometimes used in negative contexts related to financial crises.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>transformers</code> library in Python to work with contextual embeddings.  Here's an example using the BERT model:</p>
+<pre class="codehilite"><code class="language-python">from transformers import BertTokenizer, BertModel
+import torch
+
+# Load pre-trained BERT model and tokenizer
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertModel.from_pretrained('bert-base-uncased')
+
+# Input text
+text = &quot;I deposited the check at the bank.&quot;
+
+# Tokenize the text
+marked_text = &quot;[CLS] &quot; + text + &quot; [SEP]&quot;
+tokenized_text = tokenizer.tokenize(marked_text)
+
+# Map tokens to IDs
+indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
+
+# Convert inputs to PyTorch tensors
+tokens_tensor = torch.tensor([indexed_tokens])
+
+# Get the model's output
+with torch.no_grad():
+    outputs = model(tokens_tensor)
+    hidden_states = outputs[0]  # The last hidden-state is the contextual embedding. The shape is [batch_size, sequence_length, hidden_size].
+
+# Get the embeddings for the word &quot;bank&quot;
+bank_index = tokenized_text.index(&quot;bank&quot;)
+bank_embedding = hidden_states[0, bank_index, :] # Shape: (hidden_size,) (e.g., 768 for bert-base-uncased)
+
+print(f&quot;Shape of bank embedding: {bank_embedding.shape}&quot;)
+# Example: Shape of bank embedding: torch.Size([768])
+
+# Now, let's do it with the second sentence
+text2 = &quot;We sat on the bank of the river.&quot;
+marked_text2 = &quot;[CLS] &quot; + text2 + &quot; [SEP]&quot;
+tokenized_text2 = tokenizer.tokenize(marked_text2)
+indexed_tokens2 = tokenizer.convert_tokens_to_ids(tokenized_text2)
+tokens_tensor2 = torch.tensor([indexed_tokens2])
+
+with torch.no_grad():
+    outputs2 = model(tokens_tensor2)
+    hidden_states2 = outputs2[0]
+
+bank_index2 = tokenized_text2.index(&quot;bank&quot;)
+bank_embedding2 = hidden_states2[0, bank_index2, :]
+
+# Compare the embeddings (e.g., using cosine similarity)
+from torch.nn.functional import cosine_similarity
+similarity = cosine_similarity(bank_embedding, bank_embedding2, dim=0)
+print(f&quot;Cosine similarity between the two 'bank' embeddings: {similarity.item()}&quot;)
+# Example: Cosine similarity between the two 'bank' embeddings: 0.7769...  The embeddings are different, but still somewhat similar.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Load pre-trained model and tokenizer:</strong> We load the BERT model and tokenizer.  The tokenizer is crucial for converting text into tokens that the model can understand.</li>
+<li><strong>Tokenize the text:</strong> We tokenize the input text and add special tokens "[CLS]" and "[SEP]" that BERT uses.</li>
+<li><strong>Map tokens to IDs:</strong>  The tokens are converted into numerical IDs, which are the actual input to the BERT model.</li>
+<li><strong>Convert to PyTorch tensors:</strong>  The numerical IDs are converted into PyTorch tensors.</li>
+<li><strong>Get the model's output:</strong>  We pass the tensor to the BERT model and obtain the hidden states, which contain the contextual embeddings. <code>torch.no_grad()</code> is used to disable gradient calculation during the forward pass, saving memory and computation.</li>
+<li><strong>Get the embedding for "bank":</strong> We locate the index of the token "bank" and extract its corresponding embedding from the hidden states.</li>
+<li><strong>Compare the embeddings:</strong> We repeat the process for the second sentence and then compute the cosine similarity between the two "bank" embeddings to demonstrate that they are different, reflecting the different contexts.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some techniques to fine-tune contextual embedding models for specific downstream tasks, and what factors influence the choice of the fine-tuning approach? For example, should you fine-tune the entire model, or only specific layers? How does the size of your dataset affect your fine-tuning strategy?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
