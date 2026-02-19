@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>When to Use DoubleML vs EconML vs CausalML (Tooling Map)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-when-to-use-doubleml-vs-econml-vs-causalml-tooling-map">Topic: When to Use DoubleML vs EconML vs CausalML (Tooling Map)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>This topic focuses on guiding users to select the appropriate Python package (DoubleML, EconML, or CausalML) for their causal inference problem. Each package offers distinct strengths and caters to different causal inference tasks, estimators, and computational needs. Selecting the right tool is crucial for efficient and reliable causal inference. These packages provide implementations of cutting-edge methods that allow researchers and practitioners to estimate causal effects while addressing confounding.</p>
+<ul>
+<li>
+<p><strong>DoubleML:</strong> Primarily focuses on Double Machine Learning (DML) methods. DML leverages machine learning algorithms to control for confounding and estimate treatment effects. It's particularly useful when dealing with high-dimensional data where traditional parametric methods might struggle. Key advantage is its robust bias-correction through cross-fitting and orthogonality conditions. It is well suited when you want to estimate treatment effects controlling for confounders and have flexible estimators for the nuisance functions.</p>
+</li>
+<li>
+<p><strong>EconML:</strong> A broader package offering a variety of causal machine learning estimators, encompassing but not limited to DML.  It emphasizes flexibility and integrates well with scikit-learn.  EconML includes various estimators based on heterogeneous treatment effects, such as meta-learners, tree-based methods, and orthogonal random forests. Its core purpose is to estimate heterogeneous treatment effects, understanding how treatment effects vary across different subpopulations.</p>
+</li>
+<li>
+<p><strong>CausalML:</strong> Focuses heavily on Uplift Modeling and Causal Machine Learning for customer relationship management (CRM) and marketing applications. It provides a comprehensive suite of algorithms designed to estimate the incremental impact of a treatment (e.g., marketing campaign) on individual customers.  The primary use is in predicting individual treatment effects to optimize targeting decisions. It's designed to directly optimize decisions based on causal inference results.</p>
+</li>
+</ul>
+<p>Essentially, the tooling map helps navigate these packages based on problem type, estimator needed, and specific features (e.g., uplift modeling).</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider these examples:</p>
+<ul>
+<li>
+<p><strong>Scenario 1 (High-Dimensional Confounding):</strong> Estimating the effect of a new job training program on future earnings, controlling for a large number of demographic and socioeconomic factors. DoubleML would be a good choice due to its strength in handling high-dimensional data.</p>
+</li>
+<li>
+<p><strong>Scenario 2 (Heterogeneous Treatment Effects):</strong> Determining how the effect of a drug on blood pressure varies across different patient subgroups based on age, gender, and pre-existing conditions. EconML would be suitable as it offers diverse estimators for heterogeneous treatment effects.</p>
+</li>
+<li>
+<p><strong>Scenario 3 (Uplift Modeling for Marketing):</strong> Identifying customers who are most likely to purchase a product <em>because</em> of a marketing campaign, rather than purchasing it anyway. CausalML is designed for this specific scenario.</p>
+</li>
+<li>
+<p><strong>Scenario 4 (Instrumental Variables):</strong> Estimating the effect of years of education on earnings, using distance to college as an instrument. EconML offers estimators that incorporate instrumental variables. DoubleML can also incorporate IVs.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simplified illustration using Python (with placeholders as full code requires data):</p>
+<pre class="codehilite"><code class="language-python"># Using DoubleML for estimating Average Treatment Effect (ATE)
+import doubleml as dml
+import sklearn
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+import numpy as np
+import pandas as pd
+
+# Assume you have X, d, y (features, treatment, outcome)
+
+# Create dummy data for demonstration
+np.random.seed(42)
+n_obs = 100
+X = pd.DataFrame(np.random.rand(n_obs, 5), columns=['X1', 'X2', 'X3', 'X4', 'X5'])
+d = pd.Series(np.random.randint(0, 2, n_obs))
+y = pd.Series(np.random.rand(n_obs))
+
+
+# Define ML models
+ml_l = RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)  #Outcome model
+ml_m = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42) #Treatment model
+
+#Initialize doubleml data
+dml_data = dml.DoubleMLData(X, y, d)
+
+# Initialize DoubleMLIRM object
+dml_irm_obj = dml.DoubleMLIRM(dml_data, ml_l, ml_m) #IRM: Interactive Regression Model (ATE focused)
+dml_irm_obj.fit()
+
+print(&quot;ATE estimate (DoubleML):&quot;, dml_irm_obj.ate)
+
+
+# Using EconML for heterogeneous treatment effects with metalearners
+from econml.metalearners import TLearner, XLearner, SLearner
+from sklearn.linear_model import LinearRegression
+
+# Initialize metalearner
+tl = TLearner(models=LinearRegression()) #can use more complex models
+
+# Fit metalearner
+tl.fit(Y=y, T=d, X=X)
+
+# Estimate ITE
+ite_predictions = tl.effect(X)
+print(&quot;Example ITE (EconML):&quot;, ite_predictions[:5]) # First 5 ITE predictions
+
+
+# Using CausalML for Uplift Modeling
+
+#This would require more data preparation tailored for uplift modeling.
+#Here's just the general outline:
+from causalml.uplift import LogisticRegressionUplift, MetalearnerUplift
+
+# Initialize uplift model
+up = MetalearnerUplift(learner=LogisticRegressionUplift()) #Can swap the learner
+# fit the model to training data
+#up.fit(X_train, treatment, y_train) #Placeholder - requires uplift data
+print (&quot;CausalML Requires data suitable for uplift modeling.&quot;) # placeholder code
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>DoubleML:</strong> Demonstrates estimating the Average Treatment Effect (ATE) using DoubleML. We create <code>DoubleMLData</code>, specify machine learning models for the outcome and treatment assignments, initialize a <code>DoubleML</code> object (IRM, focusing on ATE), fit the model, and print the ATE estimate.</li>
+<li><strong>EconML:</strong> Shows how to use <code>TLearner</code> (a metalearner) to estimate individual treatment effects (ITE). We initialize a <code>TLearner</code> with a linear regression model, fit the model to the data, and then use the <code>effect</code> method to predict ITEs for each individual.</li>
+<li><strong>CausalML:</strong> Provides a snippet showcasing the basic structure of using <code>CausalML</code> for uplift modeling.  The data preparation is significantly different for uplift modeling, involving treatment and control groups and focus on the <em>incremental</em> effect of treatment. This example is incomplete because creating suitable data is beyond the scope of this brief demonstration. <code>CausalML</code> offers specifically designed methods for optimizing marketing campaigns, not just prediction.</li>
+</ul>
+<p><strong>Tooling Map Summary:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>DoubleML</th>
+<th>EconML</th>
+<th>CausalML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primary Focus</td>
+<td>Bias-corrected ATE/ATE Estimation</td>
+<td>Heterogeneous Treatment Effects</td>
+<td>Uplift Modeling/CRM</td>
+</tr>
+<tr>
+<td>Data Dimensions</td>
+<td>Handles High-Dimensional</td>
+<td>Flexible, works well with scikit-learn</td>
+<td>Assumes CRM/Marketing data</td>
+</tr>
+<tr>
+<td>Estimators</td>
+<td>DML-based</td>
+<td>Wide range of meta-learners, forest-based, IV</td>
+<td>Uplift-specific learners</td>
+</tr>
+<tr>
+<td>Key Advantage</td>
+<td>Robust Bias Correction</td>
+<td>Flexibility, Integration</td>
+<td>CRM/Marketing Optimization</td>
+</tr>
+<tr>
+<td>Use Case</td>
+<td>Causal Effects w/ Confounding</td>
+<td>Understanding Subgroup Effects</td>
+<td>Targeted Marketing Campaigns</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do I deal with model selection within each of these packages, especially when choosing the right machine learning model for nuisance functions in DoubleML or the appropriate meta-learner in EconML? How do the model assumptions differ across these packages and their estimators?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
