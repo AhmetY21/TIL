@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation Under Uncertainty: out-of-sample testing and policy evaluation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-evaluation-under-uncertainty-out-of-sample-testing-and-policy-evaluation">Topic: Evaluation Under Uncertainty: out-of-sample testing and policy evaluation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Evaluation under uncertainty, particularly through out-of-sample testing and policy evaluation, is the process of assessing the performance and robustness of a stochastic programming model or decision rule (policy) when faced with unseen, uncertain data.  It's a crucial step after developing and training a model to ensure it generalizes well and performs as expected in real-world scenarios.</p>
+<ul>
+<li>
+<p><strong>Out-of-sample testing:</strong>  This involves evaluating the model's performance on a dataset <em>not</em> used during the model's development (e.g., training or in-sample validation). This provides a more realistic estimate of how the model will perform on future, unseen data.  We use the trained stochastic program to make decisions using these new realizations of the random parameters, and measure the resulting objective value.</p>
+</li>
+<li>
+<p><strong>Policy Evaluation:</strong> Once a stochastic program yields a proposed <em>policy</em> (e.g., a set of decision rules or a closed-form solution) then <em>policy evaluation</em> seeks to quantify the performance of this policy against different possible future states. It involves simulating the consequences of applying the policy under various scenarios generated from the assumed uncertainty distributions. This may take the form of Monte Carlo simulation where we generate a very large number of scenarios, apply the policy, and then average the results.</p>
+</li>
+</ul>
+<p><strong>How we use it:</strong></p>
+<ul>
+<li><strong>Model Validation:</strong> Out-of-sample testing validates whether the model captures the underlying relationships in the data and avoids overfitting to the training data. This informs whether the selected model structure and the assumed uncertainty set are appropriate.</li>
+<li><strong>Performance Assessment:</strong> It provides a more realistic estimate of the expected performance of the model in real-world applications, measuring things like average cost, worst-case performance, and risk metrics.</li>
+<li><strong>Policy Comparison:</strong>  Allows us to compare different decision policies (e.g., different parameter settings of the stochastic program) to determine which performs best under uncertainty.</li>
+<li><strong>Risk Management:</strong> Helps identify potential vulnerabilities of the model and assess the risk associated with different decision strategies. It helps to estimate the chance of falling below certain performance levels.</li>
+<li><strong>Decision Support:</strong> Informs decision-makers about the expected outcomes and potential risks associated with implementing the model's recommendations.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain planning problem where a company needs to decide on the inventory levels of several products to meet uncertain demand.</p>
+<p><strong>In-Sample Optimization:</strong> The company builds a stochastic program that takes into account historical demand data and incorporates uncertainty through probability distributions. They optimize the inventory levels based on this in-sample data.</p>
+<p><strong>Out-of-Sample Testing:</strong> To evaluate the robustness of their model, they generate <em>new</em> demand scenarios from the same (or similar) probability distributions. They then use the inventory levels determined by the in-sample optimization and <em>simulate</em> the performance of the supply chain under these new scenarios.  They calculate the resulting profit or cost (taking into account inventory holding costs, shortage penalties, etc.) for each scenario and average them to get an estimate of the expected performance.</p>
+<p><strong>Policy Evaluation:</strong> Suppose the solution to the stochastic program yields a policy like: "Order enough to bring your inventory level to three times the standard deviation above the mean demand, regardless of the starting inventory." We can then generate, say 10,000 demand realizations, and for each realization, apply the <em>policy</em> to calculate an order level, and then simulate the system. The average objective value (profit or cost) calculated across these 10,000 scenarios provides an estimate of the expected performance of the policy.</p>
+<p>If the out-of-sample performance is significantly worse than the in-sample performance, it suggests the model is overfitting to the training data or that the chosen uncertainty set is too small (and that the true uncertainty is larger). This might prompt the company to refine the model or consider more robust optimization approaches. Alternatively, policy evaluation may reveal that the chosen policy is not robust, and a new policy (e.g., requiring different inventory targets under different demand conditions) should be explored.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import random
+
+def evaluate_policy(policy, demand_distributions, num_scenarios):
+    &quot;&quot;&quot;
+    Evaluates a given inventory policy under uncertain demand.
+
+    Args:
+        policy (callable): A function that takes demand information (mean, std_dev) and returns an order quantity.
+        demand_distributions (dict): A dictionary where keys are products and values are tuples (mean_demand, std_dev_demand).
+        num_scenarios (int): The number of demand scenarios to simulate.
+
+    Returns:
+        float: The average profit across all scenarios.
+    &quot;&quot;&quot;
+    total_profit = 0
+    for _ in range(num_scenarios):
+        # Generate a scenario of random demands for each product
+        demands = {}
+        for product, (mean, std_dev) in demand_distributions.items():
+            demands[product] = max(0, np.random.normal(mean, std_dev)) # Ensure demand is non-negative
+
+        # Determine order quantities based on the policy
+        order_quantities = {}
+        for product, (mean, std_dev) in demand_distributions.items():
+             order_quantities[product] = policy(mean, std_dev) # Assuming the policy does not consider current inventory
+
+        # Simulate the outcome: Calculate profit based on demand and order quantities.
+        # This is a simplified example; you'd need a more complex profit calculation
+        # incorporating costs like holding costs, shortage costs, etc.
+        profit = 0
+        for product in demand_distributions:
+            sales = min(order_quantities[product], demands[product])
+            profit += sales * 10 - order_quantities[product]*2 #Simplified example: selling price 10, order cost 2
+
+        total_profit += profit
+
+    return total_profit / num_scenarios
+
+
+# Example Usage:
+
+# Define a simple policy: Order to reach a target inventory level.  This function returns the ORDER quantity to reach the target.
+def simple_policy(mean_demand, std_dev_demand):
+    target_inventory = mean_demand + 2 * std_dev_demand # Target inventory 2 standard deviations above mean
+    return target_inventory # The order quantity
+
+
+# Define demand distributions for two products: A and B
+demand_distributions = {
+    &quot;A&quot;: (50, 10),  # Mean demand 50, standard deviation 10
+    &quot;B&quot;: (80, 15),  # Mean demand 80, standard deviation 15
+}
+
+# Evaluate the policy
+num_scenarios = 1000
+average_profit = evaluate_policy(simple_policy, demand_distributions, num_scenarios)
+
+print(f&quot;Average Profit under Uncertainty: {average_profit}&quot;)
+</code></pre>
+
+<p>This Python code provides a basic framework for policy evaluation using Monte Carlo simulation.  Key considerations:</p>
+<ul>
+<li>The <code>evaluate_policy</code> function simulates the supply chain under multiple demand scenarios.</li>
+<li>The <code>simple_policy</code> represents an example decision rule. This would be replaced with the actual decision rule resulting from the stochastic programming model.</li>
+<li>The profit calculation is simplified. A more realistic model would include various cost components.</li>
+<li>This example focuses on policy evaluation (estimating performance given a fixed policy). Out-of-sample <em>testing</em> in the pure sense would involve running the <em>entire</em> optimization process on a separate set of data, and then <em>comparing</em> the decision variables that result. This is not shown here for brevity.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can variance reduction techniques (e.g., control variates, antithetic variates) be applied to improve the efficiency and accuracy of policy evaluation in stochastic programming, especially when dealing with computationally expensive simulations or high-dimensional uncertainty?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
