@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation Under Uncertainty: out-of-sample testing and policy evaluation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-evaluation-under-uncertainty-out-of-sample-testing-and-policy-evaluation">Topic: Evaluation Under Uncertainty: out-of-sample testing and policy evaluation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Evaluation under uncertainty</strong> in the context of stochastic programming refers to assessing the performance and robustness of a decision policy (or a solution obtained through stochastic programming) when exposed to unseen, or out-of-sample, scenarios. It's a critical step after obtaining a solution from a stochastic programming model. It aims to understand how the solution will behave in "real-world" conditions which are often different from the data used during the model training or optimization phase.</p>
+<p><strong>Out-of-sample testing</strong> specifically involves evaluating the decision policy on a new set of scenarios that were <em>not</em> used to train or optimize the stochastic programming model. This is akin to testing a machine learning model on a held-out test set. The idea is to simulate the situation where the decision policy is deployed in the future and encounters conditions different from those experienced during its creation.</p>
+<p><strong>Policy evaluation</strong> extends the concept of out-of-sample testing. While out-of-sample testing focuses on direct performance metrics like cost or profit, policy evaluation aims to understand the policy's overall effectiveness, risk profile, and sensitivity to different scenarios. It may involve:</p>
+<ul>
+<li><strong>Calculating expected value of perfect information (EVPI):</strong> This metric quantifies the benefit of knowing the uncertain parameters with certainty before making a decision. It provides an upper bound on how much we should be willing to pay for better information.</li>
+<li><strong>Value of the stochastic solution (VSS):</strong> This metric measures the improvement in performance (e.g., cost reduction, profit increase) achieved by using a stochastic programming approach compared to a deterministic approach that only considers expected values for uncertain parameters.</li>
+<li><strong>Scenario analysis:</strong> Examining the policy's performance across different, potentially extreme, scenarios to identify vulnerabilities.</li>
+<li><strong>Risk analysis:</strong> Assessing the probability of undesirable outcomes (e.g., losses exceeding a certain threshold) under different scenarios.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Model Validation:</strong> Verify if the model accurately represents the real-world problem by checking if the solution performs reasonably well out-of-sample.</li>
+<li><strong>Policy Comparison:</strong> Compare the performance of different solution approaches obtained from stochastic programming or other optimization methods under uncertainty.</li>
+<li><strong>Risk Management:</strong> Identify and quantify the risks associated with implementing a specific decision policy, allowing for the development of mitigation strategies.</li>
+<li><strong>Stakeholder Communication:</strong> Provide realistic performance expectations to stakeholders based on the policy's behavior across a range of plausible scenarios.</li>
+<li><strong>Improve the Model:</strong> Out-of-sample performance can highlight areas where the model needs refinement, such as incorporating additional constraints or using a more accurate representation of uncertainty.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a supply chain network design problem. A company needs to decide where to build warehouses and how much inventory to hold at each location to meet customer demand. Demand is uncertain and is modeled using a set of scenarios. A stochastic programming model is used to find the optimal warehouse locations and inventory levels.</p>
+<p>After solving the stochastic programming model, we need to evaluate its performance out-of-sample. We generate a new set of demand scenarios that were <em>not</em> used in the original optimization. These new scenarios represent potential future market conditions.</p>
+<p>We then simulate the operation of the supply chain under these new demand scenarios, using the warehouse locations and inventory levels determined by the stochastic programming model. We track metrics such as total cost (including transportation, warehousing, and shortage costs), service level (percentage of demand met on time), and the number of stockouts.</p>
+<p>By analyzing these metrics across the out-of-sample scenarios, we can assess the robustness of the solution. For example, we might find that the solution performs well on average but is highly vulnerable to extreme demand fluctuations in certain regions. This information can then be used to refine the supply chain design (e.g., by adding more safety stock or diversifying sourcing) and provide a more realistic estimate of the supply chain's performance under real-world conditions.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+
+# Assume we have a function to simulate the supply chain
+# and calculate the total cost for a given scenario
+def simulate_supply_chain(warehouse_locations, inventory_levels, demand_scenario):
+  &quot;&quot;&quot;
+  Simulates the supply chain and returns the total cost.
+
+  Args:
+    warehouse_locations: A list of warehouse locations.
+    inventory_levels: A list of inventory levels for each warehouse.
+    demand_scenario: A dictionary representing demand at each location.
+
+  Returns:
+    The total cost of the supply chain.
+  &quot;&quot;&quot;
+  # Replace with your actual simulation logic
+  transportation_cost = np.sum(np.random.rand(len(warehouse_locations))) * np.sum(list(demand_scenario.values()))
+  warehousing_cost = np.sum(inventory_levels) * 0.1
+  shortage_cost = max(0, sum(demand_scenario.values()) - sum(inventory_levels)) * 2
+  total_cost = transportation_cost + warehousing_cost + shortage_cost
+  return total_cost
+
+# Example usage:
+# 1. Obtain a solution (warehouse locations, inventory levels) from your stochastic programming model.
+optimal_warehouse_locations = [1, 2, 3] # Example warehouse locations
+optimal_inventory_levels = [100, 150, 200] # Example inventory levels
+
+# 2. Generate out-of-sample scenarios.
+num_scenarios = 100
+out_of_sample_scenarios = []
+for _ in range(num_scenarios):
+  demand = {
+      &quot;location_1&quot;: np.random.randint(50, 150),
+      &quot;location_2&quot;: np.random.randint(75, 225),
+      &quot;location_3&quot;: np.random.randint(100, 300)
+  }
+  out_of_sample_scenarios.append(demand)
+
+# 3. Evaluate the solution on the out-of-sample scenarios.
+costs = []
+for scenario in out_of_sample_scenarios:
+  cost = simulate_supply_chain(optimal_warehouse_locations, optimal_inventory_levels, scenario)
+  costs.append(cost)
+
+# 4. Analyze the results.
+average_cost = np.mean(costs)
+std_dev_cost = np.std(costs)
+max_cost = np.max(costs)
+min_cost = np.min(costs)
+
+print(f&quot;Average cost: {average_cost}&quot;)
+print(f&quot;Standard deviation of cost: {std_dev_cost}&quot;)
+print(f&quot;Maximum cost: {max_cost}&quot;)
+print(f&quot;Minimum cost: {min_cost}&quot;)
+
+# You can also analyze the distribution of costs using histograms or other visualizations.
+import matplotlib.pyplot as plt
+
+plt.hist(costs, bins=20)
+plt.xlabel(&quot;Total Cost&quot;)
+plt.ylabel(&quot;Frequency&quot;)
+plt.title(&quot;Distribution of Costs in Out-of-Sample Scenarios&quot;)
+plt.show()
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>simulate_supply_chain</code> function:</strong>  This function simulates the supply chain given the warehouse locations, inventory levels, and a specific demand scenario. This is a placeholder. You'll need to replace this with the actual simulation logic for your specific problem.  It calculates the total cost, considering transportation, warehousing, and potential shortage costs.  Crucially, the specifics of your simulation will drastically influence your result.</p>
+</li>
+<li>
+<p><strong>Generating out-of-sample scenarios:</strong> A loop generates <code>num_scenarios</code> demand scenarios.  The <code>demand</code> dictionary represents the demand at different locations. The values are randomly generated within a range. You should use a distribution and parameters that are appropriate for your problem (e.g., normal distribution, historical data).</p>
+</li>
+<li>
+<p><strong>Evaluating the solution:</strong> The code iterates through the out-of-sample scenarios and calls the <code>simulate_supply_chain</code> function to calculate the cost for each scenario.</p>
+</li>
+<li>
+<p><strong>Analyzing the results:</strong> The code calculates the average cost, standard deviation, maximum cost, and minimum cost. It also generates a histogram of the costs using <code>matplotlib</code>.  These statistics provide insights into the performance and robustness of the solution.  You can further calculate risk measures like Value at Risk (VaR) or Conditional Value at Risk (CVaR).</p>
+</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>The <code>simulate_supply_chain</code> function is a simplified example.  A real-world simulation would be much more complex and would involve considering various factors, such as transportation times, capacity constraints, and service level requirements.</li>
+<li>The choice of the distribution and parameters for generating the out-of-sample scenarios is crucial.  You should use a distribution that accurately represents the uncertainty in your problem and parameters that are based on historical data or expert judgment.</li>
+<li>The number of out-of-sample scenarios should be large enough to provide a statistically significant estimate of the solution's performance.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the scenario generation method (e.g., Monte Carlo sampling, quasi-Monte Carlo sampling, historical data resampling) affect the validity and reliability of out-of-sample testing and policy evaluation in stochastic programming, and what are the trade-offs involved in choosing one method over another? Consider also the impact of <em>correlated</em> uncertainties.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
