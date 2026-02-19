@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baseline Solving: LP/MIP solvers, warm starts, and scaling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-baseline-solving-lpmip-solvers-warm-starts-and-scaling">Topic: Baseline Solving: LP/MIP solvers, warm starts, and scaling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Baseline Solving</strong> in the context of Stochastic Programming refers to establishing a basic, initial solution to a deterministic equivalent problem (DEP) or a sample average approximation (SAA) of the stochastic problem. This initial solution is obtained by directly solving the problem using standard LP/MIP solvers without employing advanced decomposition or approximation techniques specifically designed for stochastic optimization.  Baseline solving serves as a performance benchmark against which more sophisticated methods can be evaluated.</p>
+<ul>
+<li><strong>LP/MIP Solvers:</strong> Linear Programming (LP) and Mixed-Integer Programming (MIP) solvers are software packages designed to find optimal solutions for linear optimization problems (with and without integer variables, respectively).  They are the workhorses of optimization and typically employ branch-and-bound, cutting planes, and other algorithms.  Popular solvers include Gurobi, CPLEX, and open-source options like GLPK or CBC.</li>
+<li><strong>Warm Starts:</strong> A warm start provides the solver with an initial feasible (or near-feasible) solution to the problem. This can significantly reduce the solving time, especially for problems that are structurally similar to previously solved problems.  The solver uses this initial solution as a starting point and refines it to find the optimal solution more quickly.</li>
+<li><strong>Scaling:</strong> Scaling refers to pre-processing techniques that improve the numerical properties of the optimization problem. This involves scaling variables and constraints to have values within a more manageable range, which can prevent numerical instability and improve solver performance. Poorly scaled problems can lead to inaccurate solutions or even solver failures.</li>
+</ul>
+<p><strong>How to use it:</strong></p>
+<ol>
+<li><strong>Model the Problem:</strong> Formulate the stochastic problem either as a deterministic equivalent (DEP) or a sample average approximation (SAA). The DEP creates a large, deterministic LP/MIP. The SAA approximates the probability distribution with a finite set of scenarios and constructs a corresponding LP/MIP.</li>
+<li><strong>Solve with LP/MIP Solver:</strong> Use a standard LP/MIP solver to find the optimal solution to the DEP/SAA.</li>
+<li><strong>Implement Warm Starts:</strong> If a feasible solution is available (e.g., from a previous iteration of an algorithm or from solving a simplified version of the problem), pass it to the solver as a warm start.</li>
+<li><strong>Scale the Problem:</strong> Before solving, apply scaling techniques to ensure that the coefficients and variable bounds are well-conditioned.</li>
+<li><strong>Benchmark:</strong> Use the solution obtained as a baseline to compare the performance of more advanced stochastic programming techniques.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Inventory Management under Uncertainty:</strong></p>
+<p>Consider an inventory management problem where a retailer needs to decide how many units of a product to order in each period to meet uncertain demand. The demand in each period is a random variable.  The retailer wants to minimize the total cost, which includes ordering costs, holding costs, and shortage costs.</p>
+<ol>
+<li><strong>SAA Formulation:</strong> We can approximate the stochastic demand with a set of scenarios (e.g., historical data or simulation outputs).</li>
+<li><strong>Baseline Solution:</strong>  We can solve the resulting SAA problem as a large-scale LP using a solver like Gurobi. This provides an initial inventory ordering policy.</li>
+<li><strong>Warm Start:</strong>  If the retailer solves this problem repeatedly with slightly different scenarios (e.g., rolling horizon planning), they can use the solution from the previous period as a warm start for the current period's problem.</li>
+<li><strong>Scaling:</strong>  If the ordering costs are significantly smaller than the holding costs, scaling the problem can improve the solver's numerical stability.  For example, divide the ordering cost coefficients by a suitable constant.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import gurobipy as gp
+from gurobipy import GRB
+import numpy as np
+
+def solve_inventory_saa(demands, ordering_cost, holding_cost, shortage_cost, initial_inventory=0):
+    &quot;&quot;&quot;
+    Solves a sample average approximation (SAA) of an inventory management problem
+    using Gurobi.
+
+    Args:
+        demands (list of lists): A list of scenarios, where each scenario is a list of demands over time.
+        ordering_cost (float): Cost per unit ordered.
+        holding_cost (float): Cost per unit held in inventory.
+        shortage_cost (float): Cost per unit of unmet demand.
+        initial_inventory (float): Initial inventory level.
+
+    Returns:
+        dict: A dictionary containing the optimal ordering quantities and inventory levels for each scenario.
+    &quot;&quot;&quot;
+    num_scenarios = len(demands)
+    num_periods = len(demands[0])
+
+    try:
+        # Create a new Gurobi model
+        model = gp.Model(&quot;inventory_saa&quot;)
+
+        # Create variables
+        order_quantity = model.addVars(num_scenarios, num_periods, vtype=GRB.CONTINUOUS, name=&quot;order_quantity&quot;, lb=0)
+        inventory_level = model.addVars(num_scenarios, num_periods, vtype=GRB.CONTINUOUS, name=&quot;inventory_level&quot;, lb=0)
+        shortage = model.addVars(num_scenarios, num_periods, vtype=GRB.CONTINUOUS, name=&quot;shortage&quot;, lb=0)
+
+        # Set objective function (minimize total cost)
+        objective = gp.quicksum(
+            (ordering_cost * order_quantity[s, t] +
+             holding_cost * inventory_level[s, t] +
+             shortage_cost * shortage[s, t])
+            for s in range(num_scenarios) for t in range(num_periods)
+        ) / num_scenarios  # Average cost across scenarios
+        model.setObjective(objective, GRB.MINIMIZE)
+
+        # Add constraints (inventory balance)
+        for s in range(num_scenarios):
+            # First period inventory
+            model.addConstr(inventory_level[s, 0] == initial_inventory + order_quantity[s, 0] - demands[s][0] + shortage[s,0], name=f&quot;inventory_balance_{s}_0&quot;)
+            for t in range(1, num_periods):
+                model.addConstr(inventory_level[s, t] == inventory_level[s, t - 1] + order_quantity[s, t] - demands[s][t] + shortage[s, t], name=f&quot;inventory_balance_{s}_{t}&quot;)
+
+        # Optimize model
+        model.optimize()
+
+        # Store results
+        results = {}
+        results[&quot;order_quantity&quot;] = { (s,t): order_quantity[s, t].x for s in range(num_scenarios) for t in range(num_periods) }
+        results[&quot;inventory_level&quot;] = { (s,t): inventory_level[s, t].x for s in range(num_scenarios) for t in range(num_periods) }
+        results[&quot;shortage&quot;] = { (s,t): shortage[s, t].x for s in range(num_scenarios) for t in range(num_periods) }
+        results[&quot;objective_value&quot;] = model.objVal
+
+        return results
+
+    except gp.GurobiError as e:
+        print('Error code ' + str(e.errno) + ': ' + str(e))
+
+    except AttributeError:
+        print('Encountered an attribute error')
+
+
+# Example usage:
+demands = [[10, 12, 8], [12, 15, 10], [8, 10, 6]]  # 3 scenarios, 3 periods
+ordering_cost = 2
+holding_cost = 1
+shortage_cost = 5
+initial_inventory = 5
+
+results = solve_inventory_saa(demands, ordering_cost, holding_cost, shortage_cost, initial_inventory)
+
+if results:
+  print(&quot;Optimal objective value:&quot;, results[&quot;objective_value&quot;])
+  print(&quot;Optimal order quantities:&quot;, results[&quot;order_quantity&quot;])
+  print(&quot;Optimal inventory levels:&quot;, results[&quot;inventory_level&quot;])
+  print(&quot;Optimal shortages:&quot;, results[&quot;shortage&quot;])
+
+
+# Example of warm starting (not implemented fully, only shown conceptually)
+# In a real application, you would pass the solution from a previous run as the start value.
+# model.start = previous_solution
+# model.optimize()
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>solve_inventory_saa</code> Function:</strong> This function takes the demand scenarios, costs, and initial inventory as input.</li>
+<li><strong>Gurobi Model:</strong> It creates a Gurobi model (<code>model = gp.Model("inventory_saa")</code>).</li>
+<li><strong>Variables:</strong> It defines variables for order quantity, inventory level, and shortage for each scenario and period.</li>
+<li><strong>Objective Function:</strong> It sets the objective function to minimize the average total cost across all scenarios.</li>
+<li><strong>Constraints:</strong> It adds constraints to enforce the inventory balance equation for each scenario and period.  The <code>model.addConstr</code> method adds linear constraints.</li>
+<li><strong>Optimization:</strong> <code>model.optimize()</code> solves the LP.</li>
+<li><strong>Results:</strong>  It extracts the optimal solution and returns it in a dictionary.</li>
+<li><strong>Example Usage:</strong> The code provides an example of how to use the function with sample demand data.</li>
+</ol>
+<p><strong>Warm Start (Conceptual):</strong>  The commented-out section demonstrates the idea of a warm start. In a real application, you would get the solution from a previous run (or a heuristic solution) and set the <code>start</code> attribute of the variables before calling <code>model.optimize()</code> again.  This tells Gurobi to use that initial solution as a starting point.</p>
+<p><strong>Scaling:</strong>  Scaling isn't explicitly done in this code.  However, you could add scaling by multiplying or dividing variables and coefficients by appropriate constants before creating the Gurobi model. This would be most important if the ordering, holding, and shortage costs have vastly different magnitudes.  For example, if the shortage cost is 1000 times larger than the ordering cost, divide the shortage cost coefficients by 1000 (and the shortage variables by 1000) before creating the model.  Remember to scale back the solution after solving.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can scenario reduction techniques (e.g., scenario clustering or sampling methods) be integrated with baseline solving to improve the computational efficiency of solving the stochastic program, and how would these techniques impact the quality of the baseline solution compared to using all scenarios?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
