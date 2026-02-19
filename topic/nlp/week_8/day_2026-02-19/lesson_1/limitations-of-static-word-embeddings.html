@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Limitations of Static Word Embeddings</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-limitations-of-static-word-embeddings">Topic: Limitations of Static Word Embeddings</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Static word embeddings are pre-trained vector representations of words where each word is mapped to a single, fixed vector in a high-dimensional space. These vectors are typically learned from large corpora of text using algorithms like Word2Vec (skip-gram or CBOW), GloVe, or FastText. The core idea is that words appearing in similar contexts will have similar vector representations, capturing semantic relationships.</p>
+<p>How can we use them?</p>
+<ul>
+<li><strong>Semantic similarity:</strong>  By calculating cosine similarity or other distance metrics between word vectors, we can estimate the semantic similarity between words. Words like "king" and "queen" will have higher similarity than "king" and "apple."</li>
+<li><strong>Analogical reasoning:</strong>  Word embeddings can be used to solve analogy problems like "man is to king as woman is to queen".  We can find the vector closest to <em>vector("king") - vector("man") + vector("woman")</em>.</li>
+<li><strong>Input features for NLP tasks:</strong> Word embeddings can be used as input features for various downstream NLP tasks like text classification, sentiment analysis, machine translation, and named entity recognition. They provide a dense, low-dimensional representation of words compared to sparse one-hot encodings.  They allow models to generalize better to unseen words based on semantic similarity.</li>
+<li><strong>Word Clustering:</strong> Word embeddings can be clustered to group similar words, which can then be used for tasks such as creating thesauruses or topic modeling.</li>
+</ul>
+<p>However, a fundamental limitation is that these embeddings are <em>static</em>. A word has the <em>same</em> vector representation regardless of the context in which it appears. This means that the word "bank" will have the same vector whether it refers to a financial institution or the bank of a river. This is a major drawback because word meanings are often context-dependent.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are building a sentiment analysis model for customer reviews. You have reviews for a new restaurant. Consider these two sentences:</p>
+<ul>
+<li>"The food was great, but the service was <em>slow</em>." (Negative connotation of "slow")</li>
+<li>"The internet connection was <em>slow</em>, but they offered to compensate for it." (Less negative, possibly neutral connotation of "slow").</li>
+</ul>
+<p>Using static word embeddings, the word "slow" will have the same vector representation in both sentences. This means the sentiment analysis model will struggle to differentiate between the nuances in meaning conveyed by the context. The model might incorrectly classify the second sentence as more negative than it actually is because of the negative association of "slow" in its pre-trained embedding.</p>
+<p>Another scenario is handling polysemous words like "bank". A question answering system using static embeddings might provide incorrect answers if the question involves differentiating between the river bank and the financial institution bank, as the same embedding would be used for both.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using the <code>gensim</code> library, you can load a pre-trained Word2Vec model and access word vectors. This demonstrates how static embeddings work, but also highlights the static nature.</p>
+<pre class="codehilite"><code class="language-python">import gensim.downloader as api
+from gensim.models import KeyedVectors
+
+# Download a pre-trained Word2Vec model (small size for demonstration)
+try:
+    word_vectors = api.load(&quot;glove-twitter-25&quot;)  # can also be word2vec-google-news-300
+except:
+    print(&quot;Download failed. Please check your internet connection&quot;)
+    exit()
+
+# Get the vector representation of the word &quot;bank&quot;
+vector_bank = word_vectors[&quot;bank&quot;]
+print(&quot;Vector representation of 'bank':&quot;, vector_bank[:10])  # Print the first 10 dimensions
+
+# Check the similarity between &quot;bank&quot; and &quot;river&quot; and &quot;bank&quot; and &quot;finance&quot;
+similarity_river = word_vectors.similarity(&quot;bank&quot;, &quot;river&quot;)
+similarity_finance = word_vectors.similarity(&quot;bank&quot;, &quot;finance&quot;)
+
+print(&quot;Similarity between 'bank' and 'river':&quot;, similarity_river)
+print(&quot;Similarity between 'bank' and 'finance':&quot;, similarity_finance)
+
+#Demonstrating that the vector for 'bank' is the same regardless of context
+vector_bank_context1 = word_vectors[&quot;bank&quot;]
+vector_bank_context2 = word_vectors[&quot;bank&quot;]
+
+print(&quot;Are the bank vectors the same in both context? : &quot;, (vector_bank_context1 == vector_bank_context2).all())
+</code></pre>
+
+<p>This code snippet demonstrates that the vector for "bank" remains the same regardless of the context.  The similarity scores show the model captures <em>some</em> semantic relationships, but it cannot distinguish between different meanings of "bank" based on context. The fact that <code>vector_bank_context1</code> and <code>vector_bank_context2</code> are identical confirms the static nature.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do <em>contextualized</em> word embeddings (like those produced by BERT, RoBERTa, or ELMo) address the limitations of static word embeddings, and what are their own associated limitations?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
