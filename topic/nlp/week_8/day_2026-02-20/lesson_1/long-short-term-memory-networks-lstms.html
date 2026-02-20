@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Long Short-Term Memory Networks (LSTMs)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-long-short-term-memory-networks-lstms">Topic: Long Short-Term Memory Networks (LSTMs)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Long Short-Term Memory networks (LSTMs) are a special kind of Recurrent Neural Network (RNN) architecture designed to overcome the vanishing gradient problem, which hinders standard RNNs from learning long-term dependencies in sequential data. In essence, LSTMs are designed to "remember" information over long periods.</p>
+<p><strong>What is it?</strong></p>
+<p>LSTMs introduce a "cell state" (often denoted as <code>C_t</code>) and three "gates": the input gate (<code>i_t</code>), the forget gate (<code>f_t</code>), and the output gate (<code>o_t</code>). These gates regulate the flow of information into and out of the cell state. The cell state acts as a kind of conveyor belt, transporting relevant information across many time steps. The gates are essentially neural networks that output values between 0 and 1, representing the degree to which information should be allowed to pass through.</p>
+<p>Here's a breakdown of the key components and their equations:</p>
+<ul>
+<li><strong>Input Gate (<code>i_t</code>):</strong> Determines what new information should be added to the cell state.<ul>
+<li><code>i_t = σ(W_i * [h_{t-1}, x_t] + b_i)</code></li>
+</ul>
+</li>
+<li><strong>Forget Gate (<code>f_t</code>):</strong> Determines what information should be discarded from the cell state.<ul>
+<li><code>f_t = σ(W_f * [h_{t-1}, x_t] + b_f)</code></li>
+</ul>
+</li>
+<li><strong>Output Gate (<code>o_t</code>):</strong> Determines what information from the cell state should be output as the hidden state.<ul>
+<li><code>o_t = σ(W_o * [h_{t-1}, x_t] + b_o)</code></li>
+</ul>
+</li>
+<li><strong>Cell State Candidate (<code>C~_t</code>):</strong> A candidate for the new cell state.<ul>
+<li><code>C~_t = tanh(W_c * [h_{t-1}, x_t] + b_c)</code></li>
+</ul>
+</li>
+<li><strong>Cell State (<code>C_t</code>):</strong> The updated cell state.<ul>
+<li><code>C_t = f_t * C_{t-1} + i_t * C~_t</code></li>
+</ul>
+</li>
+<li><strong>Hidden State (<code>h_t</code>):</strong> The output of the LSTM at time step <code>t</code>.<ul>
+<li><code>h_t = o_t * tanh(C_t)</code></li>
+</ul>
+</li>
+</ul>
+<p>Where:
+*   <code>x_t</code> is the input at time step <code>t</code>
+*   <code>h_{t-1}</code> is the hidden state from the previous time step
+*   <code>W</code> are weight matrices
+*   <code>b</code> are bias vectors
+*   <code>σ</code> is the sigmoid activation function
+*   <code>tanh</code> is the hyperbolic tangent activation function</p>
+<p><strong>How can we use it?</strong></p>
+<p>LSTMs are used for tasks involving sequential data, where the order and context of the data points are important.  Examples include:</p>
+<ul>
+<li><strong>Natural Language Processing:</strong> Machine translation, text generation, sentiment analysis, part-of-speech tagging.</li>
+<li><strong>Speech Recognition:</strong> Converting speech to text.</li>
+<li><strong>Time Series Analysis:</strong> Predicting future values based on past observations (e.g., stock prices, weather patterns).</li>
+<li><strong>Video Analysis:</strong> Action recognition, video captioning.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Application Scenario: Sentiment Analysis of Movie Reviews</strong></p>
+<p>Imagine you want to build a system that can automatically classify movie reviews as either "positive" or "negative" based on the text of the review.  A standard bag-of-words approach might fail to capture the nuances of language, such as negation ("not good" vs. "good") or long-range dependencies (a review that starts positive but ends negative).</p>
+<p>LSTMs can be used to address this. Each word in the review is converted into a word embedding (a vector representation).  The LSTM processes the sequence of word embeddings, one word at a time.  The hidden state of the LSTM at the last time step (or a pooling of hidden states across time steps) captures the overall sentiment of the review. This hidden state can then be fed into a fully connected layer followed by a sigmoid activation function to produce a probability score between 0 and 1, representing the likelihood of the review being positive. By training the LSTM on a large dataset of labeled movie reviews, the network learns to associate specific words and phrases with positive or negative sentiment, taking into account the context in which they appear. The "forget gate" can allow the LSTM to disregard irrelevant initial information, while the "input gate" and "output gate" allow the LSTM to selectively remember and utilize crucial pieces of information that contribute to the overall sentiment.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense
+
+# Define the vocabulary size and embedding dimension
+vocab_size = 10000  # Example: the size of your word vocabulary
+embedding_dim = 128 # Example: the dimensionality of the word embeddings
+lstm_units = 64     # Example: the number of LSTM units in the LSTM layer
+max_length = 200    # Example: maximum review length
+
+# Build the LSTM model
+model = Sequential([
+    Embedding(vocab_size, embedding_dim, input_length=max_length),
+    LSTM(lstm_units),
+    Dense(1, activation='sigmoid') # Output layer for binary classification
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+# Print the model summary
+model.summary()
+
+# Example usage (replace with your actual data)
+# Assuming you have training data like this:
+# train_sequences: A list of tokenized and padded sequences of integers representing reviews.
+# train_labels: A list of binary labels (0 or 1) representing negative or positive sentiment.
+# X_train = tf.keras.preprocessing.sequence.pad_sequences(train_sequences, maxlen=max_length)
+# y_train = np.array(train_labels)  # Convert list to NumPy array
+
+# model.fit(X_train, y_train, epochs=2, batch_size=32) # Train the model
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Embedding Layer:</strong> Converts integer word indices into dense word embeddings. This layer learns a vector representation for each word in your vocabulary.  The <code>input_length</code> argument specifies the expected length of the input sequences.</li>
+<li><strong>LSTM Layer:</strong> The core LSTM layer processes the sequence of word embeddings. <code>lstm_units</code> determines the number of LSTM cells in the layer.</li>
+<li><strong>Dense Layer:</strong> A fully connected layer with a sigmoid activation function for binary classification (positive/negative sentiment).  Outputs a probability score between 0 and 1.</li>
+<li><strong>Compilation:</strong> Defines the optimizer (Adam), loss function (binary cross-entropy, suitable for binary classification), and evaluation metric (accuracy).</li>
+<li><strong>Training (Commented Out):</strong> The <code>model.fit()</code> function is used to train the model on your data.  You would replace <code>X_train</code> and <code>y_train</code> with your preprocessed training data. The code first pads the sequences to <code>max_length</code> to ensure all inputs have the same size.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that LSTMs have a relatively complex architecture and are computationally expensive, what are some alternative approaches or architectures (e.g., simpler RNN variants, Transformers) that can be used to achieve similar performance in certain NLP tasks, and what are the trade-offs involved?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
