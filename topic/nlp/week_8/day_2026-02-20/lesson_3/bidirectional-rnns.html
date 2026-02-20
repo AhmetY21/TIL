@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bidirectional RNNs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-bidirectional-rnns">Topic: Bidirectional RNNs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A Bidirectional Recurrent Neural Network (BRNN) is a type of recurrent neural network that processes input sequences in both directions – forward and backward – before making predictions.  Unlike a standard RNN, which processes information sequentially from the beginning to the end, a BRNN uses two separate RNNs: one processing the input sequence in its original order (forward RNN) and the other processing the input sequence in reverse order (backward RNN).</p>
+<p>Formally:</p>
+<ul>
+<li><strong>Input:</strong> A sequence of vectors <em>x = (x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>T</sub>)</em>.</li>
+<li><strong>Forward RNN:</strong> Processes the input from <em>x<sub>1</sub></em> to <em>x<sub>T</sub></em>.  At each time step <em>t</em>, it computes a hidden state <em>h<sub>t</sub><sup>f</sup></em> based on the current input <em>x<sub>t</sub></em> and the previous hidden state <em>h<sub>t-1</sub><sup>f</sup></em>.</li>
+<li><strong>Backward RNN:</strong> Processes the input from <em>x<sub>T</sub></em> to <em>x<sub>1</sub></em>. At each time step <em>t</em>, it computes a hidden state <em>h<sub>t</sub><sup>b</sup></em> based on the current input <em>x<sub>t</sub></em> and the previous hidden state <em>h<sub>t+1</sub><sup>b</sup></em>.  Note that while the <em>input</em> to the backward RNN might be in reverse order, the time index <em>t</em> still increases from 1 to T.</li>
+<li><strong>Output:</strong> At each time step <em>t</em>, the outputs of the forward and backward RNNs, <em>h<sub>t</sub><sup>f</sup></em> and <em>h<sub>t</sub><sup>b</sup></em>, are combined (e.g., by concatenation, summation, or averaging) to produce the final output <em>y<sub>t</sub></em>.  Mathematically: <em>y<sub>t</sub> = f(h<sub>t</sub><sup>f</sup>, h<sub>t</sub><sup>b</sup>)</em>, where <em>f</em> is a combination function.</li>
+</ul>
+<p>We can use BRNNs to:</p>
+<ul>
+<li><strong>Understand context better:</strong> By considering information from both past and future inputs, BRNNs provide a more comprehensive understanding of the context for each element in the sequence.  This is particularly useful when the meaning of an element depends on what comes before and after it.</li>
+<li><strong>Improve prediction accuracy:</strong> BRNNs often achieve higher accuracy than standard RNNs in tasks where context is crucial, such as sequence labeling, machine translation, and speech recognition.</li>
+<li><strong>Handle long-range dependencies:</strong>  While BRNNs are still subject to the vanishing gradient problem to some extent, the bidirectional processing can help capture long-range dependencies more effectively than unidirectional RNNs.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A common application scenario for BRNNs is <strong>Part-of-Speech (POS) tagging</strong>. In POS tagging, the goal is to assign a grammatical tag (e.g., noun, verb, adjective) to each word in a sentence.  The correct POS tag for a word often depends on the words surrounding it.</p>
+<p>For example, consider the sentence "The cat sat on the mat."  A BRNN can analyze the sentence from left to right (forward RNN) and from right to left (backward RNN). The forward RNN might see "The cat" and start to build an understanding that "cat" is likely a noun.  The backward RNN might see "on the mat" and reinforce the idea that "cat" is likely a noun acting as the subject of the verb "sat".  By combining the information from both RNNs, the BRNN can confidently assign the "Noun" tag to the word "cat".</p>
+<p>Another example is <strong>Named Entity Recognition (NER)</strong>. Detecting named entities (people, organizations, locations) also benefits from contextual information.  A BRNN can use the forward and backward passes to accurately identify and classify named entities even if they are ambiguous or have different meanings in different contexts.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.layers import Bidirectional, LSTM, Dense
+
+# Example: Bidirectional LSTM for sequence classification
+
+# Define the model
+model = tf.keras.Sequential([
+    Bidirectional(LSTM(64, return_sequences=True), input_shape=(None, 10)), # Input shape: (sequence length, features)
+    Bidirectional(LSTM(32)),
+    Dense(1, activation='sigmoid') # Output layer for binary classification
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+# Print the model summary
+model.summary()
+
+# Generate some dummy data for training
+import numpy as np
+X_train = np.random.rand(100, 20, 10) # 100 samples, sequence length 20, 10 features
+y_train = np.random.randint(0, 2, 100)
+
+# Train the model
+model.fit(X_train, y_train, epochs=2, batch_size=32)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>tensorflow.keras.layers.Bidirectional</code>:</strong> This layer wraps another recurrent layer (e.g., <code>LSTM</code>, <code>GRU</code>, <code>SimpleRNN</code>) and creates a bidirectional version of it.  It automatically creates the forward and backward RNNs.</li>
+<li><strong><code>LSTM(64, return_sequences=True)</code>:</strong>  This creates an LSTM layer with 64 hidden units.  <code>return_sequences=True</code> is important in the first Bidirectional layer if you want to stack multiple Bidirectional layers. It means that the LSTM layer will output a sequence of hidden states for each time step, rather than just the final hidden state.</li>
+<li><strong><code>LSTM(32)</code>:</strong> The second LSTM layer has 32 units. Because <code>return_sequences</code> is not set, the second Bidirectional layer receives only the final hidden state.</li>
+<li><strong><code>input_shape=(None, 10)</code>:</strong> Specifies the shape of the input data.  <code>None</code> indicates that the sequence length can vary.  <code>10</code> represents the number of features at each time step.</li>
+<li>The code demonstrates a simple binary classification task. It shows how to define, compile, and train a BRNN using TensorFlow/Keras.  The dummy data is randomly generated for demonstration purposes.  Replace this with your actual dataset.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the limitations of Bidirectional RNNs, and what are some techniques to address those limitations? For example, are there cases where non-recurrent methods like transformers would be preferable and why?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
