@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Pattern: Stochastic Unit Commitment / Energy Planning (high level)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-application-pattern-stochastic-unit-commitment-energy-planning-high-level">Topic: Application Pattern: Stochastic Unit Commitment / Energy Planning (high level)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Stochastic Unit Commitment (SUC) and Stochastic Energy Planning are extensions of traditional unit commitment and energy planning problems that explicitly incorporate uncertainty.</p>
+<ul>
+<li>
+<p><strong>Traditional Unit Commitment (UC):</strong> Aims to determine the optimal on/off schedule for generating units (e.g., power plants) to meet electricity demand at minimum cost, while respecting various operational constraints like ramp rates, minimum up/down times, and capacity limits. It typically assumes deterministic (fixed and known) demand and fuel prices.</p>
+</li>
+<li>
+<p><strong>Traditional Energy Planning:</strong>  Extends unit commitment to a longer time horizon (e.g., years, decades) and considers investment decisions in new generation capacity (e.g., building new power plants, renewable energy installations) alongside operational decisions. Similar to UC, it often relies on deterministic forecasts.</p>
+</li>
+<li>
+<p><strong>Stochastic Unit Commitment (SUC):</strong> Recognizes that electricity demand, renewable energy output (solar, wind), fuel prices, and even unit outages are uncertain. SUC uses probability distributions or scenarios to represent this uncertainty. The goal is to find a unit commitment schedule that minimizes the expected cost of operation <em>over a set of possible scenarios</em>, while still satisfying all constraints in each scenario.  It makes "here-and-now" commitment decisions (e.g., turning units on/off) that are robust against a wide range of potential future outcomes.</p>
+</li>
+<li>
+<p><strong>Stochastic Energy Planning:</strong> Builds upon stochastic UC by incorporating long-term investment decisions under uncertainty. It aims to optimize both investment in generation capacity and operational decisions, considering various scenarios for future demand growth, technology costs, environmental regulations, and fuel prices. It seeks the optimal mix of generation technologies and their operation over a long-term planning horizon, minimizing expected costs and risks.</p>
+</li>
+</ul>
+<p><strong>How we use it:</strong></p>
+<p>SUC and Stochastic Energy Planning are used to:</p>
+<ul>
+<li><strong>Improve System Reliability:</strong>  By considering uncertainty, the solutions are more robust to unexpected events, reducing the risk of supply shortages or blackouts.</li>
+<li><strong>Reduce Operating Costs:</strong>  While seemingly counterintuitive, anticipating uncertainty can allow for more efficient dispatch and hedging strategies, potentially lowering overall operating costs compared to deterministic approaches.</li>
+<li><strong>Facilitate Renewable Energy Integration:</strong> Stochastic models are crucial for handling the variability and intermittency of renewable energy sources like solar and wind.</li>
+<li><strong>Make Better Investment Decisions:</strong> Stochastic Energy Planning provides a framework for evaluating different investment options under uncertainty, leading to more informed and resilient energy infrastructure development.</li>
+<li><strong>Quantify Risk:</strong> SUC and Stochastic Energy Planning provide insights into the potential risks associated with different operating and investment strategies, allowing decision-makers to make more informed choices.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a utility company planning its operations for the next 24 hours. The company has a mix of generation assets: coal-fired plants, natural gas turbines, and wind farms. The demand forecast for electricity is uncertain, and the wind farm output is highly variable and depends on unpredictable weather patterns.</p>
+<p><strong>Deterministic UC Approach:</strong> The utility would use a single, deterministic demand forecast and a single forecast of wind generation to create a unit commitment schedule. If the actual demand turns out to be higher than forecasted, or the wind output is lower, the system might face a shortage of electricity, requiring costly emergency purchases from the market or even load shedding (blackouts).</p>
+<p><strong>Stochastic UC Approach:</strong> The utility would create several "scenarios" representing different possibilities for demand and wind generation.  For example:</p>
+<ul>
+<li>Scenario 1: High demand, low wind</li>
+<li>Scenario 2: Medium demand, medium wind</li>
+<li>Scenario 3: Low demand, high wind</li>
+</ul>
+<p>The SUC model would then determine a unit commitment schedule that minimizes the <em>expected</em> operating cost across all these scenarios, while ensuring that demand is met in each scenario.  This might involve committing more flexible natural gas turbines to be ready to ramp up quickly if the wind output is low, even if it increases the expected cost slightly. The resulting schedule would be more robust to the uncertainties, reducing the risk of shortages and minimizing the overall long-term cost.</p>
+<p>A similar application can be designed for Stochastic Energy Planning, but for a much longer time horizon (e.g., 20 years) and would include scenarios about fuel prices, policy, and new technologies.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using Python with a suitable optimization library like Pyomo, you can formulate and solve SUC and Stochastic Energy Planning problems. Here's a simplified example of a small SUC formulation.  It focuses on the core concepts and assumes a scenario-based approach.</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+
+def create_suc_model(num_units, num_scenarios, demand_scenarios, unit_costs, unit_capacities):
+    &quot;&quot;&quot;
+    Creates a Pyomo model for a simplified Stochastic Unit Commitment problem.
+
+    Args:
+        num_units (int): Number of generating units.
+        num_scenarios (int): Number of scenarios.
+        demand_scenarios (list): List of demand values for each scenario.
+        unit_costs (list): List of cost per unit for each generating unit.
+        unit_capacities (list): List of capacity for each generating unit.
+
+    Returns:
+        pyo.ConcreteModel: The Pyomo model.
+    &quot;&quot;&quot;
+
+    model = pyo.ConcreteModel()
+
+    # Sets
+    model.Units = pyo.RangeSet(1, num_units)
+    model.Scenarios = pyo.RangeSet(1, num_scenarios)
+
+    # Parameters
+    model.demand = pyo.Param(model.Scenarios, initialize=lambda model, s: demand_scenarios[s-1])
+    model.cost = pyo.Param(model.Units, initialize=lambda model, u: unit_costs[u-1])
+    model.capacity = pyo.Param(model.Units, initialize=lambda model, u: unit_capacities[u-1])
+    model.scenario_probability = pyo.Param(model.Scenarios, initialize=1.0/num_scenarios) # Equal probability
+
+    # Variables
+    model.on = pyo.Var(model.Units, domain=pyo.Binary)  # Commitment decision (here-and-now)
+    model.generation = pyo.Var(model.Units, model.Scenarios, domain=pyo.NonNegativeReals) # Generation level in each scenario
+
+    # Objective Function
+    def objective_rule(model):
+        return sum(model.scenario_probability[s] * sum(model.cost[u] * model.generation[u, s] for u in model.Units) for s in model.Scenarios)
+    model.objective = pyo.Objective(rule=objective_rule, sense=pyo.MINIMIZE)
+
+    # Constraints
+    def demand_constraint_rule(model, s):
+        return sum(model.generation[u, s] for u in model.Units) &gt;= model.demand[s]
+    model.demand_constraint = pyo.Constraint(model.Scenarios, rule=demand_constraint_rule)
+
+    def capacity_constraint_rule(model, u, s):
+        return model.generation[u, s] &lt;= model.on[u] * model.capacity[u]
+    model.capacity_constraint = pyo.Constraint(model.Units, model.Scenarios, rule=capacity_constraint_rule)
+
+    return model
+
+# Example usage
+num_units = 2
+num_scenarios = 3
+demand_scenarios = [100, 120, 90]
+unit_costs = [5, 7]  # Cost per unit generation
+unit_capacities = [80, 60]
+
+model = create_suc_model(num_units, num_scenarios, demand_scenarios, unit_costs, unit_capacities)
+
+# Solve the model
+solver = pyo.SolverFactory('glpk')  # You may need to install a solver like GLPK
+solver.solve(model)
+
+# Print results
+print(&quot;Optimal Objective Value:&quot;, pyo.value(model.objective))
+for u in model.Units:
+    print(f&quot;Unit {u} On/Off: {pyo.value(model.on[u])}&quot;)
+    for s in model.Scenarios:
+        print(f&quot;  Scenario {s} Generation: {pyo.value(model.generation[u, s])}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Model Creation:</strong> The <code>create_suc_model</code> function sets up the Pyomo model.</li>
+<li><strong>Sets:</strong> <code>Units</code> and <code>Scenarios</code> define the indices for the generating units and the scenarios, respectively.</li>
+<li><strong>Parameters:</strong> <code>demand</code>, <code>cost</code>, <code>capacity</code>, and <code>scenario_probability</code> store the problem data.</li>
+<li><strong>Variables:</strong> <code>on</code> (binary) indicates whether a unit is committed (on=1, off=0). This is a "here-and-now" decision, meaning it's made before knowing which scenario will occur. <code>generation</code> represents the generation level of each unit in each scenario.  This is a "wait-and-see" decision.</li>
+<li><strong>Objective Function:</strong> Minimizes the expected cost of generation across all scenarios.</li>
+<li><strong>Constraints:</strong><ul>
+<li><code>demand_constraint</code>: Ensures that demand is met in each scenario.</li>
+<li><code>capacity_constraint</code>: Limits the generation of each unit to its capacity, only if the unit is committed.</li>
+</ul>
+</li>
+<li><strong>Solving:</strong> The code uses the GLPK solver (you may need to install it using <code>apt-get install glpk</code> on linux or equivalent package managers on other OS) to solve the optimization problem. Other solvers (e.g., Gurobi, CPLEX) are often used for larger and more complex SUC problems.</li>
+<li><strong>Printing Results:</strong> Displays the optimal objective value and the commitment and generation levels for each unit in each scenario.</li>
+</ol>
+<p><strong>Limitations:</strong></p>
+<ul>
+<li><strong>Simplification:</strong> This is a highly simplified model. Real-world SUC models include many more constraints, such as ramp rates, minimum up/down times, reserve requirements, transmission constraints, and start-up costs.</li>
+<li><strong>Solver:</strong> GLPK might not be suitable for larger, more complex problems.</li>
+<li><strong>Scenario Generation:</strong> This example assumes scenarios are pre-defined. Real-world applications use more sophisticated techniques like Monte Carlo simulation or scenario reduction algorithms to generate representative scenarios.</li>
+<li><strong>Two-Stage vs. Multi-Stage:</strong> This example focuses on a two-stage approach (commitments are made now, generation levels are adjusted later). Multi-stage stochastic programming is often used for longer-term energy planning, allowing for sequential decision-making as uncertainty unfolds over time.</li>
+</ul>
+<p>This simplified example provides a basic understanding of how stochastic unit commitment can be formulated and solved using Pyomo.  For real-world applications, you would need to expand the model to include more detailed constraints and use more sophisticated scenario generation and solution techniques.  Stochastic Energy Planning extends this framework to consider investment decisions over longer time horizons.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different methods for scenario generation (e.g., Monte Carlo simulation, scenario reduction techniques) impact the computational complexity and accuracy of a stochastic unit commitment model? Which method is generally preferred in practice, and why?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
