@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capstone: Build a Two-Stage Stochastic Program End-to-End (data → scenarios → solve → validate)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-capstone-build-a-two-stage-stochastic-program-end-to-end-data-scenarios-solve-validate">Topic: Capstone: Build a Two-Stage Stochastic Program End-to-End (data → scenarios → solve → validate)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A two-stage stochastic program is a mathematical optimization model used for decision-making under uncertainty. It involves making decisions in two stages:</p>
+<ul>
+<li>
+<p><strong>First-stage (Here-and-Now) Decisions:</strong> These decisions must be made <em>before</em> the uncertainty is revealed. They are independent of the realization of the random variables. These decisions define an initial plan that can be adjusted.</p>
+</li>
+<li>
+<p><strong>Second-stage (Recourse) Decisions:</strong> These decisions are made <em>after</em> the uncertainty is revealed. They are adjustments to the first-stage decisions and aim to minimize the cost of deviations from the initial plan due to the specific outcome of the random variables. These decisions are scenario-dependent. These decisions define the adaptation strategy.</p>
+</li>
+</ul>
+<p><strong>Formally:</strong></p>
+<p>A general two-stage stochastic linear program can be represented as follows:</p>
+<pre class="codehilite"><code>min cᵀx + E[Q(x, ω)]
+subject to:
+Ax = b
+x ≥ 0
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><code>x</code> is the vector of first-stage decision variables.</li>
+<li><code>c</code> is the cost vector associated with the first-stage decisions.</li>
+<li><code>ω</code> is the random variable representing the uncertainty.  It can take various realizations (scenarios).</li>
+<li><code>E[Q(x, ω)]</code> is the expected value of the second-stage cost function, which depends on the first-stage decision <code>x</code> and the realization of the random variable <code>ω</code>.  This represents the average cost across all possible scenarios.</li>
+<li><code>A</code> and <code>b</code> are constraint matrices and vectors for the first-stage constraints.</li>
+</ul>
+<p>The second-stage cost function <code>Q(x, ω)</code> is defined as:</p>
+<pre class="codehilite"><code>Q(x, ω) = min q(ω)ᵀy(ω)
+subject to:
+T(ω)x + W(ω)y(ω) = h(ω)
+y(ω) ≥ 0
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><code>y(ω)</code> is the vector of second-stage decision variables for scenario <code>ω</code>.</li>
+<li><code>q(ω)</code> is the cost vector associated with the second-stage decisions for scenario <code>ω</code>.</li>
+<li><code>T(ω)</code>, <code>W(ω)</code>, and <code>h(ω)</code> are constraint matrices and vectors for the second-stage constraints, which depend on the scenario <code>ω</code>. <code>T(ω)</code> models the impact of the first-stage decisions on the second-stage constraints. <code>W(ω)</code> couples the recourse actions with the uncertain parameters <code>ω</code>.</li>
+</ul>
+<p><strong>How to use it:</strong></p>
+<p>Two-stage stochastic programming is used when you need to make decisions now, but the outcome depends on future events you don't know for sure. By considering a range of possible scenarios and optimizing for the expected outcome, it allows for more robust and resilient decisions compared to deterministic optimization. The "end-to-end" approach involves the entire process, covering data collection to validation:</p>
+<ol>
+<li><strong>Data:</strong> Gathering historical data or expert opinions to characterize the uncertainty.</li>
+<li><strong>Scenarios:</strong> Generating a set of representative scenarios based on the data. This can involve statistical methods, simulation, or expert judgement. Each scenario represents a possible future outcome.</li>
+<li><strong>Solve:</strong> Formulating the two-stage stochastic program and solving it using an optimization solver. This yields the optimal first-stage decisions and the optimal second-stage decisions for each scenario.</li>
+<li><strong>Validate:</strong> Evaluating the solution's performance under various conditions, including scenarios not used in the initial optimization. This ensures the solution is robust and reliable. This often involves simulation or out-of-sample testing.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Supply Chain Management with Demand Uncertainty:</strong></p>
+<p>A company needs to decide how much inventory to stock in a warehouse before the start of the sales season (first-stage decision). The demand for the product during the season is uncertain (random variable). After the season starts, the company observes the actual demand. If demand is higher than the initial inventory, the company can order more products at a higher cost (second-stage decision - recourse action). If demand is lower than the initial inventory, the company can sell the excess inventory at a discounted price.</p>
+<ul>
+<li><strong>First-stage decision (x):</strong> Amount of inventory to stock.</li>
+<li><strong>Random variable (ω):</strong> Demand during the season.</li>
+<li><strong>Scenarios:</strong>  Possible demand levels (e.g., low, medium, high).</li>
+<li><strong>Second-stage decision (y(ω)):</strong> Amount of additional products to order (if demand is high) or amount of excess inventory to sell at a discount (if demand is low).</li>
+<li><strong>Objective:</strong> Minimize the total cost, including the cost of initial inventory, the cost of additional orders (if needed), and the revenue from selling excess inventory.</li>
+</ul>
+<p>The company would gather historical demand data, generate demand scenarios, formulate the two-stage stochastic program, solve it to determine the optimal initial inventory level, and then validate the solution by simulating the supply chain's performance under different demand scenarios.  The validation process would help determine if the chosen number of scenarios and their probabilities accurately reflect the risks and opportunities of demand variability.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>Pyomo</code> library in Python to model and solve two-stage stochastic programs.  Since a complete end-to-end implementation (data collection, scenario generation, etc.) is extensive, I will provide a simplified example demonstrating the core Pyomo code for defining and solving the model, assuming scenarios are already generated.</p>
+<pre class="codehilite"><code class="language-python">from pyomo.environ import *
+import numpy as np
+
+# Define the number of scenarios
+num_scenarios = 3
+
+# Define scenario probabilities (must sum to 1)
+scenario_probabilities = [0.3, 0.4, 0.3]
+
+# Define scenario data (example demand values)
+scenario_demands = [80, 100, 120]
+
+# Create a concrete Pyomo model
+model = ConcreteModel()
+
+# First-stage variable: Inventory level
+model.x = Var(domain=NonNegativeReals)
+
+# Scenario set
+model.Scenarios = RangeSet(1, num_scenarios)
+
+# Second-stage variables (indexed by scenario):
+# y[s]: Amount to order in scenario s
+model.y = Var(model.Scenarios, domain=NonNegativeReals)
+# z[s]: Amount of excess inventory sold at discount in scenario s
+model.z = Var(model.Scenarios, domain=NonNegativeReals)
+
+
+# Objective function: Minimize total cost
+# c1: cost per unit of initial inventory
+# c2: cost per unit of additional order
+# c3: revenue per unit of excess inventory sold
+c1 = 5
+c2 = 7
+c3 = 3
+
+def objective_rule(model):
+  return c1 * model.x + sum(scenario_probabilities[s-1] * (c2 * model.y[s] - c3 * model.z[s]) for s in model.Scenarios)
+
+model.objective = Objective(rule=objective_rule, sense=minimize)
+
+# Constraint: Demand must be met in each scenario
+def demand_rule(model, s):
+  return model.x + model.y[s] - model.z[s] &gt;= scenario_demands[s-1]
+
+model.demand_constraint = Constraint(model.Scenarios, rule=demand_rule)
+
+
+# Solve the model
+solver = SolverFactory('glpk')  # You can use other solvers like 'gurobi', 'cplex', etc.
+solver.solve(model)
+
+
+# Print the results
+print(&quot;First-stage decision (Inventory Level):&quot;, model.x.value)
+for s in model.Scenarios:
+  print(f&quot;Scenario {s}:&quot;)
+  print(f&quot;  Additional order: {model.y[s].value}&quot;)
+  print(f&quot;  Excess inventory sold: {model.z[s].value}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Scenario Definition:</strong> The code defines a set of scenarios and their probabilities. The <code>scenario_demands</code> variable holds the demand values for each scenario.</li>
+<li><strong>Pyomo Model:</strong> A <code>ConcreteModel</code> is created to represent the optimization problem.</li>
+<li><strong>Variables:</strong> The <code>x</code> variable represents the first-stage inventory level. The <code>y</code> and <code>z</code> variables represent the second-stage decisions (amount to order and amount to sell at a discount, respectively), indexed by scenario.</li>
+<li><strong>Objective Function:</strong> The objective function minimizes the expected total cost, considering the cost of the initial inventory, the cost of additional orders, and the revenue from selling excess inventory, weighted by the scenario probabilities.</li>
+<li><strong>Constraints:</strong> The <code>demand_constraint</code> ensures that the demand is met in each scenario, either through the initial inventory or additional orders.</li>
+<li><strong>Solver:</strong>  The code uses the GLPK solver to find the optimal solution. Other solvers like Gurobi or CPLEX can be used for larger and more complex problems.</li>
+<li><strong>Results:</strong>  The code prints the optimal first-stage decision (inventory level) and the optimal second-stage decisions (additional order and excess inventory sold) for each scenario.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example.  Real-world problems often have more complex constraints and objective functions.</li>
+<li>Scenario generation is a crucial step in stochastic programming. This example assumes scenarios are already provided. Various methods exist for scenario generation, including historical data analysis, Monte Carlo simulation, and scenario reduction techniques.</li>
+<li>Solver selection is important.  Gurobi and CPLEX are commercial solvers that are often preferred for large-scale optimization problems, but GLPK is a free open-source alternative suitable for smaller problems.</li>
+<li>Model validation is essential to ensure the solution is robust and reliable.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can scenario reduction techniques be used to efficiently solve large-scale two-stage stochastic programs when dealing with a high number of possible scenarios, and what are the trade-offs between accuracy and computational complexity when applying these techniques?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
