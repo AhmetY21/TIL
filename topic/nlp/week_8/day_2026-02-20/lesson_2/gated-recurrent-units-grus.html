@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gated Recurrent Units (GRUs)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-gated-recurrent-units-grus">Topic: Gated Recurrent Units (GRUs)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A Gated Recurrent Unit (GRU) is a type of recurrent neural network (RNN) architecture. It is a variant of the Long Short-Term Memory (LSTM) network, and like LSTMs, it addresses the vanishing gradient problem that plagues traditional RNNs, allowing them to learn long-range dependencies in sequential data.  GRUs are simpler than LSTMs, having fewer parameters, which can lead to faster training times and better generalization performance, especially on smaller datasets.</p>
+<p><strong>What is it?</strong></p>
+<p>A GRU cell has two main gates:</p>
+<ul>
+<li>
+<p><strong>Update Gate (z_t):</strong> Determines how much of the previous hidden state (h_{t-1}) should be updated with the new candidate activation.  A high update gate value means the previous hidden state is mostly forgotten, and the candidate activation is used. A low value means the previous hidden state is mostly kept.</p>
+</li>
+<li>
+<p><strong>Reset Gate (r_t):</strong> Determines how much of the previous hidden state (h_{t-1}) is used to compute the new candidate activation (h'_t). A low reset gate value indicates that the previous hidden state is mostly ignored when calculating the candidate activation, which allows the network to effectively forget past information.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>GRUs are used for tasks involving sequential data, such as:</p>
+<ul>
+<li><strong>Natural Language Processing (NLP):</strong><ul>
+<li>Machine Translation</li>
+<li>Text Summarization</li>
+<li>Sentiment Analysis</li>
+<li>Language Modeling</li>
+<li>Question Answering</li>
+</ul>
+</li>
+<li><strong>Speech Recognition</strong></li>
+<li><strong>Time Series Prediction</strong></li>
+<li><strong>Video Analysis</strong></li>
+</ul>
+<p>The GRU receives an input x_t at each time step t, along with the previous hidden state h_{t-1}, and outputs a new hidden state h_t.  The calculations within a GRU cell are as follows:</p>
+<ol>
+<li><strong>Update Gate:</strong> z_t = sigmoid(W_z * x_t + U_z * h_{t-1})</li>
+<li><strong>Reset Gate:</strong> r_t = sigmoid(W_r * x_t + U_r * h_{t-1})</li>
+<li><strong>Candidate Activation:</strong> h'<em>t = tanh(W_h * x_t + U_h * (r_t * h</em>{t-1}))</li>
+<li><strong>Hidden State Update:</strong> h_t = (1 - z_t) * h_{t-1} + z_t * h'_t</li>
+</ol>
+<p>Where:</p>
+<ul>
+<li>x_t is the input at time t.</li>
+<li>h_{t-1} is the hidden state from the previous time step.</li>
+<li>z_t is the update gate.</li>
+<li>r_t is the reset gate.</li>
+<li>h'_t is the candidate activation.</li>
+<li>h_t is the new hidden state.</li>
+<li>W_z, U_z, W_r, U_r, W_h, and U_h are weight matrices that are learned during training.</li>
+<li>sigmoid is the sigmoid activation function.</li>
+<li>tanh is the hyperbolic tangent activation function.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Sentiment Analysis of Movie Reviews</p>
+<p>Imagine you want to build a system that can automatically classify movie reviews as either positive or negative. You can use a GRU for this task.</p>
+<p><strong>Process:</strong></p>
+<ol>
+<li>
+<p><strong>Data Preparation:</strong> You would collect a dataset of movie reviews labeled with their sentiment (positive or negative).  The text of each review would need to be preprocessed, including tokenization (splitting the text into individual words or sub-word units), lowercasing, and potentially removing stop words (common words like "the," "a," "is").  Each token would then be converted into a numerical representation using techniques like word embeddings (e.g., Word2Vec, GloVe, or pre-trained embeddings like those from BERT).</p>
+</li>
+<li>
+<p><strong>Model Building:</strong> You would create a GRU network. The input to the GRU would be a sequence of word embeddings representing the movie review.  The GRU would process the sequence one word at a time, updating its hidden state based on the current word and the previous hidden state.</p>
+</li>
+<li>
+<p><strong>Training:</strong> The GRU network would be trained on the labeled dataset. During training, the network learns to adjust its weights to predict the correct sentiment for each review. The output of the GRU (the final hidden state) could be fed into a fully connected layer followed by a sigmoid activation function to produce a probability between 0 and 1, representing the likelihood of the review being positive.</p>
+</li>
+<li>
+<p><strong>Evaluation:</strong> After training, the model is evaluated on a held-out test set to assess its performance. Metrics like accuracy, precision, recall, and F1-score can be used to evaluate the model's ability to correctly classify movie reviews.</p>
+</li>
+<li>
+<p><strong>Deployment:</strong> Once the model is trained and evaluated, it can be deployed to classify new, unseen movie reviews.</p>
+</li>
+</ol>
+<p>The GRU is well-suited for this task because it can capture the sequential nature of language and learn long-range dependencies between words in the review, which can be crucial for determining the overall sentiment. For example, the presence of words like "not" or "but" can completely flip the sentiment of a sentence.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+
+class GRUModel(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, num_layers=1):
+        super(GRUModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        # Initialize hidden state
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+
+        # Forward propagate GRU
+        out, _ = self.gru(x, h0)  # out: tensor of shape (batch_size, seq_length, hidden_size)
+
+        # Decode the hidden state of the last time step
+        out = self.fc(out[:, -1, :])
+        return out
+
+# Example usage:
+# Assume we have input data of shape (batch_size, sequence_length, input_size)
+input_size = 10  # Example: Each word is represented by a 10-dimensional embedding vector
+hidden_size = 20 # Number of hidden units in the GRU
+output_size = 2  # Example: Binary classification (positive/negative sentiment)
+num_layers = 2   # Number of GRU layers
+
+model = GRUModel(input_size, hidden_size, output_size, num_layers)
+
+# Create a dummy input tensor
+batch_size = 32
+sequence_length = 50
+input_tensor = torch.randn(batch_size, sequence_length, input_size)
+
+# Pass the input through the model
+output = model(input_tensor)
+
+print(output.shape) # Output shape: (batch_size, output_size)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>GRUModel</code> class:</strong> Defines the GRU model.</li>
+<li><strong><code>__init__</code>:</strong>  Initializes the GRU layer (<code>nn.GRU</code>) and a fully connected layer (<code>nn.Linear</code>). <code>batch_first=True</code> means the input tensor is expected to have the shape (batch_size, sequence_length, input_size).</li>
+<li><strong><code>forward</code>:</strong> Defines the forward pass through the network.<ul>
+<li><code>h0 = torch.zeros(...)</code>: Initializes the hidden state to zero. It's crucial to initialize the hidden state before processing each input sequence. <code>x.device</code> ensures the hidden state is on the same device (CPU or GPU) as the input tensor.</li>
+<li><code>out, _ = self.gru(x, h0)</code>:  Passes the input <code>x</code> and the initial hidden state <code>h0</code> through the GRU layer. <code>out</code> contains the hidden states for all time steps, and the underscore <code>_</code> ignores the final hidden state (which is also returned by the GRU layer). The shape of <code>out</code> is (batch_size, sequence_length, hidden_size).</li>
+<li><code>out = self.fc(out[:, -1, :])</code>: Takes the hidden state of the <em>last</em> time step (<code>out[:, -1, :]</code>) as input to the fully connected layer. The assumption here is that the last hidden state captures the relevant information from the entire sequence.</li>
+<li><code>return out</code>: Returns the output of the fully connected layer.</li>
+</ul>
+</li>
+<li><strong>Example usage:</strong> Demonstrates how to create a GRU model, generate a dummy input tensor, and pass it through the model.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the performance of GRUs compare to LSTMs in different NLP tasks, and what factors might influence the choice between using a GRU versus an LSTM?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
