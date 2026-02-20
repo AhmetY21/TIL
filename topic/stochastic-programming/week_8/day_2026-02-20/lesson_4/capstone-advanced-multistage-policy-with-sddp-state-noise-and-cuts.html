@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capstone (Advanced): Multistage Policy with SDDP (state, noise, and cuts)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-capstone-advanced-multistage-policy-with-sddp-state-noise-and-cuts">Topic: Capstone (Advanced): Multistage Policy with SDDP (state, noise, and cuts)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>This capstone topic delves into advanced applications of Stochastic Dual Dynamic Programming (SDDP) for multistage stochastic programming problems, particularly focusing on robust policy construction considering state transitions, stochastic noise, and dynamic cut management.</p>
+<ul>
+<li>
+<p><strong>What is it?</strong></p>
+<p>SDDP is a decomposition algorithm for solving multistage stochastic linear programs (SLPs).  The core idea is to iteratively approximate the value function of the future stages (or subproblems) by constructing linear cuts. These cuts represent lower bounds on the optimal cost-to-go function at each stage. In the <em>capstone</em> setting, we move beyond basic SDDP and consider:</p>
+<ul>
+<li>
+<p><strong>Multistage Policy:</strong> We aim to find a <em>policy</em>, a function that maps the current state to a decision, that is good across <em>all</em> scenarios. This means the decision made at each stage depends on the observed state and considers the potential future scenarios. The focus is not just on finding the optimal <em>value</em>, but on finding a <em>decision rule</em>.</p>
+</li>
+<li>
+<p><strong>State:</strong> The current 'state' encapsulates all relevant information needed to make a decision.  This usually includes things like resource levels, inventory, demand forecasts, and other parameters that evolve over time.  SDDP explicitly models how the state transitions between stages, influenced by decisions and stochastic noise.</p>
+</li>
+<li>
+<p><strong>Noise:</strong>  The 'noise' or 'uncertainty' represents the stochastic elements in the problem, such as random demand, weather conditions, or equipment failures. SDDP samples realizations of this noise during the forward and backward passes.  The quality of the SDDP solution is highly sensitive to the sampling strategy.</p>
+</li>
+<li>
+<p><strong>Cuts:</strong>  Cuts are linear approximations of the value function (or cost-to-go function) from a given stage to the end of the planning horizon.  SDDP iteratively adds cuts during the backward pass, improving the approximation of the value function. Advanced topics include cut management strategies (e.g., cut selection, cut dropping, aggregation) to enhance convergence and stability.  New cuts are added at each state visited in the forward pass, and then passed backwards during the backward pass.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>How can we use it?</strong></p>
+<p>We use this framework to:</p>
+<ol>
+<li><strong>Model complex decision-making problems:</strong> We can represent sequential decisions under uncertainty, where the outcome of earlier decisions impacts future options and costs.</li>
+<li><strong>Develop robust policies:</strong> The SDDP algorithm aims to find policies that perform well across a range of possible future scenarios, providing a degree of risk mitigation.</li>
+<li><strong>Quantify the value of information:</strong> By comparing the performance of a policy with and without incorporating specific information (e.g., a better forecast), we can estimate the value of acquiring that information.</li>
+<li><strong>Optimize resource allocation under uncertainty:</strong> We can use it to determine optimal levels of investment, production, inventory, or other resources, considering the potential impacts of uncertain events.</li>
+<li><strong>Handle large-scale problems:</strong> SDDP's decomposition approach allows us to tackle problems that are too large to be solved directly using deterministic optimization methods.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+</li>
+</ul>
+<p>Consider a <strong>hydroelectric power generation problem</strong> with a multi-reservoir system spanning several years.</p>
+<ul>
+<li><strong>State:</strong> The state is defined by the water levels in each reservoir at the beginning of each stage (e.g., month).  It also includes snowpack levels and long-term weather forecast features that affect inflow.</li>
+<li><strong>Decision:</strong> The decision is the amount of water to release from each reservoir for power generation each month.</li>
+<li><strong>Noise:</strong> The noise is the random inflow of water into the reservoirs due to precipitation and snowmelt. Historical data or stochastic weather models can be used to generate scenarios for the inflow.</li>
+<li><strong>Objective:</strong> The objective is to maximize the expected revenue from electricity generation over the planning horizon, subject to constraints on reservoir capacity, environmental regulations (minimum flow requirements), and power demand.</li>
+</ul>
+<p>We can use multistage SDDP to find a release policy that optimizes electricity generation while minimizing the risk of reservoir depletion or flooding.  The "capstone" aspects are important because:</p>
+<ul>
+<li><strong>Policy:</strong>  The goal is to determine a <em>rule</em> (a policy) that dictates how much water to release <em>given</em> the current water levels in the reservoirs and weather forecasts. This is more practical than simply finding the optimal solution for a specific scenario.  The policy may be a linear function of state variables.</li>
+<li><strong>State Complexity:</strong>  The state variable (water levels in multiple reservoirs plus snowpack and forecast data) is high-dimensional, which can slow down convergence. Advanced cut management techniques become essential.</li>
+<li><strong>Non-Stationary Noise:</strong>  The distribution of inflow may change over time (e.g., due to climate change). This requires adaptive scenario generation and potentially dynamic adjustment of the cuts.</li>
+<li><strong>Cut management</strong>: We can drop or aggregate cuts from past iterations to improve performance. If too many cuts exist, solving the linear program in each forward and backward pass becomes computationally expensive.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a complete implementation is lengthy, here's a simplified conceptual outline using Python libraries like <code>Pyomo</code> (for optimization modeling) and potentially custom code for SDDP logic:</p>
+<pre class="codehilite"><code class="language-python">import pyomo.environ as pyo
+import numpy as np
+import matplotlib.pyplot as plt
+
+class SDDPModel:
+    def __init__(self, num_stages, num_scenarios):
+        self.num_stages = num_stages
+        self.num_scenarios = num_scenarios
+        self.models = [pyo.ConcreteModel() for _ in range(num_stages)]
+        self.cuts = [[] for _ in range(num_stages)] # Store cuts for each stage
+
+    def define_stage_model(self, stage):
+        model = self.models[stage]
+
+        # Example state variable (simplified): single reservoir level
+        model.state = pyo.Var(bounds=(0, 100)) # Reservoir level, bounded 0-100
+
+        # Example decision variable: water release
+        model.release = pyo.Var(bounds=(0, 50)) # Release water, bounded 0-50
+
+        # Example noise variable (stochastic inflow)
+        model.inflow = pyo.Param(initialize=0)  # Set scenario specific inflow later
+
+        # Transition function: state in next stage depends on state, release, and inflow
+        if stage &lt; self.num_stages - 1:
+            def transition_rule(model_instance):
+                return self.models[stage+1].state == model_instance.state - model_instance.release + model_instance.inflow
+            model.transition = pyo.Constraint(rule=transition_rule)
+
+        # Example objective function (maximize electricity generation - simplified)
+        model.obj = pyo.Objective(expr=model.release, sense=pyo.maximize)
+
+        return model
+
+    def add_cut(self, stage, slope, intercept):
+        self.cuts[stage].append((slope, intercept))
+
+    def define_cut_constraint(self, stage):
+        model = self.models[stage]
+
+        def cut_rule(model, state_value):
+            return pyo.sumlist([slope * (state_value) + intercept for slope, intercept in self.cuts[stage]])
+        #Use a placeholder cut constraint, will be replaced during implementation
+        model.cut_constraint = pyo.Constraint(expr=model.obj &lt;= 1000000) # Placeholder. This will contain the cut constraints
+        return model
+    def forward_pass(self, initial_state, scenarios):
+        states = [initial_state]
+        decisions = []
+
+        for stage in range(self.num_stages):
+            model = self.models[stage]
+            model.state.value = states[-1]
+
+            #Sample inflow scenarios for this stage
+            inflow_scenarios = np.random.choice(scenarios, size=self.num_scenarios)
+            best_decision = None
+            best_obj_value = -float('inf')
+            #Solve stage subproblem for each scenario and pick decision that performs best on average
+            for inflow in inflow_scenarios:
+                model.inflow.value = inflow
+                opt = pyo.SolverFactory('glpk') # Or another solver like 'ipopt' or 'gurobi'
+                opt.solve(model)
+
+                if pyo.value(model.obj) &gt; best_obj_value:
+                    best_obj_value = pyo.value(model.obj)
+                    best_decision = pyo.value(model.release) #Save best decision
+            decisions.append(best_decision)
+            if stage &lt; self.num_stages-1:
+                #Simulate next state
+                states.append(states[-1] - best_decision + np.mean(inflow_scenarios))
+
+        return states, decisions
+
+    def backward_pass(self, states, decisions):
+        for stage in reversed(range(self.num_stages)):
+            model = self.models[stage]
+            model.state.value = states[stage]
+            model.release.value = decisions[stage]
+
+            opt = pyo.SolverFactory('glpk')
+            opt.solve(model)
+
+            # Compute slope and intercept for the cut
+            slope = model.dual[model.transition]
+            intercept = pyo.value(model.obj) - slope*pyo.value(model.state)
+            self.add_cut(stage, slope, intercept) # Adds a cut to approximate Value Function
+
+    def train(self, initial_state, scenarios, num_iterations):
+        for stage in range(self.num_stages):
+            self.models[stage] = self.define_stage_model(stage)
+        for i in range(self.num_stages):
+            self.models[i] = self.define_cut_constraint(i)
+        for iteration in range(num_iterations):
+            print(f&quot;Iteration: {iteration}&quot;)
+            states, decisions = self.forward_pass(initial_state, scenarios)
+            self.backward_pass(states, decisions)
+
+            # Cut management (example: remove old cuts if too many exist)
+            for stage in range(self.num_stages):
+                if len(self.cuts[stage]) &gt; 10:
+                    self.cuts[stage] = self.cuts[stage][-5:] # Keep only the last 5 cuts
+
+    def plot_cuts(self, stage_num):
+        x = np.linspace(0, 100, 100)
+        plt.figure()
+        plt.title(f&quot;Cuts for Stage {stage_num}&quot;)
+        for slope, intercept in self.cuts[stage_num]:
+            y = slope * x + intercept
+            plt.plot(x, y, label=f&quot;Cut: slope={slope:.2f}, intercept={intercept:.2f}&quot;)
+        plt.xlabel(&quot;State Variable (Reservoir Level)&quot;)
+        plt.ylabel(&quot;Value Function Approximation&quot;)
+        plt.legend()
+        plt.show()
+
+# Example Usage
+num_stages = 3 # 3 time periods
+num_scenarios = 5
+initial_state = 50
+scenarios = [10, 20, 30, 40, 50] # Simplified inflow scenarios
+num_iterations = 10
+
+sddp_model = SDDPModel(num_stages, num_scenarios)
+sddp_model.train(initial_state, scenarios, num_iterations)
+sddp_model.plot_cuts(0)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>SDDPModel</code> class:</strong> Encapsulates the SDDP algorithm and model definitions.</li>
+<li><strong><code>define_stage_model()</code>:</strong> Defines the optimization model for each stage using Pyomo. This includes decision variables (e.g., water release), state variables (e.g., reservoir level), and the objective function. The "transition" function models the state equation from t to t+1.</li>
+<li><strong><code>add_cut()</code>:</strong> Adds a linear cut to approximate the value function for a given stage.</li>
+<li><strong><code>forward_pass()</code>:</strong> Simulates the system forward in time, making decisions based on the current state and sampled scenarios. We solve each subproblem (for each scenario) to determine how much water to release given a certain inflow scenario.  The decision that performs best among scenarios is chosen and the state is transitioned.</li>
+<li><strong><code>backward_pass()</code>:</strong>  Calculates the dual variables (shadow prices) which gives the slope for the cut. Then computes the value of the cut's intercept.</li>
+<li><strong><code>train()</code>:</strong>  Iterates through the forward and backward passes to refine the value function approximation. Includes cut management logic (removing old cuts). The most important part.</li>
+<li><strong><code>plot_cuts()</code></strong>: Plots the cuts to visualize the value function approximation for a specific stage.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Solver:</strong> Replace <code>'glpk'</code> with a more powerful solver like <code>ipopt</code> or <code>gurobi</code> for realistic problems.</li>
+<li><strong>Sampling:</strong> The scenario generation method is crucial. Consider techniques like Latin Hypercube Sampling or scenario reduction.</li>
+<li><strong>Cut Management:</strong> Implement more sophisticated cut selection, aggregation, and dropping strategies to improve convergence and stability.</li>
+<li><strong>Policy Extraction:</strong> The final step is to extract the policy from the cuts. This typically involves formulating the policy as a linear function of the state variables, where the coefficients are derived from the cuts.</li>
+<li><strong>This is a simplified example.</strong>  Real-world problems involve significantly more complex state spaces, constraints, and objective functions.  Also, the dual variable may be associated with a different constraint.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of scenario generation method (e.g., Monte Carlo sampling, Latin Hypercube Sampling, scenario reduction) impact the convergence and solution quality of the SDDP algorithm, and what strategies can be used to mitigate the effect of poorly chosen scenarios? In particular, what are some advanced techniques beyond simple random sampling that can improve scenario coverage and reduce the number of scenarios needed for a given level of accuracy?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
