@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Pattern: Stochastic Portfolio Optimization (mean-risk with scenarios)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-application-pattern-stochastic-portfolio-optimization-mean-risk-with-scenarios">Topic: Application Pattern: Stochastic Portfolio Optimization (mean-risk with scenarios)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Stochastic Portfolio Optimization (SPO), specifically using a mean-risk approach with scenarios, aims to find an optimal portfolio allocation that balances expected return (mean) against risk, where the uncertainty in future asset returns is represented by a set of discrete scenarios.</p>
+<p><strong>What is it?</strong></p>
+<ul>
+<li><strong>Portfolio Optimization:</strong> Determining the optimal allocation of capital across a set of assets to achieve a specific investment objective.</li>
+<li><strong>Mean-Risk Framework:</strong> The objective is to maximize expected return while minimizing risk. Risk is usually quantified by a measure of dispersion around the mean, such as variance, standard deviation, or more sophisticated risk measures like Value-at-Risk (VaR) or Conditional Value-at-Risk (CVaR).</li>
+<li><strong>Stochastic Programming:</strong>  A framework for optimization problems where some parameters are uncertain. Instead of assuming deterministic values, these parameters are represented by probability distributions.</li>
+<li><strong>Scenarios:</strong> Discrete representations of possible future outcomes. Each scenario specifies the return of each asset in that particular future "world." Each scenario is also assigned a probability representing how likely that scenario is to occur. The scenarios collectively approximate the probability distribution of asset returns.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>The mean-risk SPO with scenarios can be formulated as a mathematical optimization problem, typically a linear program (LP) or a mixed-integer linear program (MILP) depending on the complexity of the constraints and objective. The general idea is:</p>
+<ul>
+<li><strong>Variables:</strong> The decision variables are the portfolio weights (i.e., the proportion of capital allocated to each asset).</li>
+<li><strong>Objective Function:</strong> A combination of the expected portfolio return (averaged across all scenarios) and a risk measure. The objective is usually to maximize a risk-adjusted return (e.g., maximize expected return minus a risk penalty).</li>
+<li><strong>Constraints:</strong><ul>
+<li><strong>Budget Constraint:</strong> The portfolio weights must sum to 1 (or potentially less if short-selling is not allowed).</li>
+<li><strong>Non-negativity Constraint:</strong> If short-selling is not allowed, portfolio weights must be non-negative.</li>
+<li><strong>Other Constraints:</strong> Can include investment limits on specific assets, sector diversification constraints, transaction cost constraints, or any other constraints reflecting investment policies or regulations.</li>
+</ul>
+</li>
+<li><strong>Solving:</strong> The optimization problem is solved using standard optimization solvers (e.g., Gurobi, CPLEX, SciPy). The output is the optimal portfolio weights that balance expected return and risk according to the defined scenarios and constraints.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong>  An investment manager wants to create an optimal portfolio using five different asset classes: US Stocks, International Stocks, Bonds, Real Estate, and Commodities. They have historical data and expert opinions, which are used to generate 100 plausible future scenarios for the returns of each asset class. Each scenario is equally likely. The manager wants to maximize the expected return of the portfolio while keeping the standard deviation of the portfolio return below a certain threshold (risk aversion). They also have a constraint that no single asset class can have more than 40% of the portfolio's capital allocated to it. Short-selling is allowed.</p>
+<p><strong>Details:</strong></p>
+<ul>
+<li><strong>Assets:</strong> <code>assets = ['US Stocks', 'International Stocks', 'Bonds', 'Real Estate', 'Commodities']</code></li>
+<li><strong>Scenarios:</strong> 100 scenarios, each with an equal probability of 1/100.  Each scenario contains a return for each asset. For example, <code>scenario_returns[scenario_number][asset_index]</code> would give the return of that asset in that specific scenario.</li>
+<li><strong>Objective:</strong> Maximize Expected Return - Lambda * (Standard Deviation of Returns), where Lambda is the risk aversion coefficient.</li>
+<li><strong>Constraint:</strong> Portfolio weights sum to 1.  Each asset class must have a weight &lt;= 0.4.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import scipy.optimize as optimize
+
+def stochastic_portfolio_optimization(expected_returns, covariance_matrix, risk_aversion, max_weight):
+    &quot;&quot;&quot;
+    Optimizes a portfolio using a mean-variance approach with a risk aversion parameter.
+
+    Args:
+        expected_returns (np.ndarray): Array of expected returns for each asset.
+        covariance_matrix (np.ndarray): Covariance matrix of asset returns.
+        risk_aversion (float): Risk aversion parameter (higher = more risk averse).
+        max_weight (float): Maximum allowed weight for any single asset.
+
+    Returns:
+        np.ndarray: Optimal portfolio weights.
+    &quot;&quot;&quot;
+
+    num_assets = len(expected_returns)
+
+    # Define the objective function (negative Sharpe ratio)
+    def objective(weights, expected_returns, covariance_matrix, risk_aversion):
+        portfolio_return = np.dot(weights, expected_returns)
+        portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot(covariance_matrix, weights)))
+        return -(portfolio_return - risk_aversion * portfolio_volatility)
+
+    # Define the constraints
+    constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1}) # Weights sum to 1
+    bounds = [(None, max_weight)] * num_assets  # Individual asset weight constraints
+    # Add non-negativity constraints
+
+    # Initial guess (equal allocation)
+    initial_weights = np.array([1/num_assets] * num_assets)
+
+    # Optimization
+    result = optimize.minimize(objective, initial_weights,
+                               args=(expected_returns, covariance_matrix, risk_aversion),
+                               method='SLSQP', bounds=bounds, constraints=constraints)
+
+    if result.success:
+        return result.x
+    else:
+        print(&quot;Optimization failed:&quot;, result.message)
+        return None
+
+
+# Example usage (replace with your actual data)
+#Generating dummy data
+num_assets = 5
+num_scenarios = 100
+
+expected_returns = np.random.rand(num_assets) * 0.1 + 0.05  # Expected returns between 5% and 15%
+covariance_matrix = np.random.rand(num_assets, num_assets)
+covariance_matrix = np.dot(covariance_matrix, covariance_matrix.T) #making it positive semi definite
+covariance_matrix = covariance_matrix / np.max(covariance_matrix) * 0.001  # Scaling it to more realistic values.
+risk_aversion = 0.5
+max_weight = 0.4
+#portfolio_returns = np.random.rand(num_scenarios,num_assets)
+
+optimal_weights = stochastic_portfolio_optimization(expected_returns, covariance_matrix, risk_aversion, max_weight)
+
+if optimal_weights is not None:
+    print(&quot;Optimal Portfolio Weights:&quot;, optimal_weights)
+    print(&quot;Sum of Weights:&quot;, np.sum(optimal_weights)) # should be near 1
+else:
+  print(&quot;Optimization failed.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>stochastic_portfolio_optimization</code> function:</strong></p>
+<ul>
+<li>Takes expected returns, a covariance matrix, risk aversion, and max weight for an asset as input.</li>
+<li>Defines the objective function <code>objective</code>:  This minimizes the negative Sharpe ratio, which is equivalent to maximizing risk-adjusted return.</li>
+<li>Defines constraints:  Budget constraint (weights sum to 1), and bounds constraint for maximum single asset weight.</li>
+<li>Uses <code>scipy.optimize.minimize</code> to solve the optimization problem with the SLSQP solver.</li>
+<li>Returns the optimal portfolio weights if the optimization is successful.</li>
+</ul>
+</li>
+<li>
+<p><strong>Example Usage:</strong></p>
+<ul>
+<li>Creates dummy data for expected returns, and a covariance matrix. It is vital for the covariance matrix to be positive semi-definite, and the matrix generation ensures this.</li>
+<li>Sets a risk aversion level.</li>
+<li>Calls the <code>stochastic_portfolio_optimization</code> function with the data.</li>
+<li>Prints the optimal portfolio weights.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Scenario Generation:</strong> The quality of the scenarios is crucial. They should accurately reflect the potential future outcomes and their associated probabilities. Common methods include historical simulation, Monte Carlo simulation, and bootstrapping.</li>
+<li><strong>Risk Measure:</strong>  The choice of risk measure significantly impacts the portfolio allocation. Standard deviation is easy to use but may not be suitable for non-normal return distributions. CVaR is a popular alternative that focuses on the tail of the distribution.</li>
+<li><strong>Solver:</strong>  The choice of optimization solver can affect the solution time and accuracy. Linear programs can be solved efficiently by LP solvers. More complex problems (e.g., with non-linear constraints or integer variables) may require more sophisticated solvers like MILP solvers.</li>
+<li><strong>Transaction Costs:</strong>  The model should ideally account for transaction costs incurred when rebalancing the portfolio.</li>
+<li><strong>Robustness:</strong> Scenario-based optimization can be sensitive to the specific scenarios used. Consider techniques to improve the robustness of the solution, such as scenario aggregation or robust optimization. The data used should also be reflective of the real world conditions of the asset in question.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How would the formulation and code change if, instead of using standard deviation as the risk measure, we wanted to use Conditional Value-at-Risk (CVaR) at a 95% confidence level? How would this affect the computational complexity of the problem?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
