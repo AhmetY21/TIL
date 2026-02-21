@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Positional Encodings in Transformers</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-positional-encodings-in-transformers">Topic: Positional Encodings in Transformers</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Positional encodings are a crucial component in the Transformer architecture that provides information about the position of tokens in the input sequence. Since Transformers, unlike Recurrent Neural Networks (RNNs), don't inherently process the input sequentially, they lack the capacity to understand the order of words. Positional encodings address this by injecting information about the position of each token directly into the token embeddings.</p>
+<p>Formally, a positional encoding is a vector added to the word embedding vector. This vector represents the position of the word within the sequence. There are two main types of positional encodings:</p>
+<ul>
+<li>
+<p><strong>Learned Positional Encodings:</strong> These are learnable embedding vectors, just like word embeddings. The model learns to associate each position with a specific vector.</p>
+</li>
+<li>
+<p><strong>Fixed Positional Encodings:</strong> These are predefined using mathematical functions, typically sinusoidal functions. The original Transformer paper (Attention is All You Need) used fixed positional encodings.</p>
+</li>
+</ul>
+<p>The most common fixed positional encoding is defined as follows:</p>
+<ul>
+<li>PE(pos, 2i) = sin(pos / (10000<sup>2i/d<sub>model</sub></sup>))</li>
+<li>PE(pos, 2i+1) = cos(pos / (10000<sup>2i/d<sub>model</sub></sup>))</li>
+</ul>
+<p>where:
+*   <code>pos</code> is the position of the word in the sequence (0-indexed).
+*   <code>i</code> is the dimension of the positional encoding vector.
+*   <code>d&lt;sub&gt;model&lt;/sub&gt;</code> is the dimensionality of the word embeddings (and the positional encoding).</p>
+<p>This formula generates a unique positional encoding vector for each position in the input sequence. The use of sine and cosine functions with different frequencies allows the model to attend to relative positions. Words that are close to each other will have similar positional encodings, while words that are far apart will have more dissimilar encodings.</p>
+<p>We use positional encodings by adding them to the word embeddings <em>before</em> feeding the combined vector into the first layer of the Transformer (typically an attention layer). This ensures the model has access to both the meaning of the word (from the word embedding) and its position in the sequence (from the positional encoding).</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Positional encodings are used in virtually every application of Transformers, since the Transformer architecture by itself has no notion of order.  Here are some example application scenarios:</p>
+<ul>
+<li>
+<p><strong>Machine Translation:</strong> In translating a sentence from English to French, the order of words is crucial for grammatical correctness. Positional encodings help the Transformer model maintain the correct word order during translation.</p>
+</li>
+<li>
+<p><strong>Text Summarization:</strong> When generating a summary of a long document, the position of key sentences or phrases might be important. Positional encodings help the model capture these positional dependencies and generate a more coherent summary.</p>
+</li>
+<li>
+<p><strong>Question Answering:</strong> In answering a question based on a given context, understanding the relationships between different parts of the context and the question itself requires positional information.  For instance, knowing that a specific fact appears <em>before</em> a claim might be crucial for understanding the argument's structure and answering the question correctly.</p>
+</li>
+<li>
+<p><strong>Text Generation (Language Modeling):</strong> In generating text, the model needs to know the position of each word to create grammatically correct and meaningful sentences. Positional encodings are vital for predicting the next word in a sequence based on the preceding words.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a Python implementation of the fixed sinusoidal positional encoding:</p>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+import math
+
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model, dropout=0.1, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1) # Shape (max_len, 1, d_model)
+        self.register_buffer('pe', pe) # Not a learnable parameter
+
+    def forward(self, x):
+        x = x + self.pe[:x.size(0), :]
+        return self.dropout(x)
+
+# Example Usage
+if __name__ == '__main__':
+    d_model = 512 # Embedding dimension
+    max_len = 100 # Maximum sequence length
+    batch_size = 32 # Example batch size
+
+    # Instantiate the PositionalEncoding layer
+    pos_encoder = PositionalEncoding(d_model, dropout=0.1, max_len=max_len)
+
+    # Create some dummy input data (representing word embeddings)
+    input_data = torch.randn(max_len, batch_size, d_model) # (seq_len, batch, feature)
+
+    # Apply the positional encoding
+    output_data = pos_encoder(input_data)
+
+    print(&quot;Input data shape:&quot;, input_data.shape)
+    print(&quot;Output data shape (after positional encoding):&quot;, output_data.shape) # Should be same
+</code></pre>
+
+<p>Key points:</p>
+<ul>
+<li><code>d_model</code>: The dimension of the embeddings and positional encodings.</li>
+<li><code>max_len</code>: The maximum sequence length that the positional encoding can handle.</li>
+<li><code>register_buffer</code>: This ensures that the <code>pe</code> tensor is not treated as a learnable parameter, but is still saved with the model. This is useful because the positional encodings are fixed.</li>
+<li>The <code>forward</code> function adds the positional encoding to the input embeddings and applies dropout.</li>
+<li>The dimensions of the positional encoding and the input embedding must match for addition. Typically, the input to the transformer is arranged with the shape (sequence length, batch size, embedding dimension). This code produces a positional encoding with dimensions (max_len, 1, d_model) which allows it to be added via broadcasting.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the advantages and disadvantages of using fixed positional encodings (like sinusoidal functions) compared to learned positional encodings? Are there any scenarios where one might be preferred over the other?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
