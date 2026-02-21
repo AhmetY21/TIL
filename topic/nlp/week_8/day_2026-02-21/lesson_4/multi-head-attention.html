@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Head Attention</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-multi-head-attention">Topic: Multi-Head Attention</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Multi-Head Attention is an attention mechanism used in neural networks, particularly in the Transformer architecture, that allows the model to attend to different parts of the input sequence with different learned linear projections.  It's an extension of the scaled dot-product attention mechanism.</p>
+<p>Here's the breakdown:</p>
+<ul>
+<li>
+<p><strong>Scaled Dot-Product Attention:</strong> The foundation. It calculates attention weights by computing the dot product of a query (Q) with all keys (K), scales the result by the square root of the dimension of the keys (to prevent exploding gradients), and applies a softmax function to obtain probabilities. These probabilities represent the importance of each key for the given query. The final output is a weighted sum of the values (V), where the weights are the attention probabilities. Mathematically:</p>
+<p><code>Attention(Q, K, V) = softmax((Q K^T) / sqrt(d_k)) V</code></p>
+<p>where <code>d_k</code> is the dimension of the keys.</p>
+</li>
+<li>
+<p><strong>Multiple Heads:</strong> Instead of performing a single attention calculation, Multi-Head Attention performs <em>h</em> independent scaled dot-product attentions in parallel. Each attention head uses different learned linear projections to transform the input queries, keys, and values.  Specifically:</p>
+<ol>
+<li>
+<p>The input queries (Q), keys (K), and values (V) are each linearly projected <em>h</em> times using different weight matrices.  This means we learn <em>h</em> different weight matrices <code>W_i^Q</code>, <code>W_i^K</code>, and <code>W_i^V</code> for each head <em>i</em>.</p>
+</li>
+<li>
+<p>Each projected (Q, K, V) tuple is then fed into the scaled dot-product attention mechanism independently, producing <em>h</em> different attention outputs.</p>
+</li>
+<li>
+<p>The <em>h</em> attention outputs are concatenated along a specified dimension.</p>
+</li>
+<li>
+<p>The concatenated output is linearly projected again using a final weight matrix <code>W^O</code> to produce the final Multi-Head Attention output.</p>
+</li>
+</ol>
+<p>Mathematically:</p>
+<p><code>MultiHead(Q, K, V) = Concat(head_1, ..., head_h) W^O</code></p>
+<p>where:</p>
+<p><code>head_i = Attention(Q W_i^Q, K W_i^K, V W_i^V)</code></p>
+<p>and <code>W_i^Q</code>, <code>W_i^K</code>, <code>W_i^V</code>, and <code>W^O</code> are learnable parameter matrices.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Multi-Head Attention allows the model to simultaneously attend to different parts of the input sequence and to capture different relationships between words or sub-words. Each head can learn different aspects of the input, such as syntactic dependencies, semantic relationships, or long-range dependencies.  This makes the model more powerful and capable of capturing more complex patterns in the data. It's crucial for understanding the context of a word in a sentence.  It is used in encoder and decoder architectures.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A primary application scenario for Multi-Head Attention is in <strong>machine translation</strong>. Consider translating the sentence "The animal didn't cross the street because it was too tired."</p>
+<ul>
+<li>
+<p>A single attention mechanism might struggle to correctly associate "it" with either "animal" or "street."</p>
+</li>
+<li>
+<p>Multi-Head Attention allows some heads to focus on syntactic dependencies (e.g., identifying the subject of the verb "was"), while other heads can focus on semantic relationships (e.g., understanding that animals are more likely to be tired than streets). One head might correctly establish that "it" refers to the animal, leading to a correct translation that reflects that meaning. Without this nuanced attention, a translation engine might incorrectly translate the sentence, attributing the tiredness to the street.</p>
+</li>
+</ul>
+<p>Other application scenarios include:</p>
+<ul>
+<li><strong>Text Summarization:</strong> Identifying the most important sentences or phrases in a document.</li>
+<li><strong>Question Answering:</strong> Finding the answer to a question within a given context.</li>
+<li><strong>Sentiment Analysis:</strong> Understanding the overall sentiment expressed in a piece of text.</li>
+<li><strong>Image Captioning:</strong> Generating textual descriptions of images (with attention mechanisms applied to different regions of the image).</li>
+<li><strong>Self-Attention in Language Models:</strong> Modeling relationships between words in a sentence for tasks like language generation.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While implementing Multi-Head Attention from scratch can be complex, deep learning frameworks like TensorFlow and PyTorch provide built-in layers or convenient functions to facilitate its use. Here's an example using TensorFlow/Keras:</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.layers import Layer
+
+class MultiHeadAttention(Layer):
+    def __init__(self, d_model, num_heads):
+        super(MultiHeadAttention, self).__init__()
+        self.num_heads = num_heads
+        self.d_model = d_model
+
+        assert d_model % self.num_heads == 0
+
+        self.depth = d_model // self.num_heads
+
+        self.wq = tf.keras.layers.Dense(d_model)
+        self.wk = tf.keras.layers.Dense(d_model)
+        self.wv = tf.keras.layers.Dense(d_model)
+
+        self.dense = tf.keras.layers.Dense(d_model)
+
+
+    def scaled_dot_product_attention(self, q, k, v, mask):
+        &quot;&quot;&quot;Calculate the attention weights.&quot;&quot;&quot;
+        matmul_qk = tf.matmul(q, k, transpose_b=True)
+
+        # scale matmul_qk
+        dk = tf.cast(tf.shape(k)[-1], tf.float32)
+        scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
+
+        # add the mask to the scaled tensor.
+        if mask is not None:
+            scaled_attention_logits += (mask * -1e9)  
+
+        # softmax is normalized on the last axis (seq_len_k) so that the scores
+        # add up to 1.
+        attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
+
+        output = tf.matmul(attention_weights, v)
+
+        return output, attention_weights
+
+
+    def split_heads(self, x, batch_size):
+        &quot;&quot;&quot;Split the last dimension into (num_heads, depth).
+        Transpose the result such that the shape is (batch_size, num_heads, seq_len, depth)
+        &quot;&quot;&quot;
+        x = tf.reshape(x, (batch_size, -1, self.num_heads, self.depth))
+        return tf.transpose(x, perm=[0, 2, 1, 3])
+
+
+    def call(self, v, k, q, mask):
+        batch_size = tf.shape(q)[0]
+
+        q = self.wq(q)  # (batch_size, seq_len, d_model)
+        k = self.wk(k)  # (batch_size, seq_len, d_model)
+        v = self.wv(v)  # (batch_size, seq_len, d_model)
+
+        q = self.split_heads(q, batch_size)  # (batch_size, num_heads, seq_len_q, depth)
+        k = self.split_heads(k, batch_size)  # (batch_size, num_heads, seq_len_k, depth)
+        v = self.split_heads(v, batch_size)  # (batch_size, num_heads, seq_len_v, depth)
+
+        # scaled_attention.shape == (batch_size, num_heads, seq_len_q, depth)
+        # attention_weights.shape == (batch_size, num_heads, seq_len_q, seq_len_k)
+        scaled_attention, attention_weights = self.scaled_dot_product_attention(
+            q, k, v, mask)
+
+        scaled_attention = tf.transpose(scaled_attention, perm=[0, 2, 1, 3])  # (batch_size, seq_len_q, num_heads, depth)
+
+        concat_attention = tf.reshape(scaled_attention,
+                                      (batch_size, -1, self.d_model))  # (batch_size, seq_len_q, d_model)
+
+        output = self.dense(concat_attention)  # (batch_size, seq_len_q, d_model)
+
+        return output, attention_weights
+
+# Example Usage:
+# Assuming you have sequences q, k, v
+# d_model = 512 # Embedding dimensionality
+# num_heads = 8 # Number of attention heads
+# batch_size = 64
+# seq_len = 20
+
+# q = tf.random.normal((batch_size, seq_len, d_model))
+# k = tf.random.normal((batch_size, seq_len, d_model))
+# v = tf.random.normal((batch_size, seq_len, d_model))
+
+# mha = MultiHeadAttention(d_model, num_heads)
+# output, attention_weights = mha(v, k, q, mask=None)
+
+# print(f&quot;Output shape: {output.shape}&quot;) # Expected: (batch_size, seq_len, d_model)
+# print(f&quot;Attention weights shape: {attention_weights.shape}&quot;) # Expected: (batch_size, num_heads, seq_len, seq_len)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>MultiHeadAttention(Layer)</code> Class:</strong> Defines a Keras layer for Multi-Head Attention.</li>
+<li><strong><code>__init__</code>:</strong> Initializes the layer with the model dimension (<code>d_model</code>), number of heads (<code>num_heads</code>), and calculates the dimension of each head (<code>depth</code>). Also defines the linear projection layers (<code>wq</code>, <code>wk</code>, <code>wv</code>, and <code>dense</code>).</li>
+<li><strong><code>scaled_dot_product_attention</code>:</strong> Implements the scaled dot-product attention mechanism. Includes optional masking to prevent attending to padding tokens or future tokens.</li>
+<li><strong><code>split_heads</code>:</strong> Splits the last dimension (d_model) into multiple heads (num_heads, depth).</li>
+<li><strong><code>call</code>:</strong> The main function that performs the Multi-Head Attention. It projects the queries, keys, and values; splits them into heads; calculates the scaled dot-product attention for each head; concatenates the results; and projects the concatenated output to the final dimension.</li>
+<li><strong>Example Usage:</strong> Shows how to create an instance of the <code>MultiHeadAttention</code> layer and use it with sample input tensors.</li>
+</ol>
+<p>This code provides a basic implementation. You can modify it further by adding dropout layers, layer normalization, or other techniques to improve performance.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the number of attention heads affect the performance and computational cost of a model using Multi-Head Attention, and what are some practical considerations when choosing the number of heads?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
