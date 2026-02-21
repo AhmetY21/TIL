@@ -1,5 +1,5 @@
 {
-  "next_index": 49,
+  "next_index": 50,
   "total_topics": 100,
-  "last_topic": "Machine Translation with Seq2Seq"
+  "last_topic": "Text Generation with RNNs"
 }
