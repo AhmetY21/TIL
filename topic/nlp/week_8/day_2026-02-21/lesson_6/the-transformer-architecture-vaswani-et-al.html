@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Transformer Architecture (Vaswani et al.)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-the-transformer-architecture-vaswani-et-al">Topic: The Transformer Architecture (Vaswani et al.)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Transformer architecture, introduced in the paper "Attention is All You Need" by Vaswani et al. (2017), is a novel neural network architecture based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. It's primarily used for sequence-to-sequence tasks like machine translation, text summarization, and text generation.</p>
+<p><strong>Key Components:</strong></p>
+<ul>
+<li>
+<p><strong>Encoder:</strong> Processes the input sequence and transforms it into a continuous representation. It consists of N identical layers. Each layer comprises two sub-layers:</p>
+<ul>
+<li><strong>Multi-Head Self-Attention:</strong> Computes attention weights between different parts of the input sequence, capturing relationships within the input.</li>
+<li><strong>Feed Forward Network:</strong> A position-wise fully connected feed-forward network applied to each position separately and identically.</li>
+</ul>
+</li>
+<li>
+<p><strong>Decoder:</strong> Generates the output sequence based on the encoder's output. It also consists of N identical layers. Each layer comprises three sub-layers:</p>
+<ul>
+<li><strong>Masked Multi-Head Self-Attention:</strong> Similar to the encoder's attention, but prevents the decoder from attending to future tokens in the sequence during training.</li>
+<li><strong>Multi-Head Attention:</strong> Attends to the output of the encoder, allowing the decoder to consider the entire input sequence when generating the output.</li>
+<li><strong>Feed Forward Network:</strong> A position-wise fully connected feed-forward network.</li>
+</ul>
+</li>
+<li>
+<p><strong>Attention Mechanism (Scaled Dot-Product Attention):</strong> The core of the transformer.  It calculates attention weights based on three inputs:</p>
+<ul>
+<li><strong>Query (Q):</strong> Represents the request for information.</li>
+<li><strong>Key (K):</strong> Represents the data that the query is attending to.</li>
+<li><strong>Value (V):</strong> The actual information being extracted.</li>
+</ul>
+<p>The attention weights are calculated as <code>Attention(Q, K, V) = softmax((Q * K^T) / sqrt(d_k)) * V</code>, where <code>d_k</code> is the dimensionality of the keys. The scaling by <code>sqrt(d_k)</code> prevents the dot products from becoming too large, which can lead to small gradients after the softmax.</p>
+</li>
+<li>
+<p><strong>Multi-Head Attention:</strong> Allows the model to attend to information from different representation subspaces at different positions. It runs the attention mechanism multiple times in parallel with different learned linear projections of Q, K, and V, then concatenates the results.</p>
+</li>
+<li>
+<p><strong>Positional Encoding:</strong> Since the transformer lacks recurrence, it needs a mechanism to inject information about the position of tokens in the sequence. Positional encodings are added to the input embeddings. These can be learned or fixed functions (e.g., sine and cosine functions).</p>
+</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<ol>
+<li><strong>Sequence-to-Sequence Tasks:</strong> Machine translation, text summarization, question answering, code generation, etc.  The input sequence is fed to the encoder, and the decoder generates the output sequence.</li>
+<li><strong>Classification:</strong> By feeding the input sequence through the encoder and using the final hidden state (or CLS token in some variations) for classification.</li>
+<li><strong>Pre-training and Fine-tuning:</strong> Pre-training a large Transformer model on a massive dataset and then fine-tuning it for specific downstream tasks (e.g., BERT, GPT).</li>
+<li><strong>Feature Extraction:</strong> Using the hidden states from different layers of the encoder or decoder as features for other models.</li>
+</ol>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario: Machine Translation (English to French)</strong></p>
+<p>Let's say we want to translate the English sentence "Hello, how are you?" into French.</p>
+<ol>
+<li>
+<p><strong>Input:</strong> The English sentence is tokenized and converted into numerical representations (word embeddings). Positional encodings are added to these embeddings.</p>
+</li>
+<li>
+<p><strong>Encoder:</strong> The encoder processes the English sentence through multiple layers of self-attention and feed-forward networks. The self-attention mechanism allows the model to understand the relationships between words in the sentence. For example, it might learn that "how" is related to "are" and "you".</p>
+</li>
+<li>
+<p><strong>Decoder:</strong> The decoder receives the encoder's output and generates the French translation one word at a time.</p>
+<ul>
+<li>The decoder's masked self-attention prevents it from "cheating" by looking at future words in the translation.</li>
+<li>The decoder's attention mechanism attends to the encoder's output, allowing it to focus on the relevant parts of the English sentence when generating each French word. For example, when generating the French word for "hello" ("Bonjour"), it will focus on the "Hello" part of the English sentence.</li>
+</ul>
+</li>
+<li>
+<p><strong>Output:</strong> The decoder outputs the French translation "Bonjour, comment allez-vous?".</p>
+</li>
+</ol>
+<p>The Transformer excels in this scenario because it can capture long-range dependencies in the sentence, which is crucial for accurate translation. The attention mechanism allows the model to directly relate words that are far apart in the sequence.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While implementing a full Transformer from scratch is complex, we can use existing libraries like Hugging Face Transformers to easily utilize pre-trained models.  Here's a simplified example using the <code>transformers</code> library to perform English to French translation using a pre-trained model from the Hugging Face model hub.</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load a pre-trained translation model (English to French)
+translator = pipeline(&quot;translation_en_to_fr&quot;, model=&quot;Helsinki-NLP/opus-mt-en-fr&quot;)
+
+# Input English sentence
+english_sentence = &quot;Hello, how are you?&quot;
+
+# Translate the sentence
+french_translation = translator(english_sentence)
+
+# Print the translation
+print(french_translation)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import <code>pipeline</code>:</strong>  This utility from <code>transformers</code> simplifies using models for common tasks.</li>
+<li><strong>Load the pre-trained model:</strong>  <code>pipeline("translation_en_to_fr", model="Helsinki-NLP/opus-mt-en-fr")</code> loads a pre-trained English-to-French translation model. "Helsinki-NLP/opus-mt-en-fr" is the name of the model on the Hugging Face Model Hub. The <code>pipeline</code> function downloads the model and tokenizer if it's not already cached.</li>
+<li><strong>Translate the sentence:</strong> <code>translator(english_sentence)</code> performs the translation using the loaded model.</li>
+<li><strong>Print the output:</strong> The output will be a list containing a dictionary with the translated text. The dictionary key is <code>translation_text</code>.</li>
+</ol>
+<p>This example demonstrates how easily we can leverage the power of the Transformer architecture using the <code>transformers</code> library without needing to implement the complex attention mechanisms ourselves.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the Transformer architecture handle variable-length input sequences and output sequences, especially since the attention mechanism relies on matrix operations with fixed-size tensors?  Are there specific techniques or padding strategies employed to address this? Explain the role of padding and masking in achieving variable sequence lengths in Transformers.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
