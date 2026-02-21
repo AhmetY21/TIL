@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Generation with RNNs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-text-generation-with-rnns">Topic: Text Generation with RNNs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text generation with Recurrent Neural Networks (RNNs) is the task of using an RNN to automatically create new text based on a learned probability distribution from a training corpus. The core idea is to train the RNN to predict the next word (or character) given a sequence of preceding words (or characters).</p>
+<p>More formally:</p>
+<ul>
+<li><strong>What is it?</strong>  We are trying to learn a probabilistic language model:  P(w<sub>t</sub> | w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>t-1</sub>), where w<sub>t</sub> is the t-th word in a sequence and the model estimates the probability of observing the t-th word given all previous words.  RNNs are particularly well-suited for this task because they inherently maintain a hidden state that captures information about the sequence history.</li>
+<li><strong>How can we use it?</strong><ul>
+<li><strong>Language Modeling:</strong>  As described above, learning the probability distribution of text.  This can be used in other NLP tasks like machine translation or speech recognition.</li>
+<li><strong>Text Generation:</strong>  Generating novel text, such as:<ul>
+<li><strong>Character-level generation:</strong> Predicting the next character in a sequence.  This allows generating text letter by letter.</li>
+<li><strong>Word-level generation:</strong> Predicting the next word in a sequence.</li>
+</ul>
+</li>
+<li><strong>Creative Writing:</strong>  Assisting in writing poems, scripts, or articles.</li>
+<li><strong>Code Generation:</strong>  Generating code snippets.</li>
+<li><strong>Dialogue Generation:</strong> Creating chatbots and conversational agents.</li>
+</ul>
+</li>
+</ul>
+<p>The basic process involves:
+1.  <strong>Data Preparation:</strong>  Gather a large corpus of text.
+2.  <strong>Tokenization:</strong> Convert the text into a sequence of tokens (words or characters).
+3.  <strong>Numericalization:</strong>  Map each token to a numerical index.  This creates a vocabulary.
+4.  <strong>Model Training:</strong> Train an RNN (e.g., LSTM or GRU) to predict the next token given a sequence of preceding tokens.  The RNN takes the numerical representation of the input sequence and outputs a probability distribution over the vocabulary.
+5.  <strong>Text Generation:</strong>  Start with an initial seed sequence.  Feed this sequence into the trained RNN to predict the next token.  Sample a token from the predicted probability distribution (e.g., using techniques like greedy sampling or temperature sampling).  Append the sampled token to the sequence and repeat the process.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you want to build a chatbot that can generate responses in a style similar to a famous author, say Jane Austen.</p>
+<ol>
+<li><strong>Data Collection:</strong> You would gather a large collection of Jane Austen's novels (e.g., "Pride and Prejudice," "Sense and Sensibility").</li>
+<li><strong>Preprocessing:</strong>  Clean the text (remove punctuation, convert to lowercase).</li>
+<li><strong>Training:</strong> You would train an RNN (LSTM or GRU would be suitable) on this data. The RNN learns the statistical patterns of Austen's writing style.</li>
+<li><strong>Chatbot Interaction:</strong><ul>
+<li>A user provides an initial prompt, like "Mr. Darcy was quite..."</li>
+<li>The chatbot would encode this prompt and feed it to the trained RNN.</li>
+<li>The RNN would predict the next word with a certain probability distribution (e.g., "arrogant" - 0.4, "handsome" - 0.3, "reserved" - 0.1...).</li>
+<li>The chatbot might sample the word "arrogant" based on its probability.</li>
+<li>The chatbot would then append "arrogant" to the prompt, creating "Mr. Darcy was quite arrogant".</li>
+<li>The process repeats to generate a longer response, mimicking Austen's writing style.  For example, the chatbot might respond "Mr. Darcy was quite arrogant, but his virtues were undeniable."</li>
+</ul>
+</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>This example uses TensorFlow/Keras to demonstrate character-level text generation.</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.layers import LSTM, Dense, Embedding
+from tensorflow.keras.models import Sequential
+import numpy as np
+
+# 1. Load and preprocess text data (replace with your actual data loading)
+text = open('your_text_file.txt', 'r').read().lower()  # Replace with your file
+chars = sorted(list(set(text)))
+char_to_index = {ch: i for i, ch in enumerate(chars)}
+index_to_char = {i: ch for i, ch in enumerate(chars)}
+
+# 2. Create sequences and labels
+seq_length = 100  # Length of input sequences
+step = 3  # Step size to create overlapping sequences
+sentences = []
+next_chars = []
+for i in range(0, len(text) - seq_length, step):
+    sentences.append(text[i: i + seq_length])
+    next_chars.append(text[i + seq_length])
+
+# 3. Vectorize the data
+x = np.zeros((len(sentences), seq_length, len(chars)), dtype=np.bool)
+y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
+for i, sentence in enumerate(sentences):
+    for t, char in enumerate(sentence):
+        x[i, t, char_to_index[char]] = 1
+    y[i, char_to_index[next_chars[i]]] = 1
+
+# 4. Build the model
+model = Sequential()
+model.add(LSTM(128, input_shape=(seq_length, len(chars)))) # Input shape is (sequence_length, vocabulary_size)
+model.add(Dense(len(chars), activation='softmax')) # Output a probability distribution over the vocabulary
+
+# 5. Compile and train the model
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
+model.compile(loss='categorical_crossentropy', optimizer=optimizer)
+
+model.fit(x, y, batch_size=128, epochs=10)
+
+# 6. Text generation function
+def generate_text(model, seed_text, length=400, temperature=0.5):
+    generated_text = seed_text
+    for _ in range(length):
+        x_pred = np.zeros((1, seq_length, len(chars)))
+        for t, char in enumerate(seed_text):
+            x_pred[0, t, char_to_index[char]] = 1.
+
+        preds = model.predict(x_pred, verbose=0)[0]
+        # Temperature sampling (adjust temperature for more or less randomness)
+        preds = np.asarray(preds).astype('float64')
+        preds = np.log(preds) / temperature
+        exp_preds = np.exp(preds)
+        preds = exp_preds / np.sum(exp_preds)
+        probas = np.random.multinomial(1, preds, 1)
+        next_index = np.argmax(probas)
+        next_char = index_to_char[next_index]
+
+        generated_text += next_char
+        seed_text = seed_text[1:] + next_char
+    return generated_text
+
+# 7. Generate text
+seed_text = &quot;the quick brown fox jumps over the lazy dog. &quot; #Initial seed, needs to be at least seq_length
+print(generate_text(model, seed_text, length=400))
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Loading and Preprocessing:</strong> Loads the text, converts it to lowercase, and creates a vocabulary of unique characters.  Also, creates mappings between characters and their indices.</li>
+<li><strong>Sequence Creation:</strong> Creates overlapping sequences of <code>seq_length</code> characters from the text data. <code>next_chars</code> stores the character that follows each sequence.</li>
+<li><strong>Vectorization:</strong> Converts the text sequences and the next characters into one-hot encoded vectors.  <code>x</code> represents the input sequences, and <code>y</code> represents the target (next) characters.</li>
+<li><strong>Model Building:</strong> Builds an LSTM-based model. The model consists of an LSTM layer followed by a dense layer with a softmax activation function to output a probability distribution over the vocabulary.</li>
+<li><strong>Model Training:</strong> Compiles and trains the model using categorical crossentropy loss and the Adam optimizer.  The <code>fit</code> method trains the model on the prepared data.</li>
+<li><strong>Text Generation Function:</strong>  <code>generate_text</code> function takes the trained model, a seed text (initial sequence), and the desired length of the generated text as input.  It generates text by repeatedly predicting the next character based on the current sequence and sampling from the predicted probability distribution using a temperature parameter to control randomness. Lower temperatures make the output more deterministic, while higher temperatures introduce more randomness.</li>
+<li><strong>Text Generation:</strong> Calls the <code>generate_text</code> function with a seed text to generate new text.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Data Quality:</strong> The quality and size of the training data significantly impact the generated text.</li>
+<li><strong>Model Architecture:</strong> Experiment with different RNN architectures (LSTM, GRU), number of layers, and hidden unit sizes.</li>
+<li><strong>Hyperparameter Tuning:</strong> Tune hyperparameters like learning rate, batch size, and number of epochs.</li>
+<li><strong>Temperature:</strong> The <code>temperature</code> parameter in the <code>generate_text</code> function controls the randomness of the generated text. Experiment with different temperature values.</li>
+<li><strong>Vocabulary Size:</strong> Choose between character-level or word-level tokenization based on your needs. Character-level models have smaller vocabularies but may require more training data. Word-level models can capture more semantic information.</li>
+<li><strong>GPU:</strong> Training RNNs, especially on large datasets, is computationally intensive. Consider using a GPU for faster training.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can attention mechanisms be incorporated into RNN-based text generation models to improve their performance, especially in capturing long-range dependencies within the text?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
