@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pre-training vs Fine-tuning BERT</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-pre-training-vs-fine-tuning-bert">Topic: Pre-training vs Fine-tuning BERT</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>BERT (Bidirectional Encoder Representations from Transformers) is a powerful pre-trained language model developed by Google. The <strong>pre-training vs. fine-tuning</strong> paradigm is crucial to BERT's effectiveness.</p>
+<ul>
+<li>
+<p><strong>Pre-training:</strong> This is the initial stage where BERT is trained on a massive amount of unlabeled text data (like books and Wikipedia). The model learns general-purpose language representations by completing two unsupervised tasks:</p>
+<ul>
+<li><strong>Masked Language Modeling (MLM):</strong> Randomly masking some of the words in the input and training the model to predict the masked words based on the context.</li>
+<li><strong>Next Sentence Prediction (NSP):</strong> Training the model to predict whether two given sentences are consecutive in the original document. While NSP's utility has been debated and replaced in later models like RoBERTa, it was a core component of original BERT.</li>
+</ul>
+<p>The goal of pre-training is to learn a good general understanding of language, including syntax, semantics, and relationships between words and sentences. The output of pre-training is a model with learned weights and parameters that capture these general language patterns. We <em>use</em> the pre-trained model as a starting point.</p>
+</li>
+<li>
+<p><strong>Fine-tuning:</strong> This is the second stage where the pre-trained BERT model is adapted to a specific downstream task (e.g., sentiment analysis, question answering, text classification). In fine-tuning, we take the pre-trained BERT model and add a task-specific layer (or layers) on top. Then, we train the entire model (or a portion of it) on a labeled dataset relevant to the specific task. The pre-trained weights provide a strong initialization, allowing the model to learn the task-specific nuances with much less data and training time than training from scratch. We <em>use</em> the fine-tuned model to perform the task it was specifically trained for.</p>
+</li>
+</ul>
+<p>In essence, pre-training teaches BERT general language knowledge, and fine-tuning applies that knowledge to a specific problem.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider the scenario of <strong>sentiment analysis</strong> on customer reviews.</p>
+<ul>
+<li>
+<p><strong>Pre-training:</strong> BERT has already been pre-trained on vast amounts of general text data, giving it a strong grasp of English grammar, vocabulary, and common sense. It understands word relationships and sentence structure.</p>
+</li>
+<li>
+<p><strong>Fine-tuning:</strong> We have a labeled dataset of customer reviews, where each review is labeled as positive, negative, or neutral.  We take the pre-trained BERT model and add a classification layer on top. We then fine-tune the entire model using our labeled review dataset. During fine-tuning, BERT adjusts its pre-trained weights to better represent the specific linguistic patterns associated with positive, negative, and neutral sentiment in customer reviews. For example, it might learn that certain words or phrases are strongly indicative of positive or negative sentiment in this specific domain.</p>
+</li>
+</ul>
+<p>After fine-tuning, we can use the fine-tuned BERT model to predict the sentiment of new, unseen customer reviews. Because the model started from a good pre-trained state, it will likely perform much better than a model trained from scratch on the same limited review dataset. The model has "transferred" the knowledge learned during pre-training to this new, specific task.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using the Hugging Face Transformers library, which is the standard way to interact with BERT models in Python:</p>
+<pre class="codehilite"><code class="language-python">from transformers import BertTokenizer, BertForSequenceClassification
+from transformers import AdamW
+from torch.utils.data import Dataset, DataLoader
+import torch
+
+# 1. Load pre-trained BERT model and tokenizer
+model_name = 'bert-base-uncased'
+tokenizer = BertTokenizer.from_pretrained(model_name)
+model = BertForSequenceClassification.from_pretrained(model_name, num_labels=3) #3 labels: pos, neg, neutral
+
+# 2. Sample data (replace with your actual data)
+texts = [&quot;This movie was great!&quot;, &quot;I hated this movie.&quot;, &quot;It was okay.&quot;]
+labels = [1, 0, 2]  # 1: positive, 0: negative, 2: neutral
+
+# 3. Prepare data for BERT
+class SentimentDataset(Dataset):
+    def __init__(self, texts, labels, tokenizer, max_length):
+        self.texts = texts
+        self.labels = labels
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+
+    def __len__(self):
+        return len(self.texts)
+
+    def __getitem__(self, idx):
+        text = self.texts[idx]
+        label = self.labels[idx]
+        encoding = self.tokenizer.encode_plus(
+            text,
+            add_special_tokens=True,
+            max_length=self.max_length,
+            padding='max_length',
+            truncation=True,
+            return_tensors='pt'
+        )
+        return {
+            'input_ids': encoding['input_ids'].flatten(),
+            'attention_mask': encoding['attention_mask'].flatten(),
+            'label': torch.tensor(label, dtype=torch.long)
+        }
+
+max_length = 128  # Adjust as needed
+dataset = SentimentDataset(texts, labels, tokenizer, max_length)
+dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+
+# 4. Fine-tuning
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+model.to(device)
+
+optimizer = AdamW(model.parameters(), lr=5e-5)  # Adjust learning rate as needed
+
+num_epochs = 3
+for epoch in range(num_epochs):
+    model.train()
+    for batch in dataloader:
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
+        labels = batch['label'].to(device)
+
+        outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
+        loss = outputs.loss
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+
+print(&quot;Fine-tuning complete!&quot;)
+
+# 5. Inference (example)
+model.eval()  # Set the model to evaluation mode
+new_text = &quot;The product is amazing and I love it.&quot;
+encoding = tokenizer.encode_plus(
+            new_text,
+            add_special_tokens=True,
+            max_length=max_length,
+            padding='max_length',
+            truncation=True,
+            return_tensors='pt'
+        )
+input_ids = encoding['input_ids'].to(device)
+attention_mask = encoding['attention_mask'].to(device)
+
+with torch.no_grad(): # Disable gradient calculation during inference
+    outputs = model(input_ids, attention_mask=attention_mask)
+    predictions = torch.argmax(outputs.logits, dim=-1).item()
+
+print(f&quot;Sentiment prediction: {predictions}&quot;) # will give 0,1 or 2 based on our model
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong>Load Pre-trained Model and Tokenizer:</strong> We load the pre-trained BERT model (<code>bert-base-uncased</code>) and its corresponding tokenizer.  The <code>BertForSequenceClassification</code> model is used because we are doing a classification task. <code>num_labels</code> specifies how many classes we have (positive, negative, and neutral in this example).</p>
+</li>
+<li>
+<p><strong>Sample Data:</strong> This section creates some sample text and label data.  You would replace this with your real dataset.</p>
+</li>
+<li>
+<p><strong>Prepare Data for BERT:</strong> The <code>SentimentDataset</code> class handles the data preparation. It tokenizes the text using the BERT tokenizer, pads/truncates sequences to a fixed length, and creates PyTorch tensors. The <code>DataLoader</code> then loads the data in batches.</p>
+</li>
+<li>
+<p><strong>Fine-tuning:</strong> This is the core part.  We move the model to the device (GPU if available, otherwise CPU). We define an optimizer (AdamW is commonly used) and set a learning rate. The code then iterates through the data for a specified number of epochs. In each epoch, it feeds the data to the model, calculates the loss, performs backpropagation to update the model's weights, and updates the optimizer. The <code>model.train()</code> and <code>model.eval()</code> set the model for training and inference, respectively. The <code>torch.no_grad()</code> block is important during inference to prevent the calculation of gradients which is uncessary.</p>
+</li>
+<li>
+<p><strong>Inference</strong> After training is complete, you can use the fine-tuned model for inference. A new text is tokenized and passed to the model for prediction. The <code>torch.argmax</code> function gives the predicted class.</p>
+</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example.  For real-world applications, you'll need to handle larger datasets, use more sophisticated data preprocessing techniques, and tune hyperparameters.</li>
+<li>The choice of <code>model_name</code> (e.g., <code>bert-base-uncased</code>) depends on your needs.  Larger models generally perform better but require more resources.</li>
+<li>The learning rate and other hyperparameters should be tuned based on your specific task and dataset.</li>
+<li>You need to have <code>transformers</code> and <code>torch</code> installed: <code>pip install transformers torch</code></li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the performance of a fine-tuned BERT model compare to other approaches like training a simpler model (e.g., logistic regression or a basic neural network) from scratch on the same downstream task data?  Specifically, what are the trade-offs in terms of data requirements, computational resources, and expected accuracy?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
