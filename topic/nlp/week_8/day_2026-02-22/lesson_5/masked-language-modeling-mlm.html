@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masked Language Modeling (MLM)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-masked-language-modeling-mlm">Topic: Masked Language Modeling (MLM)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Masked Language Modeling (MLM) is a technique used to train language models by randomly masking some of the words in an input sequence and then training the model to predict the masked words. It's a type of <em>self-supervised learning</em> because the training data is generated automatically from the input text itself, without requiring human-labeled data.</p>
+<p>Formally:</p>
+<ul>
+<li><strong>Input:</strong> A sequence of words (a sentence or a longer piece of text).</li>
+<li><strong>Masking:</strong> A percentage (typically 15%) of the input words are randomly selected and replaced with a special <code>[MASK]</code> token.</li>
+<li><strong>Prediction:</strong> The model takes the masked sequence as input and is trained to predict the original, unmasked words that were hidden behind the <code>[MASK]</code> tokens.</li>
+<li><strong>Objective:</strong> The model learns to understand the contextual relationships between words and to predict words based on their surrounding context. The training objective is usually to minimize the cross-entropy loss between the predicted probability distribution over the vocabulary for each masked token and the actual masked word.</li>
+</ul>
+<p>How can we use it? MLM is primarily used as a <strong>pre-training</strong> technique for language models. The resulting pre-trained model can then be fine-tuned for various downstream NLP tasks, such as:</p>
+<ul>
+<li><strong>Text Classification:</strong> Classifying text into categories (e.g., sentiment analysis, topic classification).</li>
+<li><strong>Question Answering:</strong> Answering questions based on a given context.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities in text (e.g., person names, locations, organizations).</li>
+<li><strong>Natural Language Inference (NLI):</strong> Determining the relationship between two sentences (e.g., entailment, contradiction, neutrality).</li>
+<li><strong>Text Generation:</strong> Generating new text, potentially conditioned on a prompt.</li>
+</ul>
+<p>The pre-training via MLM allows the model to learn a general-purpose representation of language, which can then be adapted to specific tasks with relatively little task-specific training data.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a scenario where you want to build a system to automatically correct grammatical errors in text. Directly training a system on error correction might require a large dataset of correctly and incorrectly written text, which can be expensive to create.</p>
+<p>Instead, you can use MLM as follows:</p>
+<ol>
+<li>
+<p><strong>Pre-train a language model with MLM:</strong> Train a large language model (like BERT) on a large corpus of general text using MLM.  The model will learn the relationships between words and how to predict missing words based on context.</p>
+</li>
+<li>
+<p><strong>Fine-tune for error correction:</strong>  Fine-tune the pre-trained language model on a smaller dataset of correctly and incorrectly written text. During fine-tuning, you would adapt the masked language modeling objective. For example, you might mask the incorrect words and train the model to predict the correct words.  You might also add specific layers or heads that are more suitable for error correction.</p>
+</li>
+</ol>
+<p>The pre-trained model, already having a strong understanding of language, will require less error correction data to achieve good performance compared to training a model from scratch. This is because the MLM pre-training phase has already taught the model a good general understanding of language. The fine-tuning phase then specializes this general knowledge to the specific task of error correction.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using the Hugging Face Transformers library, which provides easy access to pre-trained models and training pipelines for MLM.</p>
+<pre class="codehilite"><code class="language-python">from transformers import AutoTokenizer, AutoModelForMaskedLM, Trainer, TrainingArguments, DataCollatorForLanguageModeling
+from datasets import load_dataset
+
+# 1. Load a dataset
+dataset = load_dataset(&quot;wikitext&quot;, &quot;wikitext-2-raw-v1&quot;, split=&quot;train&quot;)
+
+# 2. Load a pre-trained tokenizer and model
+model_name = &quot;bert-base-uncased&quot;  # Or any other MLM model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForMaskedLM.from_pretrained(model_name)
+
+# 3. Tokenize the dataset
+def tokenize_function(examples):
+    return tokenizer(examples[&quot;text&quot;], truncation=True)
+
+tokenized_datasets = dataset.map(tokenize_function, batched=True, num_proc=4, remove_columns=[&quot;text&quot;])
+
+# 4. Prepare data for MLM (using DataCollatorForLanguageModeling)
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15) #mlm_probability is the masking percentage.
+
+# 5. Configure training arguments
+training_args = TrainingArguments(
+    output_dir=&quot;./results&quot;,
+    evaluation_strategy=&quot;epoch&quot;,
+    learning_rate=2e-5,
+    num_train_epochs=3,
+    weight_decay=0.01,
+    push_to_hub=False,  # Set to True if you want to push your model to Hugging Face Hub
+)
+
+# 6. Train the model
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets,
+    eval_dataset=tokenized_datasets,  #Optional validation dataset
+    data_collator=data_collator,
+    tokenizer=tokenizer,
+)
+
+trainer.train()
+trainer.save_model(&quot;./my_mlm_model&quot;) # Save the trained model
+tokenizer.save_pretrained(&quot;./my_mlm_model&quot;) # Save the tokenizer
+</code></pre>
+
+<p>Explanation:</p>
+<ul>
+<li>We use the <code>transformers</code> library, specifically <code>AutoTokenizer</code> and <code>AutoModelForMaskedLM</code> to load a pre-trained BERT model and its tokenizer.  You can replace <code>bert-base-uncased</code> with other MLM pre-trained models, such as RoBERTa, DistilBERT, etc.</li>
+<li>We load the <code>wikitext-2</code> dataset as a simple example.  You can replace this with your own text data.</li>
+<li>The <code>tokenizer</code> converts text into numerical tokens that the model can understand.</li>
+<li>The <code>DataCollatorForLanguageModeling</code> handles the masking and batching of the data.  It randomly masks a percentage (here, 15%) of the tokens in each input sequence.</li>
+<li>The <code>Trainer</code> class manages the training loop, including optimization, evaluation, and saving the model.</li>
+<li>The training arguments are configured to define the training process (e.g., learning rate, number of epochs).</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that MLM is effective as a pre-training strategy, how can we choose the optimal masking strategy (e.g., different masking probabilities, masking contiguous spans of text instead of individual tokens, or using dynamic masking where the masking pattern changes during training) and what are the trade-offs associated with each?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
