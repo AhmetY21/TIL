@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decoder-only Transformers</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-decoder-only-transformers">Topic: Decoder-only Transformers</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Decoder-only Transformers are a type of Transformer architecture that solely utilizes the "decoder" block, omitting the "encoder" component.  In contrast to the original Transformer architecture (e.g., used in machine translation), which consists of both encoder and decoder stacks, decoder-only models process input sequences and generate output sequences auto-regressively.</p>
+<p><strong>Components and Functionality:</strong></p>
+<ul>
+<li><strong>Input Embedding:</strong> The input sequence is first converted into embeddings, similar to the standard Transformer.</li>
+<li>
+<p><strong>Decoder Layers:</strong> The core of the architecture is a stack of identical decoder layers. Each layer consists of:</p>
+<ul>
+<li><strong>Masked Multi-Head Self-Attention:</strong> This is a crucial component.  It allows each token in the input sequence to attend to all <em>preceding</em> tokens, but prevents it from attending to future tokens during training.  This masking is essential for auto-regressive generation. The attention mechanism calculates attention scores between tokens and uses these scores to weight the token representations.</li>
+<li><strong>Feed-Forward Network:</strong> A fully connected feed-forward network applied to each token individually, providing non-linearity and further processing.</li>
+<li><strong>Layer Normalization and Residual Connections:</strong> Standard techniques to stabilize training and improve performance.</li>
+</ul>
+</li>
+<li>
+<p><strong>Output Projection and Softmax:</strong>  The output of the final decoder layer is projected to a vocabulary space, and a softmax function is applied to produce a probability distribution over the possible next tokens.</p>
+</li>
+</ul>
+<p><strong>How it works (Auto-regressive generation):</strong></p>
+<p>Decoder-only Transformers generate sequences token by token.  They start with an initial input (often a start-of-sequence token). The model predicts the probability distribution for the next token, and a token is selected (either deterministically via argmax or stochastically using sampling).  This predicted token is then appended to the input sequence, and the model is run again to predict the <em>next</em> token. This process repeats until a stopping criterion is met (e.g., a maximum length is reached or an end-of-sequence token is generated).</p>
+<p><strong>Use Cases:</strong></p>
+<p>Decoder-only Transformers are particularly well-suited for:</p>
+<ul>
+<li><strong>Language Modeling:</strong> Predicting the next word in a sequence, given the preceding words. This is the primary application.</li>
+<li><strong>Text Generation:</strong> Generating coherent and contextually relevant text based on a prompt or initial input.</li>
+<li><strong>Code Generation:</strong> Generating code snippets based on natural language descriptions or existing code.</li>
+<li><strong>Chatbots and Dialogue Systems:</strong> Generating responses in a conversational setting.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider the application of <strong>text generation</strong>. Suppose we want to use a decoder-only Transformer to generate a short story based on a given prompt.</p>
+<p><strong>Prompt:</strong> "The old lighthouse keeper noticed something unusual on the horizon..."</p>
+<p><strong>Scenario:</strong></p>
+<ol>
+<li><strong>Input:</strong> The prompt is fed into the decoder-only Transformer as the initial input sequence.  The prompt is first tokenized and converted into embeddings.</li>
+<li><strong>Auto-regressive Generation:</strong><ul>
+<li>The model processes the prompt and predicts the probability distribution for the next word. Let's say the highest probability is assigned to the word "a".</li>
+<li>"a" is appended to the prompt: "The old lighthouse keeper noticed something unusual on the horizon... a".</li>
+<li>The model processes the updated sequence and predicts the next word. Let's say the highest probability is assigned to the word "dark".</li>
+<li>"dark" is appended: "The old lighthouse keeper noticed something unusual on the horizon... a dark".</li>
+<li>This process continues, generating words like "shape", "approaching", "rapidly", etc.</li>
+</ul>
+</li>
+<li><strong>Stopping Condition:</strong> The generation continues until a predefined length is reached, or the model generates an end-of-sequence token.</li>
+<li><strong>Output:</strong> The final generated text is: "The old lighthouse keeper noticed something unusual on the horizon... a dark shape approaching rapidly. He grabbed his binoculars, his heart pounding in his chest."</li>
+</ol>
+<p>In this scenario, the decoder-only Transformer leverages its learned language model to generate a coherent and plausible continuation of the given prompt.  The masked self-attention ensures that each predicted word is based only on the preceding words, maintaining the auto-regressive generation process.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using the <code>transformers</code> library by Hugging Face, we can easily use a pre-trained decoder-only Transformer model for text generation.  Here's an example using the <code>GPT2LMHeadModel</code>:</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline, set_seed
+
+# Initialize the text generation pipeline with GPT-2
+generator = pipeline('text-generation', model='gpt2')
+
+# Set a seed for reproducibility
+set_seed(42)
+
+# Prompt text
+prompt = &quot;The old lighthouse keeper noticed something unusual on the horizon...&quot;
+
+# Generate text
+generated_text = generator(prompt, max_length=50, num_return_sequences=1)
+
+# Print the generated text
+print(generated_text[0]['generated_text'])
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>from transformers import pipeline, set_seed</code></strong>: Imports the necessary modules from the <code>transformers</code> library. <code>pipeline</code> provides a high-level interface for using pre-trained models, and <code>set_seed</code> ensures reproducible results.</li>
+<li><strong><code>generator = pipeline('text-generation', model='gpt2')</code></strong>: Creates a text generation pipeline using the pre-trained GPT-2 model.  <code>'gpt2'</code> specifies the model to use. You could replace this with other decoder-only models like <code>'openai-gpt'</code>, <code>'distilgpt2'</code>, <code>'gpt2-medium'</code>, <code>'gpt2-large'</code>, <code>'gpt2-xl'</code>, or custom fine-tuned models.</li>
+<li><strong><code>set_seed(42)</code></strong>: Sets a random seed for the generation process.  This makes the results reproducible.  Without this, the model will generate different text each time you run the code.</li>
+<li><strong><code>prompt = "The old lighthouse keeper noticed something unusual on the horizon..."</code></strong>: Defines the prompt text that will be used as the starting point for text generation.</li>
+<li><strong><code>generated_text = generator(prompt, max_length=50, num_return_sequences=1)</code></strong>:  This is the core part of the code.  It calls the <code>generator</code> to generate text based on the prompt.<ul>
+<li><code>prompt</code>: The input text.</li>
+<li><code>max_length=50</code>: Specifies the maximum length of the generated text (including the prompt).</li>
+<li><code>num_return_sequences=1</code>: Specifies that we want to generate only one sequence.</li>
+</ul>
+</li>
+<li><strong><code>print(generated_text[0]['generated_text'])</code></strong>: Prints the generated text. The <code>generator</code> returns a list of dictionaries, where each dictionary contains the generated text.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Model Selection:</strong> The quality of the generated text depends heavily on the chosen model. Larger models (e.g., <code>gpt2-xl</code>) generally produce better results but require more computational resources.</li>
+<li><strong>Decoding Strategies:</strong>  The <code>pipeline</code> uses a default decoding strategy (usually greedy decoding or beam search). You can customize this further by providing arguments to the <code>generator</code> function, such as <code>do_sample=True</code> for sampling-based generation, <code>top_k</code> and <code>top_p</code> for nucleus sampling, <code>temperature</code> for controlling randomness, and <code>repetition_penalty</code> to prevent the model from repeating phrases.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we fine-tune a decoder-only Transformer model on a specific dataset to improve its performance for a particular task, such as generating code in a specific programming language or writing stories in a particular style?  What are the key considerations and techniques involved in the fine-tuning process?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
