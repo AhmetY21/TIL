@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPT (Generative Pre-trained Transformer) Family</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-gpt-generative-pre-trained-transformer-family">Topic: GPT (Generative Pre-trained Transformer) Family</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The GPT (Generative Pre-trained Transformer) family refers to a series of transformer-based language models developed primarily by OpenAI. These models are characterized by their ability to generate human-like text and perform various natural language processing tasks with minimal task-specific training. The "Generative" part indicates that the model is designed to generate text, predicting the next word in a sequence given the preceding words. "Pre-trained" signifies that the model is first trained on a massive corpus of text data in a self-supervised manner, learning general language patterns and knowledge. "Transformer" refers to the specific neural network architecture used, which relies on attention mechanisms to weigh the importance of different words in a sequence when making predictions.</p>
+<p><strong>How it works:</strong></p>
+<ul>
+<li><strong>Pre-training:</strong> The model is initially trained on a massive dataset (e.g., Common Crawl, WebText). During pre-training, the model is tasked with predicting the next word in a sequence. This helps it learn the statistical relationships between words, grammar, and general knowledge about the world.</li>
+<li><strong>Fine-tuning (optional):</strong> After pre-training, the model can be fine-tuned on a smaller, task-specific dataset. This allows the model to adapt its learned knowledge to perform specific tasks such as text classification, question answering, or text summarization. Some models, like GPT-3, are designed to perform tasks directly based on prompts without fine-tuning (zero-shot learning) or with very few examples (few-shot learning).</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<p>GPT models can be used for a wide range of applications, including:</p>
+<ul>
+<li><strong>Text generation:</strong> Creating articles, stories, poems, and other forms of written content.</li>
+<li><strong>Text completion:</strong> Completing sentences or paragraphs based on a given prompt.</li>
+<li><strong>Translation:</strong> Translating text from one language to another.</li>
+<li><strong>Question answering:</strong> Answering questions based on provided context or general knowledge.</li>
+<li><strong>Text summarization:</strong> Generating concise summaries of longer documents.</li>
+<li><strong>Code generation:</strong> Generating code snippets in various programming languages.</li>
+<li><strong>Chatbots and conversational AI:</strong> Creating more natural and engaging conversational experiences.</li>
+<li><strong>Content creation and marketing:</strong> Assisting with writing blog posts, social media updates, and other marketing materials.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Automating customer support using a chatbot.</p>
+<p>A company wants to improve its customer service by implementing a chatbot that can handle common customer inquiries.  Instead of relying solely on human agents, they deploy a GPT-based chatbot to answer questions about order status, product information, and company policies.</p>
+<p><strong>How GPT is used:</strong></p>
+<p>The GPT model is fine-tuned on a dataset of customer support conversations, including questions and corresponding answers. When a customer asks a question, the chatbot uses the fine-tuned GPT model to generate a relevant and informative response. Because the model was pre-trained on a massive dataset, it already possesses general knowledge and can handle a wide range of inquiries. Fine-tuning further tailors the model to the specific needs of the company and its customers. The chatbot can also learn from new conversations and improve its responses over time. This reduces the workload on human agents, improves response times, and enhances customer satisfaction. The system can even escalate complex queries to a human agent when the chatbot is unable to provide a satisfactory answer.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import openai
+
+# Set your OpenAI API key (replace with your actual key)
+openai.api_key = &quot;YOUR_OPENAI_API_KEY&quot;
+
+def generate_text(prompt, model=&quot;gpt-3.5-turbo&quot;): # &quot;gpt-3.5-turbo&quot; is usually more cost effective than GPT-4
+    &quot;&quot;&quot;Generates text using OpenAI's GPT models.
+
+    Args:
+        prompt: The input text prompt.
+        model: The name of the GPT model to use (e.g., &quot;gpt-3.5-turbo&quot;, &quot;gpt-4&quot;).
+
+    Returns:
+        The generated text, or None if an error occurred.
+    &quot;&quot;&quot;
+    try:
+        completion = openai.chat.completions.create(
+            model=model,
+            messages=[
+                {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}
+            ]
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        print(f&quot;An error occurred: {e}&quot;)
+        return None
+
+# Example usage
+prompt = &quot;Write a short story about a cat who goes on an adventure.&quot;
+generated_text = generate_text(prompt)
+
+if generated_text:
+    print(generated_text)
+
+# Example Usage for Question Answering
+
+prompt = &quot;What is the capital of France?&quot;
+generated_text = generate_text(prompt)
+
+if generated_text:
+    print(generated_text)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import <code>openai</code>:</strong> Imports the OpenAI Python library, which provides access to the GPT models.</li>
+<li><strong>Set API Key:</strong> Sets the OpenAI API key. You need to have an OpenAI account and obtain an API key to use their models. <strong>Replace <code>"YOUR_OPENAI_API_KEY"</code> with your actual API key.</strong></li>
+<li><strong><code>generate_text</code> function:</strong><ul>
+<li>Takes a <code>prompt</code> (the input text) and an optional <code>model</code> argument (defaults to <code>gpt-3.5-turbo</code>). You can specify a different GPT model if needed.</li>
+<li>Uses the <code>openai.chat.completions.create()</code> method to generate text based on the prompt. The <code>messages</code> parameter is a list of dictionaries, where each dictionary represents a message in the conversation. In this case, we only have one message from the "user" containing the prompt.  The newer OpenAI API uses a "chat" based structure.  Older APIs such as <code>openai.Completion.create()</code> may still work but are often deprecated.</li>
+<li>The <code>try...except</code> block handles potential errors during the API call.</li>
+<li>Returns the generated text from the API response.  The response contains several fields; <code>completion.choices[0].message.content</code> extracts the text of the reply.</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong><ul>
+<li>Shows how to use the <code>generate_text</code> function with a sample prompt.</li>
+<li>Prints the generated text if the function returns successfully.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>API Key:</strong> You <strong>must</strong> have an OpenAI API key to run this code.</li>
+<li><strong>OpenAI Account:</strong> You need to create an account on the OpenAI website (<a href="https://openai.com/">https://openai.com/</a>) and configure billing. Using the OpenAI API incurs costs based on usage.</li>
+<li><strong>Install OpenAI Library:</strong> Make sure you have the <code>openai</code> Python library installed. You can install it using pip: <code>pip install openai</code>.</li>
+<li><strong>Model Selection:</strong> The <code>model</code> parameter allows you to choose which GPT model to use.  <code>gpt-3.5-turbo</code> is generally a good choice for many tasks due to its balance of performance and cost. <code>gpt-4</code> is more powerful but also more expensive and may have usage limits.</li>
+<li><strong>Error Handling:</strong>  The code includes basic error handling, but you might need to implement more robust error handling for production applications.</li>
+<li><strong>Rate Limits:</strong> OpenAI has rate limits on API requests. Be mindful of these limits when making frequent calls to the API.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can I improve the quality and consistency of the output generated by a GPT model for a specific task, such as generating product descriptions, without requiring extensive fine-tuning on a large, labeled dataset? What strategies can I use to guide the model's generation using prompt engineering or other techniques?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
