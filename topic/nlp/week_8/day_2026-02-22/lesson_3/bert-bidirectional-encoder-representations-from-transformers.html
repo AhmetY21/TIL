@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BERT: Bidirectional Encoder Representations from Transformers</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-bert-bidirectional-encoder-representations-from-transformers">Topic: BERT: Bidirectional Encoder Representations from Transformers</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>BERT (Bidirectional Encoder Representations from Transformers) is a pre-trained language model that uses the Transformer architecture to learn contextual representations of words in text. Unlike earlier models that processed text unidirectionally (either left-to-right or right-to-left), BERT considers the entire context of a word simultaneously (bidirectionally). This bidirectional context awareness allows BERT to understand the nuances of language and produce more accurate and nuanced representations.</p>
+<p>BERT is typically pre-trained on a massive corpus of text data using two main objectives:</p>
+<ul>
+<li>
+<p><strong>Masked Language Modeling (MLM):</strong> A percentage (typically 15%) of the words in the input sequence are randomly masked. The model's task is to predict the masked words based on the surrounding context.  This forces the model to learn bidirectional context.</p>
+</li>
+<li>
+<p><strong>Next Sentence Prediction (NSP):</strong>  The model is given pairs of sentences and asked to predict whether the second sentence logically follows the first. This helps the model understand relationships between sentences.  (Note: Later research has shown NSP isn't always necessary and sometimes hinders performance).</p>
+</li>
+</ul>
+<p>After pre-training, BERT can be fine-tuned for a variety of downstream NLP tasks, including:</p>
+<ul>
+<li><strong>Text Classification:</strong>  Classifying text into different categories (e.g., sentiment analysis, spam detection).</li>
+<li><strong>Question Answering:</strong> Answering questions based on a given context.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities in text (e.g., people, organizations, locations).</li>
+<li><strong>Sentence Similarity:</strong> Determining the semantic similarity between two sentences.</li>
+<li><strong>Text Summarization:</strong>  Generating a concise summary of a longer text.</li>
+</ul>
+<p>We use BERT by first obtaining a pre-trained BERT model (e.g., from Hugging Face's Transformers library). Then, we fine-tune the model on a task-specific dataset. The fine-tuning process involves updating the model's parameters to optimize its performance on the target task. After fine-tuning, the model can be used to make predictions on new, unseen data.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a customer service chatbot that needs to understand customer inquiries and route them to the appropriate department. Traditional keyword-based approaches might fail to recognize the underlying intent if the customer uses different phrasing or synonyms.</p>
+<p>BERT can be used to perform <strong>intent classification</strong> in this scenario. The customer's inquiry is fed into a fine-tuned BERT model, which classifies the intent into categories like "billing issue," "technical support," "order status," etc. By using the contextual understanding provided by BERT, the chatbot can more accurately identify the customer's intent, even with variations in language. This leads to faster and more accurate routing, improving customer satisfaction.</p>
+<p>For example, a customer might say:</p>
+<ul>
+<li>"I'm having trouble understanding my bill."</li>
+<li>"Why is my invoice so high this month?"</li>
+<li>"My monthly charge doesn't seem right."</li>
+</ul>
+<p>All of these sentences have the same underlying intent: "billing issue."  A keyword-based system might miss the connection between these phrasings, but a BERT model fine-tuned for intent classification can recognize the similar meaning despite the different wording.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simple example using the Hugging Face <code>transformers</code> library to classify a single sentence using a pre-trained BERT model:</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load a pre-trained BERT model for text classification
+classifier = pipeline(&quot;text-classification&quot;, model=&quot;distilbert-base-uncased-finetuned-sst-2-english&quot;)
+
+# Input text
+text = &quot;This movie was incredibly disappointing.&quot;
+
+# Classify the text
+result = classifier(text)
+
+# Print the results
+print(result)
+# Expected output (something similar):
+# [{'label': 'NEGATIVE', 'score': 0.999...}]
+
+#Another Example with a positive Sentence
+text = &quot;This movie was incredibly awesome!&quot;
+result = classifier(text)
+print(result)
+
+#Expected output (something similar):
+# [{'label': 'POSITIVE', 'score': 0.999...}]
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>from transformers import pipeline</code></strong>: Imports the <code>pipeline</code> function from the <code>transformers</code> library.  Pipelines are a simple way to use pre-trained models for inference.</li>
+<li><strong><code>classifier = pipeline("text-classification", model="distilbert-base-uncased-finetuned-sst-2-english")</code></strong>: Creates a text classification pipeline using a pre-trained DistilBERT model (a smaller, faster version of BERT) that has been fine-tuned for sentiment analysis on the SST-2 dataset.</li>
+<li><strong><code>text = "..."</code></strong>: Defines the input text.</li>
+<li><strong><code>result = classifier(text)</code></strong>:  Passes the text to the classifier pipeline, which performs the classification using the pre-trained model.</li>
+<li><strong><code>print(result)</code></strong>: Prints the classification result, which includes the predicted label (e.g., "NEGATIVE", "POSITIVE") and the corresponding confidence score.</li>
+</ol>
+<p>This is a simplified example.  For real-world applications, you'd typically fine-tune BERT on your own dataset to achieve better performance on your specific task.  The Hugging Face library provides extensive tools for fine-tuning BERT and other transformer models.  You would typically use <code>AutoModelForSequenceClassification</code> or similar classes for fine-tuning.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does BERT handle out-of-vocabulary (OOV) words, and what are some techniques to mitigate the issues caused by OOV words when using BERT in practical applications?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
