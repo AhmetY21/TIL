@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-bert-bidirectional-encoder-representations-from-transformers">Topic: BERT: Bidirectional Encoder Representations from Transformers</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>BERT (Bidirectional Encoder Representations from Transformers) is a pre-trained language model that uses the Transformer architecture to learn contextual representations of words in text. Unlike earlier models that processed text unidirectionally (either left-to-right or right-to-left), BERT considers the entire context of a word simultaneously (bidirectionally). This bidirectional context awareness allows BERT to understand the nuances of language and produce more accurate and nuanced representations.</p>
@@ -185,6 +201,7 @@ print(result)
 <p>This is a simplified example.  For real-world applications, you'd typically fine-tune BERT on your own dataset to achieve better performance on your specific task.  The Hugging Face library provides extensive tools for fine-tuning BERT and other transformer models.  You would typically use <code>AutoModelForSequenceClassification</code> or similar classes for fine-tuning.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does BERT handle out-of-vocabulary (OOV) words, and what are some techniques to mitigate the issues caused by OOV words when using BERT in practical applications?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

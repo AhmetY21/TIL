@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-external-validity-transportability-and-generalization">Topic: External Validity: Transportability and Generalization</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p><strong>External Validity</strong> refers to the extent to which the findings from a causal study conducted in one population or setting (the <em>source population</em>) can be generalized or <em>transported</em> to a different population or setting (the <em>target population</em>). It addresses the question: "Will this causal effect that I observed in one place hold true in another place?".</p>
@@ -253,6 +269,7 @@ print(f&quot;ATE in Target Population (for comparison): {ate_target}&quot;)
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the concept of "domain adaptation" in machine learning relate to the challenges of transportability in causal inference, and what are some methods used in domain adaptation that could potentially be adapted for use in causal transportability analyses?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

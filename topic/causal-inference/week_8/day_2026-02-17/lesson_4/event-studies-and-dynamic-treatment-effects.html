@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-event-studies-and-dynamic-treatment-effects">Topic: Event Studies and Dynamic Treatment Effects</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p><strong>Event studies</strong> are a quasi-experimental method used to estimate the causal effect of a specific event (the treatment) on an outcome of interest. Unlike standard difference-in-differences (DID), event studies explicitly model the <em>dynamic treatment effects</em>, allowing us to observe the impact of the event <em>before</em>, <em>during</em>, and <em>after</em> it occurs. This is crucial for understanding how the treatment effect evolves over time and for identifying potential anticipatory effects (where outcomes change <em>before</em> the treatment is implemented).</p>
@@ -238,6 +254,7 @@ print(results.summary())
 <p>This improved response provides a complete, runnable example with clear explanations, making it significantly more useful for someone trying to implement an event study in Python. Remember to install <code>pandas</code> and <code>statsmodels</code> if you don't have them already: <code>pip install pandas statsmodels</code>.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How can we account for the possibility that the <em>intensity</em> of the treatment varies across different treated units in an event study framework?  For example, in the minimum wage scenario, some cities might implement a much larger increase in the minimum wage than others.  How would that impact our estimates and how could we adjust for it?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

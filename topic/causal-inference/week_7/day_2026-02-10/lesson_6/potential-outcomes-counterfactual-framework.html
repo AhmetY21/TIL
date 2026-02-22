@@ -107,9 +107,24 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
@@ -117,6 +132,7 @@
   </div>
 
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-potential-outcomes-counterfactual-framework">Topic: Potential Outcomes (Counterfactual) Framework</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>The Potential Outcomes (also known as the Counterfactual) framework is a powerful tool for defining and estimating causal effects. It provides a rigorous way to think about what <em>would</em> have happened to a subject if they had received a different treatment than they actually did.</p>
@@ -240,6 +256,7 @@ print(estimate)
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the Potential Outcomes framework relate to the concept of causal graphs (e.g., Directed Acyclic Graphs or DAGs), and how can causal graphs help in identifying and estimating causal effects within the Potential Outcomes framework?</p>
 
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,9 +107,24 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
@@ -117,6 +132,7 @@
   </div>
 
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-introduction-to-stochastic-programming-why-uncertainty-changes-optimization">Topic: Introduction to Stochastic Programming (Why uncertainty changes optimization)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Stochastic Programming (SP) is a framework for modeling optimization problems that involve uncertainty. Unlike deterministic optimization, where all parameters are known with certainty, SP explicitly incorporates random variables representing uncertain parameters. This is crucial when decisions must be made before the actual values of these parameters are revealed.</p>
@@ -253,6 +269,7 @@ print(&quot;Low Demand Shortage:&quot;, value(model.z_low))
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do the computational complexity and scalability challenges of stochastic programming affect the choice of solution methods and approximation techniques, especially when dealing with a large number of scenarios or continuous random variables?  Specifically, what are some commonly used decomposition or sampling techniques for solving large-scale stochastic programs?</p>
 
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-causal-discovery-careful-what-it-can-and-cannot-do">Topic: Causal Discovery (Careful: What it can and cannot do)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Causal discovery refers to the process of learning causal relationships from observational data <em>without</em> relying on prior knowledge of the causal structure. It aims to infer a causal graph representing the probabilistic dependencies among variables, where an edge from variable A to variable B suggests that A causally influences B.  Unlike traditional statistical methods that primarily focus on correlations, causal discovery attempts to identify the <em>direction</em> of influence.</p>
@@ -207,6 +223,7 @@ print(directed_graph.to_adjacency())
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How can we evaluate the performance of a causal discovery algorithm when we don't know the true causal graph? What metrics or approaches can be used to assess the quality of the inferred causal relationships?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -83,15 +83,31 @@
     .dark th, .dark td { border-color: #334155; }
     .dark th { background: #1e293b; }
     .dark hr { border-top-color: #334155; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-deterministic-equivalent-formulation-def-for-two-stage-sp">Topic: Deterministic Equivalent Formulation (DEF) for two-stage SP</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>The Deterministic Equivalent Formulation (DEF) of a two-stage stochastic program is a deterministic optimization problem that is equivalent to the original stochastic program.  By "equivalent," we mean that solving the DEF yields the optimal first-stage decisions, which, when implemented, lead to the same expected value of the objective function as solving the stochastic program directly (though solving the stochastic program "directly" is generally intractable unless the number of scenarios is very small).</p>
@@ -251,6 +267,7 @@ print(f&quot;Optimal objective value: {pyo.value(model.objective)}&quot;)
 </ol>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the Deterministic Equivalent Formulation relate to sample average approximation (SAA) in Stochastic Programming, and what are the pros and cons of using each method?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-positional-encodings-in-transformers">Topic: Positional Encodings in Transformers</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Positional encodings are a crucial component in the Transformer architecture that provides information about the position of tokens in the input sequence. Since Transformers, unlike Recurrent Neural Networks (RNNs), don't inherently process the input sequentially, they lack the capacity to understand the order of words. Positional encodings address this by injecting information about the position of each token directly into the token embeddings.</p>
@@ -208,6 +224,7 @@ if __name__ == '__main__':
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are the advantages and disadvantages of using fixed positional encodings (like sinusoidal functions) compared to learned positional encodings? Are there any scenarios where one might be preferred over the other?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

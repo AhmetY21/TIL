@@ -104,9 +104,24 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
@@ -114,6 +129,7 @@
   </div>
 
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-d-separation-and-backdoor-paths">Topic: d-Separation and Backdoor Paths</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p><strong>d-Separation:</strong> d-separation (d stands for "directional") is a criterion for determining whether two sets of nodes (variables) in a causal graph are conditionally independent given a third set of nodes.  In other words, it allows us to read conditional independencies directly from the graph's structure, without needing any numerical data.</p>
@@ -184,6 +200,7 @@ GeneticPredisposition --&gt; HealthCondition
 </code></pre>
 
 <p>In this updated scenario, what is the <em>minimal</em> adjustment set needed to estimate the causal effect of <em>Drug</em> on <em>Recovery</em>? Explain why the adjustment set is sufficient and why it is minimal. Specifically, discuss why adjusting for <em>HealthCondition</em> alone is insufficient.</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

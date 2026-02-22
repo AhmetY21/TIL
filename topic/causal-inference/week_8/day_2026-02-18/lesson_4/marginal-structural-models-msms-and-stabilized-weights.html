@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-marginal-structural-models-msms-and-stabilized-weights">Topic: Marginal Structural Models (MSMs) and Stabilized Weights</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Marginal Structural Models (MSMs) are a class of causal inference models used to estimate the causal effect of a <em>time-varying</em> treatment on an outcome, in the presence of time-varying confounding.  Traditional regression models often fail in this scenario because they don't adequately account for the feedback loop where past treatment influences future confounders, which in turn influences future treatment decisions. This feedback loop can introduce bias.</p>
@@ -287,6 +303,7 @@ print(model_stabilized.summary())
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do I assess the positivity assumption (also known as the overlap assumption) when using MSMs, and what strategies can I use if positivity is violated?  Provide concrete examples of violations that might arise in the ART initiation scenario discussed above.</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-distributionally-robust-stochastic-programming-dro-sp-high-level-view">Topic: Distributionally Robust Stochastic Programming (DRO-SP) — high level view</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Distributionally Robust Stochastic Programming (DRO-SP) addresses the limitations of traditional Stochastic Programming (SP) by acknowledging the uncertainty inherent in estimating the probability distribution of the uncertain parameters. In standard SP, we assume a known probability distribution for the uncertain parameters and optimize against its expectation. However, this assumed distribution might be inaccurate or incomplete, leading to suboptimal decisions in reality. DRO-SP tackles this by considering a <em>set</em> of plausible probability distributions (an ambiguity set) around the estimated distribution and seeking a solution that performs well across <em>all</em> distributions within that set.</p>
@@ -218,6 +234,7 @@ else:
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are the key computational challenges in solving DRO-SP problems, and what techniques are used to address them? For example, how does the size of the ambiguity set affect the computational complexity?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
