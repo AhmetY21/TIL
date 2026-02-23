@@ -107,14 +107,33 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 <h1 id="topic-distributionally-robust-stochastic-programming-dro-sp-high-level-view">Topic: Distributionally Robust Stochastic Programming (DRO-SP) — high level view</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -218,6 +237,7 @@ else:
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are the key computational challenges in solving DRO-SP problems, and what techniques are used to address them? For example, how does the size of the ambiguity set affect the computational complexity?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

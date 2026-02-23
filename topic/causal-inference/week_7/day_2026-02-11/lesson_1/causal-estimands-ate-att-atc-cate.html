@@ -107,14 +107,33 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 
 <h1 id="topic-causal-estimands-ate-att-atc-cate">Topic: Causal Estimands: ATE, ATT, ATC, CATE</h1>
@@ -229,6 +248,7 @@ print(f&quot;Estimated ATC: {atc_estimate}&quot;)
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do the assumptions required for valid estimation of each of these estimands (ATE, ATT, ATC, and CATE) differ, and how do these differences influence the choice of estimation method in practice?</p>
 
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

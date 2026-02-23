@@ -112,12 +112,31 @@
     .dark .week-title {
       border-bottom-color: #334155;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   <div class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
+    <main id="main-content" tabindex="-1">
     <header>
       <h1>Natural Language Processing Learning Hub</h1>
       <p class="subtitle">A curriculum-based journey into Natural Language Processing</p>
@@ -524,6 +543,7 @@
             </div>
         </div>
         </div>
+  </main>
   </div>
   <script>
     const btn = document.getElementById('theme-toggle');

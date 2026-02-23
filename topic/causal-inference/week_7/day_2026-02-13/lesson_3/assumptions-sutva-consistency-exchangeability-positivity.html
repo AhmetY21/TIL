@@ -83,14 +83,33 @@
     .dark th, .dark td { border-color: #334155; }
     .dark th { background: #1e293b; }
     .dark hr { border-top-color: #334155; }
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 <h1 id="topic-assumptions-sutva-consistency-exchangeability-positivity">Topic: Assumptions: SUTVA, Consistency, Exchangeability, Positivity</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -199,6 +218,7 @@ print(results.summary())
 </ol>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are some strategies for addressing violations of each of these assumptions (SUTVA, Consistency, Exchangeability, Positivity) in a real-world causal inference problem?  For example, if I suspect interference is occurring, what could I do? If I suspect unmeasured confounding, what are my options?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
