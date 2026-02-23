@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>T5 (Text-to-Text Transfer Transformer)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-t5-text-to-text-transfer-transformer">Topic: T5 (Text-to-Text Transfer Transformer)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>T5, which stands for "Text-to-Text Transfer Transformer," is a powerful and versatile language model developed by Google. The core idea behind T5 is to frame <em>all</em> NLP tasks as text-to-text problems. This means that the input to the model is always text, and the output is also always text.  Instead of having specialized models for different tasks like translation, summarization, question answering, etc., T5 uses a single model architecture and teaches it to perform all these tasks by feeding it different text inputs with different prefixes to indicate the desired task.</p>
+<p>How we can use it:</p>
+<ul>
+<li><strong>Task Formulation:</strong> Define the NLP task as a text-to-text problem. For example, for translation, the input would be "translate English to German: The cat sat on the mat." and the expected output is the German translation. For summarization, the input could be "summarize: [long document]" and the output is the summarized text.</li>
+<li><strong>Prefixing:</strong> Use prefixes to inform T5 which task you want it to perform.  Common prefixes include "translate English to German:", "summarize:", "question:", etc.</li>
+<li><strong>Fine-tuning (preferred) or Zero-Shot/Few-Shot Inference:</strong><ul>
+<li><strong>Fine-tuning:</strong> Train the pre-trained T5 model on a dataset specific to the task you want to solve. This usually provides the best performance.</li>
+<li><strong>Zero-Shot:</strong> Directly use the pre-trained T5 model without any task-specific training. Performance will be lower than fine-tuning but can still be useful.</li>
+<li><strong>Few-Shot:</strong> Provide a few examples of the desired input-output pairs to the model before inference. This can improve performance compared to zero-shot.</li>
+</ul>
+</li>
+<li><strong>Inference:</strong> Feed the task-formatted input to the T5 model and generate the output text.</li>
+</ul>
+<p>T5's architecture is based on the standard Transformer architecture, including encoder and decoder components.  It's trained on a massive dataset called C4 (Colossal Clean Crawled Corpus), allowing it to generalize well to a wide range of tasks. Different sizes of T5 models are available (e.g., T5-small, T5-base, T5-large, T5-3B, T5-11B) offering trade-offs between performance and computational cost.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Here are some application scenarios for T5:</p>
+<ul>
+<li><strong>Machine Translation:</strong> Translating text between different languages. For example, translating English to French or vice versa. Input: "translate English to French: Hello, how are you?" Output: "Bonjour, comment allez-vous ?"</li>
+<li><strong>Text Summarization:</strong> Generating concise summaries of longer documents or articles. Input: "summarize: [Large article]" Output: "[Summary of the article]"</li>
+<li><strong>Question Answering:</strong> Answering questions based on a given context. Input: "question: What is the capital of France? context: Paris is the capital of France." Output: "Paris"</li>
+<li><strong>Text Generation:</strong> Generating creative text formats,  like poems, code, scripts, musical pieces, email, letters, etc.  For example, generating song lyrics based on a specific theme. Input: "write a song about rain" Output: "[Song lyrics about rain]"</li>
+<li><strong>Text Classification:</strong> Classifying text into different categories.  For example, classifying news articles into topics like "sports," "politics," or "business." Input: "classify: [news article]" Output: "politics" (if that is the appropriate category)</li>
+<li><strong>Grammar Correction:</strong> Correcting grammatical errors in text. Input: "correct: The cat are on the mat." Output: "The cat is on the mat."</li>
+<li><strong>Code Generation/Translation:</strong>  Generating code from natural language descriptions or translating code between different programming languages.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from transformers import T5Tokenizer, T5ForConditionalGeneration
+
+# Load the pre-trained T5 model and tokenizer
+model_name = 't5-small'  # You can also use 't5-base', 't5-large', etc.
+tokenizer = T5Tokenizer.from_pretrained(model_name)
+model = T5ForConditionalGeneration.from_pretrained(model_name)
+
+def generate_text(input_text, max_length=50):
+    &quot;&quot;&quot;
+    Generates text using the T5 model.
+
+    Args:
+        input_text: The input text for the model.
+        max_length: The maximum length of the generated output.
+
+    Returns:
+        The generated text.
+    &quot;&quot;&quot;
+    input_ids = tokenizer.encode(input_text, return_tensors='pt')
+
+    # Generate the output
+    output = model.generate(input_ids, max_length=max_length)
+
+    # Decode the generated output
+    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+
+    return generated_text
+
+# Example usage: Translation
+input_text = &quot;translate English to German: The cat sat on the mat.&quot;
+translated_text = generate_text(input_text)
+print(f&quot;Input: {input_text}&quot;)
+print(f&quot;Translation: {translated_text}&quot;)
+
+# Example usage: Summarization (using a dummy document)
+input_text = &quot;summarize: Natural language processing (NLP) is a field of artificial intelligence that focuses on enabling computers to understand, interpret, and generate human language. NLP encompasses a wide range of tasks, including machine translation, text summarization, sentiment analysis, and question answering. NLP techniques are used in various applications, such as chatbots, virtual assistants, and search engines.&quot;
+summarized_text = generate_text(input_text, max_length=30) # Short summary
+print(f&quot;Input: {input_text}&quot;)
+print(f&quot;Summary: {summarized_text}&quot;)
+
+# Example usage: Question Answering
+input_text = &quot;question: What is the capital of France? context: Paris is the capital of France.&quot;
+answer = generate_text(input_text, max_length=10) # Short answer
+print(f&quot;Input: {input_text}&quot;)
+print(f&quot;Answer: {answer}&quot;)
+</code></pre>
+
+<p>This code snippet uses the <code>transformers</code> library from Hugging Face.  Make sure you have it installed: <code>pip install transformers sentencepiece</code>. Sentencepiece is necessary for T5's tokenizer.  The code demonstrates translation, summarization, and question answering using T5.  Remember to adjust <code>max_length</code> based on the expected output length.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that T5 frames all NLP tasks as text-to-text problems, what are some of the potential drawbacks or limitations of this approach compared to using task-specific models, and how might these limitations be addressed?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
