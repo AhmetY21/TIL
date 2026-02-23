@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPT-2 and Zero-shot Learning</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-gpt-2-and-zero-shot-learning">Topic: GPT-2 and Zero-shot Learning</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>GPT-2:</strong> GPT-2 (Generative Pre-trained Transformer 2) is a large language model (LLM) developed by OpenAI. It's based on the transformer architecture and pre-trained on a massive dataset of text scraped from the internet.  It's primarily a <em>generative</em> model, meaning it's designed to generate text, but its capabilities extend beyond that.  It's available in multiple sizes, ranging from 124M to 1.5B parameters.</p>
+<p><strong>Zero-shot Learning:</strong> Zero-shot learning is a machine learning paradigm where a model is able to perform a task without having been explicitly trained on data specific to that task. In the context of language models, this means the model can perform a task (e.g., translation, question answering, summarization) solely based on the task description provided in the input prompt, <em>without</em> any prior fine-tuning or examples demonstrating the task.</p>
+<p><strong>GPT-2 and Zero-shot Learning:</strong>  GPT-2 demonstrated a remarkable ability to perform various NLP tasks in a zero-shot fashion.  This is because the vast amount of data it was trained on allowed it to learn a broad understanding of language and world knowledge.  By carefully crafting the input prompt (also known as the context), we can "instruct" GPT-2 to perform a task.  The key is to frame the prompt in a way that hints at the desired output format and utilizes the model's pre-existing knowledge. For example, instead of fine-tuning GPT-2 for translation, we can provide a prompt like "Translate English to French: Hello world =&gt;" and GPT-2 might generate "Bonjour le monde". This is zero-shot because GPT-2 was never explicitly trained on any English-to-French translation data.</p>
+<p>We can use GPT-2 in a zero-shot setting for:
+*   <strong>Text generation:</strong>  Generating stories, poems, code, etc.  The prompt provides the initial context or style.
+*   <strong>Translation:</strong> Translating between languages, by providing examples or a descriptive prompt.
+*   <strong>Question answering:</strong> Answering questions based on general knowledge implied within the prompt.
+*   <strong>Summarization:</strong> Generating a summary of a longer text segment, where the prompt includes an instruction to summarize.
+*   <strong>Classification/Sentiment Analysis:</strong> Though less precise than fine-tuning, GPT-2 can be prompted to classify text (e.g., positive/negative sentiment) by asking it questions about the text and evaluating its response.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a scenario where we need to generate short product descriptions for an e-commerce website. We don't have the resources to train a custom model for each product category.  We can use GPT-2 in a zero-shot fashion to accomplish this.</p>
+<p>Prompting examples:</p>
+<ul>
+<li><strong>Input:</strong> "Product: Cozy wool socks. Features: Soft, warm, durable. Description:"</li>
+<li><strong>Expected output:</strong> "Perfect for keeping your feet warm and comfortable all winter long. Made from high-quality wool for superior softness and durability."</li>
+</ul>
+<p>Another example with more guidance for sentiment:</p>
+<ul>
+<li><strong>Input:</strong> "Write a short, enthusiastic product description for: A stylish leather backpack. Description:"</li>
+<li><strong>Expected Output:</strong> "Upgrade your look with this stunning leather backpack! It's the perfect blend of style and functionality - sure to turn heads wherever you go!"</li>
+</ul>
+<p>In this application, GPT-2, guided by a well-crafted prompt that includes the product name and key features, can generate a relevant and descriptive product summary. The key is experimenting with different prompts to achieve the desired output quality and tone. Using keywords such as "description:" as a clear output indicator and adjusting prompts for specific categories enhances performance.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline, set_seed
+
+# Initialize the pipeline for text generation
+generator = pipeline('text-generation', model='gpt2')  # Can specify different GPT-2 model sizes
+
+def generate_product_description(product_name, features):
+  &quot;&quot;&quot;
+  Generates a product description using GPT-2 in a zero-shot manner.
+
+  Args:
+    product_name: The name of the product.
+    features: A list of key features of the product.
+
+  Returns:
+    A generated product description string.
+  &quot;&quot;&quot;
+  prompt = f&quot;Product: {product_name}. Features: {', '.join(features)}. Description:&quot;
+  set_seed(42) # for reproducibility
+  generated_text = generator(prompt, max_length=100, num_return_sequences=1)[0]['generated_text']
+
+  # Clean up the generated text to remove the initial prompt
+  description = generated_text.replace(prompt, &quot;&quot;).strip()
+
+  return description
+
+
+# Example usage
+product = &quot;Wireless Bluetooth Headphones&quot;
+features = [&quot;Noise-canceling&quot;, &quot;Long battery life&quot;, &quot;Comfortable fit&quot;]
+description = generate_product_description(product, features)
+print(description)
+
+
+product2 = &quot;Ergonomic Office Chair&quot;
+features2 = [&quot;Adjustable lumbar support&quot;, &quot;Breathable mesh back&quot;, &quot;Durable construction&quot;]
+description2 = generate_product_description(product2, features2)
+print(description2)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import libraries:</strong> We import the <code>pipeline</code> and <code>set_seed</code> from the <code>transformers</code> library. <code>pipeline</code> is used for easy model loading and inference.  <code>set_seed</code> is used for reproducibility of the model outputs.</li>
+<li><strong>Initialize pipeline:</strong> We initialize a <code>text-generation</code> pipeline using the <code>gpt2</code> model (you can specify other GPT-2 variants like <code>'gpt2-medium'</code>, <code>'gpt2-large'</code>, or <code>'gpt2-xl'</code>).</li>
+<li><strong>Define a function:</strong>  <code>generate_product_description</code> takes the product name and features as input.</li>
+<li><strong>Craft the prompt:</strong> A prompt is created by concatenating the product name, features, and the keyword "Description:". This is the input to the GPT-2 model.</li>
+<li><strong>Generate text:</strong> The <code>generator</code> is called with the prompt. <code>max_length</code> limits the length of the generated text.  <code>num_return_sequences</code> specifies the number of sequences to return (here, just one).</li>
+<li><strong>Clean up:</strong> The code removes the initial prompt from the generated text to return only the generated description.</li>
+<li><strong>Example usage:</strong> The function is called with example data, and the generated description is printed.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the size of the GPT-2 model (e.g., 124M, 355M, 774M, 1.5B parameters) impact its performance in zero-shot learning scenarios, and what are the trade-offs to consider when choosing a specific size for a given task? Specifically, how does model size interact with the complexity of the task being undertaken and the computational resources available?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
