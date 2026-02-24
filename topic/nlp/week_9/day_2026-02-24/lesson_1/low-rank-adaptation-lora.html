@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Low-Rank Adaptation (LoRA)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-low-rank-adaptation-lora">Topic: Low-Rank Adaptation (LoRA)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Low-Rank Adaptation (LoRA) is a parameter-efficient fine-tuning technique for large pre-trained language models (PLMs).  Instead of updating all the parameters of the PLM, which can be computationally expensive and require significant memory, LoRA freezes the pre-trained weights and injects trainable rank-decomposition matrices into each layer of the Transformer architecture. Specifically, for a given weight matrix <em>W</em> in the original model, LoRA adds a decomposed matrix <em>BA</em>, where <em>B</em> has shape (d, r) and <em>A</em> has shape (r, k). Here, <em>W</em> has shape (d, k) and <em>r &lt;&lt; min(d, k)</em>, making <em>r</em> the <em>rank</em> of the decomposition.</p>
+<p>The update to the original weight <em>W</em> becomes <em>W + BA</em>. During training, only <em>A</em> and <em>B</em> are updated, while <em>W</em> remains frozen.  The output of the layer is thus computed as:</p>
+<p><em>h = Wx + BAx</em></p>
+<p>Where <em>x</em> is the input to the layer and <em>h</em> is the output.</p>
+<p>We can use LoRA to adapt a pre-trained model to a specific downstream task with significantly fewer trainable parameters compared to full fine-tuning. This drastically reduces GPU memory usage, making it feasible to fine-tune very large models on resource-constrained environments.  The key idea is that the weight updates during adaptation have a low intrinsic rank.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>LoRA is particularly well-suited for fine-tuning large language models (LLMs) for various downstream tasks, including:</p>
+<ul>
+<li><strong>Text classification:</strong> Adapting a pre-trained language model like BERT or RoBERTa for sentiment analysis, topic classification, or spam detection.</li>
+<li><strong>Text generation:</strong> Fine-tuning a generative model like GPT-3 or T5 for tasks like text summarization, machine translation, or dialogue generation.</li>
+<li><strong>Question answering:</strong> Adapting a language model to answer questions based on a given context.</li>
+<li><strong>Code generation:</strong> Fine-tuning code-generating models for specific programming languages or frameworks.</li>
+</ul>
+<p>In resource-constrained environments like edge devices or cloud platforms with limited GPU memory, LoRA allows users to efficiently adapt LLMs for specific tasks without the need for extensive hardware upgrades or expensive cloud resources. It is also useful for rapidly experimenting with different task-specific adaptations since the training time and storage requirements are significantly reduced. LoRA also facilitates better multitask learning.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python"># Example using the `peft` library from Hugging Face Transformers
+
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import LoraConfig, get_peft_model, TaskType
+
+# 1. Load pre-trained model and tokenizer
+model_name = &quot;facebook/opt-350m&quot; # Replace with your desired model
+model = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
+
+# 2. Configure LoRA
+lora_config = LoraConfig(
+    r=8,                       # Rank of the decomposition matrices
+    lora_alpha=32,             # Scaling factor
+    lora_dropout=0.05,         # Dropout probability
+    bias=&quot;none&quot;,               # Bias type: &quot;none&quot;, &quot;bais&quot;, or &quot;all&quot;
+    task_type=TaskType.CAUSAL_LM # Task type (e.g., CAUSAL_LM for text generation)
+    #target_modules=[&quot;q_proj&quot;, &quot;v_proj&quot;] # Optional: Specify specific layers to adapt
+)
+
+# 3. Wrap the model with LoRA
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()  # Check trainable parameter count
+
+# At this point, you can train the 'model' as you normally would,
+# using a training loop, Trainer API, etc.  Only the LoRA parameters
+# will be updated during training.
+
+# Example training loop (minimal example - replace with your actual training logic)
+import torch
+from torch.optim import AdamW
+
+#Dummy data for example only
+train_dataset = [&quot;This is a test sentence.&quot;, &quot;Another test sentence.&quot;]
+optimizer = AdamW(model.parameters(), lr=1e-4)
+
+model.train()
+for text in train_dataset:
+    inputs = tokenizer(text, return_tensors=&quot;pt&quot;, padding=True, truncation=True).to(model.device)
+    labels = inputs[&quot;input_ids&quot;].clone()
+    outputs = model(**inputs, labels=labels)
+    loss = outputs.loss
+    loss.backward()
+    optimizer.step()
+    optimizer.zero_grad()
+
+# After training:
+# 4. Save the LoRA weights (only A and B matrices)
+# model.save_pretrained(&quot;my_lora_model&quot;)
+
+# 5. Later, to load the LoRA model:
+# from peft import PeftModel
+# model = AutoModelForCausalLM.from_pretrained(model_name)
+# model = PeftModel.from_pretrained(model, &quot;my_lora_model&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of rank <em>r</em> impact the performance and efficiency of LoRA, and what strategies can be used to determine an optimal value for <em>r</em>?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

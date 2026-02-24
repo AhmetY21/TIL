@@ -1,5 +1,5 @@
 {
-  "next_index": 67,
+  "next_index": 68,
   "total_topics": 100,
-  "last_topic": "Parameter Efficient Fine-Tuning (PEFT)"
+  "last_topic": "Low-Rank Adaptation (LoRA)"
 }
