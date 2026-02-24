@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instruction Tuning and RLHF Overview</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-instruction-tuning-and-rlhf-overview">Topic: Instruction Tuning and RLHF Overview</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Instruction Tuning:</strong> Instruction tuning is a technique for fine-tuning pre-trained language models (LLMs) to better follow human instructions. It involves training the LLM on a dataset of instruction-response pairs. The "instruction" is a natural language prompt specifying what the model should do (e.g., "Summarize this article," "Translate this sentence to French," "Write a poem about autumn"). The "response" is the desired output for that instruction. The goal is to teach the model to generalize its understanding and generation capabilities to a wide range of unseen instructions.</p>
+<p><em>How can we use it?</em> Instruction tuning makes LLMs more controllable, predictable, and useful for real-world applications. It allows users to give clear, natural language prompts and receive outputs that are aligned with their intentions, reducing the need for extensive prompt engineering. Instruction-tuned models are better at zero-shot and few-shot generalization on novel tasks.</p>
+<p><strong>Reinforcement Learning from Human Feedback (RLHF):</strong> RLHF is a technique used to further align LLMs with human preferences by training them using reinforcement learning. It typically involves three steps:</p>
+<ol>
+<li><strong>Supervised Fine-Tuning (SFT):</strong> An initial instruction-tuned model is trained on a dataset of instruction-response pairs (as described above). This provides a strong foundation for following instructions.</li>
+<li><strong>Reward Model Training:</strong> A separate reward model is trained to predict human preferences for different outputs given the same instruction. Human annotators rank or rate multiple outputs from the SFT model for each instruction. The reward model learns to mimic these human judgments, assigning higher scores to outputs that humans prefer.</li>
+<li><strong>Reinforcement Learning Fine-Tuning:</strong> The SFT model is further fine-tuned using reinforcement learning. The reward model provides the reward signal to the RL agent (which is the LLM). The agent's goal is to generate outputs that maximize the reward signal provided by the reward model. Policy optimization algorithms like Proximal Policy Optimization (PPO) are commonly used.</li>
+</ol>
+<p><em>How can we use it?</em> RLHF directly optimizes the LLM to produce outputs that are more desirable and helpful to humans. It addresses issues like toxicity, bias, and lack of helpfulness that can persist even after instruction tuning. It's particularly useful for aligning models with subjective aspects of language use, such as creativity, helpfulness, and harmlessness.</p>
+<p>In short, instruction tuning <em>teaches</em> the model to follow instructions, and RLHF <em>aligns</em> the model with human preferences by optimizing the <em>quality</em> of the responses.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Instruction Tuning:</strong> Imagine you want to build a chatbot that can answer questions about a specific document or article.  You could instruction tune a pre-trained LLM by creating a dataset of question-answer pairs based on the content of the document. Each question is the "instruction," and the corresponding answer from the document is the "response."  After instruction tuning, the chatbot would be much better at accurately and concisely answering questions about the document, even questions that were not explicitly present in the training data. Another example is creating a code generation assistant. You can instruction-tune an LLM to generate code in a specific programming language by providing instructions such as "Write a Python function to calculate the factorial of a number" along with the correct code as the response.</p>
+<p><strong>RLHF:</strong> Consider a chatbot designed to provide mental health support. While instruction tuning can help it respond to users' queries, RLHF can be used to ensure the chatbot's responses are empathetic, supportive, and avoid providing harmful or misleading information. Human annotators would rate the chatbot's responses based on criteria like helpfulness, empathy, and safety. The reward model would learn to predict these ratings, and the RL fine-tuning step would then optimize the chatbot's behavior to maximize these desired qualities.  RLHF is crucial for applications where safety and alignment with human values are paramount. Another scenario includes generating creative text formats.  Instruction tuning can get a model to generate poems or scripts, but RLHF can further improve the quality and creativity of the output by training the model based on human feedback on aspects such as originality and engagement.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While implementing a full instruction tuning and RLHF pipeline from scratch requires significant resources and infrastructure, we can demonstrate the core concepts using libraries like Hugging Face Transformers and datasets.  The following example shows how to perform instruction tuning using a smaller dataset and a pre-trained model. It is important to note that this is a simplified demonstration and doesn't cover the complexities of real-world instruction tuning or RLHF.</p>
+<pre class="codehilite"><code class="language-python">from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
+from datasets import load_dataset
+
+# 1. Load a pre-trained language model and tokenizer
+model_name = &quot;distilgpt2&quot;  # A smaller model for demonstration purposes
+model = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side=&quot;left&quot;, truncation_side=&quot;right&quot;)
+tokenizer.pad_token = tokenizer.eos_token  # Important for generation
+
+# 2. Prepare the instruction tuning dataset (replace with your own)
+# This example uses a small synthetic dataset.  A real dataset would be much larger.
+data = [
+    {&quot;instruction&quot;: &quot;Summarize this: The cat sat on the mat.&quot;, &quot;response&quot;: &quot;Cat on mat.&quot;},
+    {&quot;instruction&quot;: &quot;Translate to French: Hello, world!&quot;, &quot;response&quot;: &quot;Bonjour, le monde!&quot;},
+    {&quot;instruction&quot;: &quot;Write a short poem about the sun.&quot;, &quot;response&quot;: &quot;Golden orb in the sky,\nWarming earth as days fly.&quot;}
+]
+
+# Format the data into a dataset suitable for training.
+def format_instruction(example):
+    return f&quot;Instruction: {example['instruction']}\nResponse: {example['response']}{tokenizer.eos_token}&quot;
+
+def tokenize_function(examples):
+    formatted_prompts = [format_instruction(example) for example in examples]
+    return tokenizer(formatted_prompts, truncation=True, padding=&quot;max_length&quot;, max_length=128)
+
+dataset = load_dataset(&quot;json&quot;, data_files={&quot;train&quot;: data})
+tokenized_dataset = dataset.map(tokenize_function, batched=True)
+
+
+# 3. Define training arguments
+training_args = TrainingArguments(
+    output_dir=&quot;./instruction_tuning_model&quot;,
+    overwrite_output_dir=True,
+    num_train_epochs=3,
+    per_device_train_batch_size=4,
+    save_steps=100,
+    save_total_limit=2,
+    logging_steps=10,
+    learning_rate=2e-5,
+    weight_decay=0.01,
+    push_to_hub=False, # Set to True if you want to push the model to the Hugging Face Hub
+)
+
+# 4. Create a Trainer instance and train the model
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_dataset[&quot;train&quot;],
+    tokenizer=tokenizer, # Important for correct padding
+)
+
+trainer.train()
+
+# 5. Inference Example:
+def generate_response(instruction, model, tokenizer):
+    prompt = f&quot;Instruction: {instruction}\nResponse:&quot;
+    input_ids = tokenizer.encode(prompt, return_tensors=&quot;pt&quot;).to(model.device)
+    output = model.generate(input_ids, max_length=100, num_return_sequences=1, no_repeat_ngram_size=2)
+    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+    return generated_text.split(&quot;Response:&quot;)[1].strip()
+
+
+new_instruction = &quot;Write a short story about a talking dog.&quot;
+response = generate_response(new_instruction, model, tokenizer)
+print(f&quot;Instruction: {new_instruction}\nGenerated Response: {response}&quot;)
+
+#Save the model and tokenizer
+model.save_pretrained(&quot;./instruction_tuning_model&quot;)
+tokenizer.save_pretrained(&quot;./instruction_tuning_model&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Load Pre-trained Model and Tokenizer:</strong> Loads a DistilGPT-2 model and its tokenizer.</li>
+<li><strong>Prepare Dataset:</strong> Creates a small dataset of instruction-response pairs. The <code>format_instruction</code> function combines the instruction and response into a single text string. The <code>tokenize_function</code> tokenizes this formatted text.</li>
+<li><strong>Training Arguments:</strong> Defines the training parameters, such as the output directory, number of epochs, and batch size.</li>
+<li><strong>Trainer:</strong>  Uses the Hugging Face <code>Trainer</code> class to manage the training loop.  The tokenizer is passed to the <code>Trainer</code> to handle padding correctly.</li>
+<li><strong>Training:</strong> Starts the training process.</li>
+<li><strong>Inference:</strong> <code>generate_response</code> function demonstrates how to use the fine-tuned model to generate a response to a new instruction.</li>
+</ul>
+<p>This provides a basic example of instruction tuning. Real-world instruction tuning datasets are much larger and require more careful data curation. The RLHF process is significantly more complex and involves training a reward model based on human feedback and then using that reward model to fine-tune the LLM using reinforcement learning algorithms.  Libraries like <code>trl</code> (Transformers Reinforcement Learning) from Hugging Face are commonly used to simplify the RLHF process.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given the computational cost and complexity of RLHF, are there alternative, more efficient techniques for aligning LLMs with human values and preferences, and what are their limitations compared to RLHF? For instance, what are the pros and cons of Directly Optimizing Policy (DPO) as an alternative alignment method?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
