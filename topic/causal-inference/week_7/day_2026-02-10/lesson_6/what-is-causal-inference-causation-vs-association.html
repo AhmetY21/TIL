@@ -107,14 +107,34 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #0f172a;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      font-weight: 600;
+      border-bottom-right-radius: 6px;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content">
 
 
 <h1 id="topic-what-is-causal-inference-causation-vs-association">Topic: What is Causal Inference? (Causation vs Association)</h1>
@@ -212,7 +232,8 @@ print(refute_results)
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do different causal inference methods (e.g., propensity score matching, instrumental variables, regression discontinuity) address confounding variables, and what are the limitations of each method?</p>
 
-  <script>
+    </main>
+<script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
     

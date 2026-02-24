@@ -104,14 +104,34 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #0f172a;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      font-weight: 600;
+      border-bottom-right-radius: 6px;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content">
 
 
 <h1 id="topic-standardization-and-g-formula-outcome-modeling">Topic: Standardization and G-Formula (Outcome Modeling)</h1>
@@ -260,7 +280,8 @@ print(f&quot;ATE Bootstrap Confidence Interval: ({ci_lower}, {ci_upper})&quot;)
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does standardization/G-formula compare to Inverse Probability of Treatment Weighting (IPTW) in terms of assumptions and robustness?  What are some practical considerations for choosing between the two methods?</p>
-  <script>
+    </main>
+<script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
     
