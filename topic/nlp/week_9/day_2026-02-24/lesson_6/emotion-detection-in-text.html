@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emotion Detection in Text</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-emotion-detection-in-text">Topic: Emotion Detection in Text</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Emotion detection in text, also known as sentiment analysis with a focus on specific emotions, is the task of identifying and classifying the emotions expressed in a piece of text. Unlike simple sentiment analysis, which often boils down to positive, negative, or neutral, emotion detection aims to pinpoint specific emotions such as joy, sadness, anger, fear, surprise, disgust, and sometimes more nuanced feelings like love, grief, or hope.</p>
+<p>Formally, we can define it as a classification problem where given an input text <em>T</em>, the goal is to predict the most likely emotion <em>E</em> from a predefined set of emotions <em>E = {emotion_1, emotion_2, ..., emotion_n}</em>. This is often achieved using machine learning models trained on datasets of text labeled with emotions.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Customer feedback analysis:</strong> Understand specific customer emotions related to products, services, or marketing campaigns.  Knowing <em>why</em> a customer is unhappy (e.g., frustration with the interface, anger at a delayed delivery) is more actionable than simply knowing they are "negative."</li>
+<li><strong>Mental health monitoring:</strong> Analyze social media posts or online forum discussions to identify individuals who may be experiencing emotional distress, such as depression or anxiety.</li>
+<li><strong>Content personalization:</strong> Tailor content to match the user's current emotional state.  For example, suggesting upbeat music to someone who seems sad or providing calming articles to someone who appears anxious.</li>
+<li><strong>Human-computer interaction:</strong>  Improve the naturalness and effectiveness of chatbots and virtual assistants by enabling them to respond appropriately to user emotions.</li>
+<li><strong>Market research:</strong> Identify emotional trends related to specific brands, products, or events.</li>
+<li><strong>Crisis management:</strong> Monitor social media during crises to understand public sentiment and tailor communication strategies accordingly.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> A company wants to improve its customer service by identifying and addressing customer frustrations. They receive thousands of customer reviews through their website and social media.</p>
+<p><strong>How emotion detection can help:</strong></p>
+<ol>
+<li><strong>Data Collection:</strong> Gather all customer reviews and comments.</li>
+<li><strong>Preprocessing:</strong> Clean the text data by removing noise, handling misspellings, and standardizing the text format.</li>
+<li><strong>Emotion Detection:</strong> Apply an emotion detection model to each review to identify the dominant emotion expressed (e.g., anger, frustration, disappointment).</li>
+<li><strong>Categorization and Prioritization:</strong>  Categorize reviews based on the detected emotion and product/service mentioned. Prioritize reviews expressing strong negative emotions like anger or frustration.</li>
+<li><strong>Actionable Insights:</strong> Analyze the categorized reviews to identify common sources of customer frustration.  For example, if many reviews express anger related to shipping delays, the company can focus on improving its logistics.</li>
+<li><strong>Personalized Response:</strong> Customer service agents can be provided with information about the customer's expressed emotion, enabling them to respond in a more empathetic and effective manner.  For example, if the model detected anger, the agent can start by acknowledging the customer's frustration.</li>
+<li><strong>Continuous Improvement:</strong> Monitor emotion trends over time to assess the effectiveness of implemented changes and identify new areas for improvement.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While building a custom emotion detection model from scratch requires a large, labeled dataset and significant effort, we can leverage pre-trained models and libraries to perform emotion detection in Python. One popular option is using the <code>transformers</code> library in conjunction with a pre-trained emotion classification model.</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load a pre-trained emotion detection model
+emotion_pipeline = pipeline(&quot;text-classification&quot;, model=&quot;SamLowe/roberta-base-go_emotions&quot;)
+
+def detect_emotion(text):
+  &quot;&quot;&quot;
+  Detects the emotion in a given text using a pre-trained model.
+
+  Args:
+    text: The text to analyze.
+
+  Returns:
+    A dictionary containing the predicted emotion and its confidence score.
+  &quot;&quot;&quot;
+  result = emotion_pipeline(text)
+  return result
+
+# Example usage
+text = &quot;I am so incredibly frustrated with this product. It keeps crashing!&quot;
+emotion = detect_emotion(text)
+print(f&quot;Text: {text}&quot;)
+print(f&quot;Detected Emotion: {emotion}&quot;)
+
+
+text2 = &quot;I am feeling overjoyed with the new update. Thank you so much for the great work.&quot;
+emotion2 = detect_emotion(text2)
+print(f&quot;Text: {text2}&quot;)
+print(f&quot;Detected Emotion: {emotion2}&quot;)
+
+text3 = &quot;I am feeling a little sad and down.&quot;
+emotion3 = detect_emotion(text3)
+print(f&quot;Text: {text3}&quot;)
+print(f&quot;Detected Emotion: {emotion3}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import <code>pipeline</code>:</strong> This function from the <code>transformers</code> library provides a simple way to load and use pre-trained models.</li>
+<li><strong>Load the emotion detection model:</strong>  We use <code>pipeline("text-classification", model="SamLowe/roberta-base-go_emotions")</code> to load a model specifically trained for emotion classification. The <code>model</code> argument specifies the identifier of the pre-trained model on the Hugging Face Model Hub.  "SamLowe/roberta-base-go_emotions" is a RoBERTa-based model trained on the GoEmotions dataset, which covers a range of emotions.  Other models exist and can be explored on the Hugging Face Model Hub.</li>
+<li><strong><code>detect_emotion</code> function:</strong> This function takes the input text, passes it to the <code>emotion_pipeline</code> for analysis, and returns the result.</li>
+<li><strong>Example Usage:</strong>  Demonstrates how to use the function with sample text and prints the detected emotion and its confidence score. The results will be in the form of a list of dictionaries. Each dictionary will have the keys 'label' and 'score'. The 'label' holds the name of the emotion and the 'score' contains the confidence score.</li>
+</ol>
+<p><strong>Important considerations:</strong></p>
+<ul>
+<li><strong>Model Choice:</strong> The choice of pre-trained model is crucial. Different models are trained on different datasets and may be better suited for specific types of text or specific sets of emotions. The "SamLowe/roberta-base-go_emotions" model is a good starting point, but explore other options on the Hugging Face Model Hub.</li>
+<li><strong>Context is King:</strong> Emotion detection is highly sensitive to context. Sarcasm, irony, and cultural nuances can significantly affect accuracy.</li>
+<li><strong>Bias:</strong> Pre-trained models can inherit biases from the data they were trained on. Be aware of potential biases and evaluate model performance carefully on diverse datasets.</li>
+<li><strong>Fine-tuning:</strong> For optimal performance on a specific task or domain, fine-tuning a pre-trained model on a custom dataset can be beneficial.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we adapt or improve this emotion detection pipeline to handle sarcasm and irony, which often lead to misclassifications of underlying emotions?  What specific techniques or model architectures are best suited for this challenge, and what data considerations are important when training a model to recognize sarcasm and irony?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
