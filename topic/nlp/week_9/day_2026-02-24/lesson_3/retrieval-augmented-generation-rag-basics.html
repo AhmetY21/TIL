@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retrieval-Augmented Generation (RAG) Basics</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-retrieval-augmented-generation-rag-basics">Topic: Retrieval-Augmented Generation (RAG) Basics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Retrieval-Augmented Generation (RAG) is a technique for enhancing the performance of large language models (LLMs) by grounding them with external knowledge retrieved from a data source. It addresses limitations such as hallucinations, limited knowledge cut-off dates, and inability to access up-to-date or proprietary information.</p>
+<p>Here's a breakdown:</p>
+<ul>
+<li>
+<p><strong>Retrieval:</strong> Instead of relying solely on its pre-trained parameters, the LLM first retrieves relevant information from an external knowledge source (e.g., a document database, a website, or a knowledge graph). This retrieval step is typically done using semantic search, keyword search, or a combination of both. The goal is to find pieces of information most relevant to the user's query.</p>
+</li>
+<li>
+<p><strong>Augmentation:</strong> The retrieved information is then incorporated into the prompt given to the LLM. This augmented prompt provides the LLM with the context needed to answer the user's question more accurately and comprehensively.</p>
+</li>
+<li>
+<p><strong>Generation:</strong> Finally, the LLM uses the augmented prompt to generate a response. Because the LLM has access to retrieved information, its response is more likely to be factually correct, relevant, and specific to the user's query.</p>
+</li>
+</ul>
+<p>In essence, RAG combines the generative capabilities of LLMs with the ability to access and incorporate external knowledge, creating a more powerful and versatile system. It can be used to answer questions, generate summaries, translate languages, write different kinds of creative content, and answer your questions in an informative way – all while grounding the output in verifiable data.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a scenario where you want to build a chatbot that can answer questions about a company's internal policies and procedures. The company has a vast collection of documents outlining these policies, but the LLM itself doesn't have access to this information.</p>
+<p>Using RAG, you can:</p>
+<ol>
+<li>
+<p><strong>Create a vector database (embedding store) of your internal documents.</strong> Each document is converted into a vector representation (embedding) that captures its semantic meaning. Tools like ChromaDB or Pinecone can be used for this.</p>
+</li>
+<li>
+<p><strong>When a user asks a question, perform a semantic search on the vector database.</strong> The question itself is also converted into a vector embedding, and the system retrieves the documents whose vector embeddings are most similar to the question's embedding.</p>
+</li>
+<li>
+<p><strong>Augment the LLM prompt with the retrieved documents.</strong> The prompt might include the user's question along with the relevant document snippets.</p>
+</li>
+<li>
+<p><strong>The LLM generates an answer based on the augmented prompt.</strong> Because the LLM now has access to the relevant policy documents, it can provide an accurate and informative answer to the user's question.</p>
+</li>
+</ol>
+<p>This approach allows the chatbot to answer questions about internal policies even though the LLM was not specifically trained on that data. This avoids the need to retrain the LLM every time the policies change, as you only need to update the vector database.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>This example demonstrates a basic RAG implementation using LangChain and OpenAI. It requires you to have an OpenAI API key.</p>
+<pre class="codehilite"><code class="language-python">from langchain.document_loaders import TextLoader
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import Chroma
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+import os
+
+# Replace with your OpenAI API key
+os.environ[&quot;OPENAI_API_KEY&quot;] = &quot;YOUR_OPENAI_API_KEY&quot;
+
+
+# 1. Load your data (example: a text file)
+loader = TextLoader(&quot;my_company_policies.txt&quot;)  # Replace with your document path
+documents = loader.load()
+
+# 2. Split the documents into smaller chunks
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+texts = text_splitter.split_documents(documents)
+
+# 3. Create embeddings and store them in a vector database
+embeddings = OpenAIEmbeddings()
+db = Chroma.from_documents(texts, embeddings)
+
+# 4. Create a retriever
+retriever = db.as_retriever()
+
+# 5. Create a QA chain
+qa = RetrievalQA.from_chain_type(llm=OpenAI(), chain_type=&quot;stuff&quot;, retriever=retriever)
+
+
+# 6. Ask a question
+query = &quot;What is the company's policy on remote work?&quot;
+answer = qa.run(query)
+
+print(answer)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>TextLoader</code></strong>: Loads the document (<code>my_company_policies.txt</code>).</li>
+<li><strong><code>CharacterTextSplitter</code></strong>: Splits the document into smaller chunks to improve retrieval relevance.  A common strategy.</li>
+<li><strong><code>OpenAIEmbeddings</code></strong>: Creates embeddings of the text chunks using OpenAI's embedding model.</li>
+<li><strong><code>Chroma</code></strong>:  Creates a Chroma vector database to store the embeddings.</li>
+<li><strong><code>retriever</code></strong>:  Creates a retriever object from the Chroma database.</li>
+<li><strong><code>RetrievalQA</code></strong>:  Creates a RetrievalQA chain, which combines the retriever and an LLM (OpenAI). The <code>chain_type="stuff"</code> tells LangChain to stuff all retrieved documents into the LLM's context window. Other chain types exist for handling larger sets of retrieved documents.</li>
+<li><strong><code>qa.run(query)</code></strong>:  Runs the query against the QA chain, retrieving relevant documents, augmenting the prompt, and generating an answer.</li>
+</ol>
+<p><strong>Note:</strong></p>
+<ul>
+<li>You need to have the <code>langchain</code>, <code>openai</code>, <code>chromadb</code>, and <code>tiktoken</code> Python packages installed: <code>pip install langchain openai chromadb tiktoken</code>.</li>
+<li>Replace <code>"YOUR_OPENAI_API_KEY"</code> with your actual OpenAI API key.</li>
+<li>Replace <code>"my_company_policies.txt"</code> with the actual path to your document.</li>
+<li>This is a basic example. For more complex scenarios, you might need to adjust the chunk size, the embedding model, the vector database, and the QA chain type.  Different chain types ('stuff', 'map_reduce', 'refine', 'map_rerank') handle different limitations such as exceeding the context window of the LLM.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we improve the accuracy and relevance of the retrieved documents in a RAG system beyond simple keyword/similarity searches? What techniques can be employed to make the retrieval process more intelligent and context-aware?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
