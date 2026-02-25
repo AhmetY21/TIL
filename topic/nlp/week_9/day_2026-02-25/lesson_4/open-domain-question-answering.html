@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open-Domain Question Answering</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-open-domain-question-answering">Topic: Open-Domain Question Answering</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Open-Domain Question Answering (Open-Domain QA) is a field of Natural Language Processing (NLP) that focuses on answering questions posed in natural language about virtually any topic. Unlike closed-domain QA systems, which are limited to a specific knowledge base (e.g., a database about movies), open-domain QA systems must be able to find relevant information from a vast and unstructured source of knowledge, such as the entire internet, a large collection of documents, or a comprehensive knowledge graph.</p>
+<p><strong>What is it?</strong> Open-Domain QA typically involves two main steps:</p>
+<ol>
+<li><strong>Information Retrieval (IR):</strong> Given a question, the system first retrieves a set of potentially relevant documents or passages from a large knowledge source. This is often done using techniques like keyword search, semantic similarity, or more advanced methods using dense vector embeddings.</li>
+<li><strong>Reading Comprehension (RC):</strong>  The system then analyzes the retrieved passages to find the specific answer to the question. This is usually accomplished using machine learning models trained to identify the answer within a given context. This stage also includes extracting and aggregating information from multiple documents and reasoning over the combined information.</li>
+</ol>
+<p><strong>How can we use it?</strong> Open-Domain QA can be used in a wide variety of applications, including:</p>
+<ul>
+<li><strong>Search Engines:</strong> Improve the ability of search engines to directly answer questions rather than just providing links to relevant web pages.</li>
+<li><strong>Chatbots and Virtual Assistants:</strong> Enable more sophisticated conversational agents that can provide informative answers to user queries on a wide range of topics.</li>
+<li><strong>Personalized Education:</strong> Develop tutoring systems that can answer student questions and provide explanations based on a vast repository of educational materials.</li>
+<li><strong>Knowledge Base Access:</strong>  Provide a user-friendly interface for accessing and querying large knowledge bases, making it easier to find specific information.</li>
+<li><strong>Fact-Checking:</strong> Assist in verifying the accuracy of information by comparing claims against multiple sources and identifying inconsistencies.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider the application scenario of building a <strong>virtual research assistant</strong>.  Imagine a researcher needs to quickly gather information on a complex and rapidly evolving topic, such as the latest developments in CRISPR gene editing.</p>
+<p>Instead of manually searching through numerous research papers, articles, and websites, the researcher could pose a question to the open-domain QA system like: "What are the latest advances in base editing for correcting point mutations in human cells?".</p>
+<p>The system would then:</p>
+<ol>
+<li><strong>Retrieve Relevant Documents:</strong> Use a large database of scientific publications (e.g., PubMed, arXiv) and relevant websites to retrieve documents that are potentially related to base editing and point mutation correction.</li>
+<li><strong>Identify the Answer:</strong>  Analyze the retrieved documents to pinpoint the passages that specifically address the question about the latest advances. The system might extract information about new base editors, improved delivery methods, or clinical trials using base editing.</li>
+<li><strong>Present the Answer:</strong>  The system would then provide a concise and accurate answer, possibly with links to the original sources for further reading.  This could be a summarized paragraph extracted directly from the relevant sources.</li>
+</ol>
+<p>This application highlights the potential of open-domain QA to significantly speed up the research process and make complex information more accessible.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While building a full open-domain QA system from scratch is complex, we can demonstrate a simplified example using the <code>transformers</code> library from Hugging Face. This example utilizes a pre-trained model for question answering. We'll use the <code>pipeline</code> function for ease of use.</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Create a question answering pipeline using a pre-trained model
+qa_pipeline = pipeline(&quot;question-answering&quot;)
+
+# Example context (this would typically be retrieved from a larger document source)
+context = &quot;The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower.&quot;
+
+# Example question
+question = &quot;Who is the Eiffel Tower named after?&quot;
+
+# Get the answer
+answer = qa_pipeline(question=question, context=context)
+
+# Print the answer
+print(answer)
+
+# Example with a more complex question
+question2 = &quot;In what city is the Eiffel Tower located?&quot;
+answer2 = qa_pipeline(question=question2, context=context)
+print(answer2)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>pipeline("question-answering")</code></strong>: This line creates a question answering pipeline using a default pre-trained model (usually a BERT-based model fine-tuned for QA).  You can specify a different model by providing the <code>model</code> and <code>tokenizer</code> arguments to <code>pipeline</code>.</li>
+<li><strong><code>context</code></strong>:  This is the relevant text that the model will search through to find the answer.  In a real open-domain QA system, this context would be retrieved from a much larger knowledge source.</li>
+<li><strong><code>question</code></strong>: This is the question you want to answer.</li>
+<li><strong><code>qa_pipeline(question=question, context=context)</code></strong>: This line feeds the question and context to the pipeline, which performs the question answering task.</li>
+<li><strong><code>answer</code></strong>:  The <code>answer</code> variable contains a dictionary with information about the answer, including the predicted <code>answer</code> text, the <code>score</code> (confidence of the answer), and the <code>start</code> and <code>end</code> positions of the answer within the context.</li>
+</ul>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example. A real open-domain QA system would require a more sophisticated information retrieval component to find relevant documents.</li>
+<li>The performance of this method depends heavily on the quality of the pre-trained model and the relevance of the context.</li>
+<li>For more complex tasks, you might need to use more advanced techniques such as fine-tuning a model on a specific dataset or using ensemble methods to combine the results of multiple models.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we improve the <strong>information retrieval</strong> component in an open-domain QA system to handle questions that require reasoning or synthesizing information from multiple documents? Specifically, what techniques can be used to go beyond simple keyword-based search and better identify relevant documents in such cases?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
