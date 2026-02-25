@@ -414,6 +414,22 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
 
+    .skip-link {{
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
+
     /* Copy Button */
     pre {{ position: relative; }}
     .copy-button {{
@@ -440,8 +456,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 {header_html}
+<main id="main-content" tabindex="-1">
 {html_body}
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
@@ -739,18 +758,37 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .dark .week-title {{
       border-bottom-color: #334155;
     }}
+
+    .skip-link {{
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   <div class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
-    <header>
-      <h1>{meta.subject} Learning Hub</h1>
-      <p class="subtitle">{meta.subtitle}</p>
-    </header>
+    <main id="main-content" tabindex="-1">
+      <header>
+        <h1>{meta.subject} Learning Hub</h1>
+        <p class="subtitle">{meta.subtitle}</p>
+      </header>
 
-    {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
+      {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
+    </main>
   </div>
   <script>
     const btn = document.getElementById('theme-toggle');

@@ -107,14 +107,33 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 <h1 id="topic-capstone-project-ideas-pick-one-design-one-library">Topic: Capstone Project Ideas (Pick one design + one library)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -196,6 +215,7 @@ print(results.summary())
 <p>In this example, the <code>interaction</code> term's coefficient estimates the impact of the treatment (personalized learning platform) on test scores. A positive and statistically significant coefficient suggests a positive effect.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do you handle unobserved confounders in your chosen design, and how does the selected library provide tools for addressing them (e.g., sensitivity analysis, instrumental variables, front-door adjustment)? Consider what methods are most appropriate based on the assumptions you are willing to make given the real-world scenario. How would you validate these assumptions?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

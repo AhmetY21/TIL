@@ -104,14 +104,33 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 
 <h1 id="topic-probability-basics-for-optimization-random-variables-distributions-expectations">Topic: Probability Basics for Optimization: random variables, distributions, expectations</h1>
@@ -204,6 +223,7 @@ print(f&quot;Approximate Optimal Q: {optimal_Q}&quot;)
 <p>This code calculates the expected cost for a given order quantity <em>Q</em> and provides an example of a simple search to find an approximate optimal <em>Q</em>. Note that for more complex problems, specialized optimization algorithms are required to efficiently find the optimal solution.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the choice of the probability distribution for a random variable impact the optimal solution in a stochastic programming problem? What are some strategies for choosing an appropriate distribution when historical data is limited or unavailable?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

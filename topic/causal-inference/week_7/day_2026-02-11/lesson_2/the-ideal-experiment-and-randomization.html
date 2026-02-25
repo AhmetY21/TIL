@@ -107,14 +107,33 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 
 <h1 id="topic-the-ideal-experiment-and-randomization">Topic: The Ideal Experiment and Randomization</h1>
@@ -221,6 +240,7 @@ print(f&quot;Adjusted Average Treatment Effect (ATE): {ate_adjusted:.2f}&quot;)
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the concept of "ignorability" relate to the ideal experiment and randomization? Why is ignorability such an important assumption in causal inference, and what strategies can be used to address situations where it is violated in real-world observational studies?</p>
 
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
