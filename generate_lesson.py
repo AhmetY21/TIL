@@ -312,6 +312,14 @@ def add_front_matter(md: str, *, title: str, date_str: str, week_num: int, lesso
 def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] = None) -> str:
     html_body = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
 
+    # Calculate reading time
+    word_count = len(md_text.split())
+    read_time = max(1, round(word_count / 200))
+    read_time_html = f'<div class="read-time">⏱️ {read_time} min read</div>'
+
+    # Inject reading time after the first h1
+    html_body = re.sub(r'(</h1>)', r'\1' + read_time_html, html_body, count=1)
+
     header_html = ""
     if meta:
         # Assuming fixed directory structure: topic/{slug}/week_N/day_Y/lesson_N/slug.html
@@ -413,6 +421,17 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th, .dark td {{ border-color: #334155; }}
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
+
+    .read-time {{
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+      margin-top: -12px;
+    }}
+    .dark .read-time {{
+      color: #94a3b8;
+    }}
 
     /* Copy Button */
     pre {{ position: relative; }}
