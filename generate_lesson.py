@@ -310,7 +310,16 @@ def add_front_matter(md: str, *, title: str, date_str: str, week_num: int, lesso
 
 
 def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] = None) -> str:
+    # Estimate reading time (200 wpm)
+    word_count = len(md_text.split())
+    reading_time_min = max(1, round(word_count / 200))
+    reading_time_html = f'<p class="reading-time">⏱️ {reading_time_min} min read</p>'
+
     html_body = markdown.markdown(md_text, extensions=MD_EXTENSIONS)
+
+    # Inject reading time after the first H1
+    if "</h1>" in html_body:
+        html_body = html_body.replace("</h1>", f"</h1>\n{reading_time_html}", 1)
 
     header_html = ""
     if meta:
@@ -413,6 +422,16 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th, .dark td {{ border-color: #334155; }}
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
+
+    .reading-time {{
+      color: #6b7280;
+      font-size: 0.9rem;
+      margin-top: -10px;
+      margin-bottom: 24px;
+    }}
+    .dark .reading-time {{
+      color: #94a3b8;
+    }}
 
     /* Copy Button */
     pre {{ position: relative; }}
