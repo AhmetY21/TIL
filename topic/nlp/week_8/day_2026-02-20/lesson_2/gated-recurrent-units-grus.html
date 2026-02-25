@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-gated-recurrent-units-grus">Topic: Gated Recurrent Units (GRUs)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>A Gated Recurrent Unit (GRU) is a type of recurrent neural network (RNN) architecture. It is a variant of the Long Short-Term Memory (LSTM) network, and like LSTMs, it addresses the vanishing gradient problem that plagues traditional RNNs, allowing them to learn long-range dependencies in sequential data.  GRUs are simpler than LSTMs, having fewer parameters, which can lead to faster training times and better generalization performance, especially on smaller datasets.</p>
@@ -243,6 +259,7 @@ print(output.shape) # Output shape: (batch_size, output_size)
 </ol>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the performance of GRUs compare to LSTMs in different NLP tasks, and what factors might influence the choice between using a GRU versus an LSTM?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

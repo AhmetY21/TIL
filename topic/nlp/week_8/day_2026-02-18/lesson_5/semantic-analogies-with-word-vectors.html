@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-semantic-analogies-with-word-vectors">Topic: Semantic Analogies with Word Vectors</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Semantic analogies with word vectors leverage the numerical representation of words learned by word embedding models (like Word2Vec, GloVe, or FastText) to identify and reason about relationships between words.  The core idea is that if vector spaces accurately reflect semantic relationships, then the vector difference between two words (e.g., "king" - "man") should be similar to the vector difference between another pair of words expressing a similar relationship (e.g., "queen" - "woman").</p>
@@ -180,6 +196,7 @@ print(result)
 
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How can we evaluate the performance of a word embedding model on semantic analogy tasks systematically? What metrics are commonly used, and what are the challenges in creating a comprehensive evaluation dataset?  Also, how do different word embedding models (Word2Vec, GloVe, FastText) typically perform on analogy tasks, and why might their performance differ?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

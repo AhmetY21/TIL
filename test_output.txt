@@ -1,0 +1,7 @@
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.003s
+
+OK
+[test] Updated hubs/test-index.html
+[test] Updated hubs/test-index.html

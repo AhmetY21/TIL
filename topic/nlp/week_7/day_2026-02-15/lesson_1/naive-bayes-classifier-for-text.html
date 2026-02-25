@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-naive-bayes-classifier-for-text">Topic: Naive Bayes Classifier for Text</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>The Naive Bayes classifier is a probabilistic machine learning algorithm used for classification tasks.  "Naive" refers to the simplifying assumption of <em>feature independence</em>, meaning it assumes that the presence of a particular feature in a class is unrelated to the presence of any other feature. In the context of text classification, this means it assumes the occurrence of a word in a document is independent of the occurrence of other words in the same document, given the class.  This assumption is almost always violated in real-world text, but surprisingly, the Naive Bayes classifier often performs well.</p>
@@ -206,6 +222,7 @@ print(f&quot;Predicted class for new document: {predicted_class}&quot;)
 </ol>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are some common techniques to improve the performance of a Naive Bayes classifier for text, especially considering the naive independence assumption?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

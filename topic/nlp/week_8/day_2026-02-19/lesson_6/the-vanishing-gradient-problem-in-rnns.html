@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-the-vanishing-gradient-problem-in-rnns">Topic: The Vanishing Gradient Problem in RNNs</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>The vanishing gradient problem is a challenge encountered during the training of recurrent neural networks (RNNs), particularly when dealing with long sequences. It refers to the exponential decay of gradients as they are backpropagated through time (BPTT) from the output layer to earlier time steps in the network.</p>
@@ -166,6 +182,7 @@ model.summary()
 <p>Gradient clipping mitigates the vanishing (and exploding) gradient problems by preventing overly large gradients from disrupting the learning process.  By limiting the range of gradient values, the gradient update steps become smaller, therefore the neural network is trained in a more stable manner.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the exploding gradient problem relate to the vanishing gradient problem, and are the techniques used to address them similar or different?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-heterogeneous-effects-with-instruments-causal-iv-forest">Topic: Heterogeneous Effects with Instruments (Causal IV Forest)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Heterogeneous Effects with Instruments (often addressed using methods like Causal IV Forests) aims to estimate the Conditional Average Treatment Effect (CATE) when the treatment variable is endogenous.  Endogeneity arises when the treatment is correlated with the error term in the outcome equation, leading to biased estimates. Instrumental Variables (IVs) are used to address this endogeneity. However, a standard IV approach typically estimates a single, average treatment effect (ATE).  Heterogeneous effects methods, like Causal IV Forests, allow us to estimate <em>different</em> treatment effects for <em>different</em> subgroups within the population.</p>
@@ -209,6 +225,7 @@ print(f&quot;Treatment Effect for individual: {individual_treatment_effect}&quot
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do you assess the <em>quality</em> of the heterogeneous treatment effect estimates obtained from a Causal IV Forest (or an <code>econml</code> IvDMLRegressor), especially when you lack a "ground truth" of the true heterogeneous effects? What are the practical considerations for checking the validity of the results?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

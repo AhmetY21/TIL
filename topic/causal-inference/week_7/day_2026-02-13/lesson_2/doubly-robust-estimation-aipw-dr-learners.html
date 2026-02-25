@@ -83,15 +83,31 @@
     .dark th, .dark td { border-color: #334155; }
     .dark th { background: #1e293b; }
     .dark hr { border-top-color: #334155; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-doubly-robust-estimation-aipw-dr-learners">Topic: Doubly Robust Estimation (AIPW / DR Learners)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Doubly Robust (DR) estimation, specifically via methods like Augmented Inverse Propensity Weighting (AIPW) or DR Learners, aims to estimate the Average Treatment Effect (ATE) or other causal quantities while being "doubly robust."  This means it provides a consistent estimate if <em>either</em> the outcome model <em>or</em> the treatment assignment model is correctly specified. This is a powerful improvement over methods that rely on only one model being correct, offering increased robustness against model misspecification.</p>
@@ -270,6 +286,7 @@ print(f&quot;Estimated ATE (Doubly Robust - Train/Test Split): {ate_aipw}&quot;)
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the performance of Doubly Robust estimation compare to other causal inference methods, such as Inverse Propensity Weighting (IPW) and Outcome Regression, especially when both models are misspecified or when the positivity assumption is violated?  What diagnostic checks can be used to assess the validity of the assumptions required for Doubly Robust estimation?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
