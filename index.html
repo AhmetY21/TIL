@@ -157,17 +157,33 @@
       color: var(--primary);
       border: 1px solid #334155;
     }
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      z-index: 1000;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 0 0 8px 8px;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
   </style>
 </head>
 
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   <header>
     <h1>📚 Daily Learning Hub</h1>
     <p class="subtitle">Curriculum-based micro-lessons generated daily.</p>
   </header>
 
-  <div class="hub-grid">
+  <main class="hub-grid" id="main-content">
     <a href="hubs/nlp-index.html" class="hub-card">
       <div class="hub-icon">🗣️</div>
       <div class="hub-title">Natural Language Processing</div>
@@ -190,7 +206,7 @@
       <div class="hub-desc">Modeling uncertainty, scenario trees, and decomposition methods (Benders, PHA, SDDP).</div>
       <span class="hub-badge">43 topics</span>
     </a>
-  </div>
+  </main>
 
   <footer>
     <p>Lessons are generated every 8 hours</p>
