@@ -107,9 +107,33 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    /* Skip to Content Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      transition: top 0.2s;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
@@ -117,6 +141,7 @@
   </div>
 
 
+<div id="main-content" tabindex="-1"></div>
 <h1 id="topic-introduction-to-natural-language-processing-nlp">Topic: Introduction to Natural Language Processing (NLP)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Natural Language Processing (NLP) is a branch of artificial intelligence (AI) that deals with the interaction between computers and human (natural) languages. It aims to enable computers to understand, interpret, and generate human language in a way that is both valuable and meaningful. It bridges the gap between human communication and computer understanding.</p>

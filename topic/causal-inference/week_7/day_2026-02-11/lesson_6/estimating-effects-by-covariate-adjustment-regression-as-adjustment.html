@@ -104,9 +104,33 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    /* Skip to Content Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      transition: top 0.2s;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
@@ -114,6 +138,7 @@
   </div>
 
 
+<div id="main-content" tabindex="-1"></div>
 <h1 id="topic-estimating-effects-by-covariate-adjustment-regression-as-adjustment">Topic: Estimating Effects by Covariate Adjustment (Regression as Adjustment)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Covariate adjustment, also known as regression as adjustment, is a method used in causal inference to estimate the causal effect of a treatment (or exposure) on an outcome while controlling for confounding variables (also called covariates or confounders).  The fundamental idea is to use regression analysis to statistically remove the association between the confounders and both the treatment and the outcome.  By adjusting for these confounders, we aim to isolate the true causal effect of the treatment.</p>
