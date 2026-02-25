@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Question Answering Systems (Extractive)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-question-answering-systems-extractive">Topic: Question Answering Systems (Extractive)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Extractive Question Answering (QA) systems are a type of NLP system designed to answer questions by <em>extracting</em> a span of text directly from a provided context document. Unlike abstractive QA systems, which generate new answers based on the context, extractive systems identify and return a portion of the context that directly answers the question.</p>
+<p>Formally, given a question <em>Q</em> and a context document <em>D</em>, an extractive QA system aims to find the start and end indices (s, e) within <em>D</em> such that the substring <em>D[s:e+1]</em> represents the answer to <em>Q</em>.</p>
+<p>We can use these systems in scenarios where the answer to a question is explicitly present within a given document or set of documents. This is useful for tasks like:</p>
+<ul>
+<li><strong>Information Retrieval:</strong> Finding specific answers within a knowledge base.</li>
+<li><strong>Document Summarization:</strong> Identifying key sentences that answer common questions about a document.</li>
+<li><strong>Customer Support:</strong> Answering user questions from a knowledge base of FAQs and documentation.</li>
+<li><strong>Search Engines:</strong> Highlighting the exact answer within a webpage snippet.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a user asks the question: "When was Albert Einstein born?"</p>
+<p>And the system is given the following context document:</p>
+<p>"Albert Einstein was a German-born theoretical physicist. He developed the theory of relativity, one of the two pillars of modern physics. His work is also known for its influence on the philosophy of science. He is best known to the general public for his mass-energy equivalence formula E = mc2 (which has been dubbed "the world's most famous equation"). He received the 1921 Nobel Prize in Physics for his services to theoretical physics, and especially for his discovery of the law of the photoelectric effect, a pivotal step in the development of quantum theory. He was born <strong>March 14, 1879</strong>, in Ulm, Württemberg, Germany. He died April 18, 1955, in Princeton, New Jersey, U.S."</p>
+<p>An extractive QA system would identify the text span "<strong>March 14, 1879</strong>" within the context document as the answer to the question and return that span.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>transformers</code> library from Hugging Face to implement an extractive QA system using pre-trained models.  This example uses the pre-trained model "bert-large-uncased-whole-word-masking-finetuned-squad".</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+def answer_question(question, context):
+    &quot;&quot;&quot;
+    Answers a question given a context using a pre-trained extractive QA model.
+    &quot;&quot;&quot;
+    nlp = pipeline('question-answering', model='bert-large-uncased-whole-word-masking-finetuned-squad')
+    QA_input = {
+        'question': question,
+        'context': context
+    }
+    result = nlp(QA_input)
+    return result['answer'], result['score']
+
+if __name__ == '__main__':
+    question = &quot;When was Albert Einstein born?&quot;
+    context = &quot;Albert Einstein was a German-born theoretical physicist. He developed the theory of relativity, one of the two pillars of modern physics. His work is also known for its influence on the philosophy of science. He is best known to the general public for his mass-energy equivalence formula E = mc2 (which has been dubbed \&quot;the world's most famous equation\&quot;). He received the 1921 Nobel Prize in Physics for his services to theoretical physics, and especially for his discovery of the law of the photoelectric effect, a pivotal step in the development of quantum theory. He was born March 14, 1879, in Ulm, Württemberg, Germany. He died April 18, 1955, in Princeton, New Jersey, U.S.&quot;
+
+    answer, score = answer_question(question, context)
+    print(f&quot;Question: {question}&quot;)
+    print(f&quot;Answer: {answer}&quot;)
+    print(f&quot;Confidence Score: {score}&quot;)
+</code></pre>
+
+<p>This code defines a function <code>answer_question</code> that takes a question and context as input. It utilizes the <code>pipeline</code> function from <code>transformers</code> to create a question-answering pipeline. The pipeline uses a pre-trained BERT model fine-tuned for the SQuAD dataset, a benchmark dataset for extractive QA. The function then passes the question and context to the pipeline, which returns the extracted answer and a confidence score indicating how certain the model is that the answer is correct.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do extractive QA systems handle situations where the answer is not explicitly present in the provided context? What are some approaches to address this limitation?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
