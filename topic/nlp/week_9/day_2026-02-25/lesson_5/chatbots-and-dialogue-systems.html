@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbots and Dialogue Systems</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-chatbots-and-dialogue-systems">Topic: Chatbots and Dialogue Systems</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Chatbots and Dialogue Systems are computer programs designed to simulate conversation with human users, particularly over the internet. They accept user input, typically in the form of text or voice, and respond in a way that mimics human conversation.  Essentially, they are software agents that can understand and generate natural language.</p>
+<p>We can use them to:</p>
+<ul>
+<li><strong>Automate customer service:</strong> Answering frequently asked questions, providing product information, troubleshooting problems, and taking orders.</li>
+<li><strong>Personal assistants:</strong> Setting reminders, scheduling appointments, providing information, and controlling smart home devices.</li>
+<li><strong>Information retrieval:</strong>  Quickly finding and delivering relevant information from large datasets.</li>
+<li><strong>Education and training:</strong>  Providing interactive learning experiences and personalized feedback.</li>
+<li><strong>Entertainment:</strong> Creating engaging and interactive experiences, such as games and storytelling.</li>
+<li><strong>Data collection and analysis:</strong>  Gathering user feedback, conducting surveys, and understanding user preferences.</li>
+</ul>
+<p>The complexity of a chatbot can range from simple rule-based systems to sophisticated AI-powered systems using machine learning techniques like natural language understanding (NLU) and natural language generation (NLG).  The "dialogue system" encompasses the larger architecture including the core chatbot, but also the supporting components like databases, knowledge bases, and API integrations that enable it to fulfill specific tasks or objectives.  A dialogue system often includes components for dialogue management, which handles the state of the conversation, and response ranking/generation, which determines the best response based on the current context.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a user needs help troubleshooting their internet connection.  A chatbot integrated into their internet service provider's website can guide them through the process.</p>
+<ul>
+<li><strong>User:</strong> "My internet is not working."</li>
+<li><strong>Chatbot:</strong> "I'm sorry to hear that. To help me understand the problem, could you tell me what lights are flashing on your modem?"</li>
+<li><strong>User:</strong> "The power light is solid, the internet light is flashing red, and the wireless light is off."</li>
+<li><strong>Chatbot:</strong> "Okay, that indicates there might be a problem with the connection to our network. Could you please try restarting your modem by unplugging it for 30 seconds and then plugging it back in?"</li>
+<li><strong>User:</strong> "Okay, I've done that."</li>
+<li><strong>Chatbot:</strong> "Great! Is the internet light now solid green?"</li>
+<li><strong>User:</strong> "Yes, it is!"</li>
+<li><strong>Chatbot:</strong> "Excellent! Is your internet working now?"</li>
+<li><strong>User:</strong> "Yes, it is. Thank you!"</li>
+<li><strong>Chatbot:</strong> "You're welcome! Is there anything else I can help you with today?"</li>
+</ul>
+<p>In this scenario, the chatbot uses a predefined set of rules and knowledge (e.g., knowing what different modem light patterns mean and the common solution of restarting the modem) to guide the user through the troubleshooting process, ultimately resolving their issue without requiring human intervention. This illustrates the value of chatbots in customer support scenarios.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While building a full-fledged dialogue system is complex and often relies on specialized libraries like Rasa or Dialogflow, we can illustrate a very simple example using regular expressions to create a basic rule-based chatbot.</p>
+<pre class="codehilite"><code class="language-python">import re
+
+def simple_chatbot(user_input):
+  &quot;&quot;&quot;A very simple rule-based chatbot.&quot;&quot;&quot;
+
+  user_input = user_input.lower()
+
+  if re.search(r&quot;hello|hi|hey&quot;, user_input):
+    return &quot;Hello there! How can I help you today?&quot;
+  elif re.search(r&quot;what is your name&quot;, user_input):
+    return &quot;I am a simple chatbot.&quot;
+  elif re.search(r&quot;how are you&quot;, user_input):
+    return &quot;I am doing well, thank you for asking!&quot;
+  elif re.search(r&quot;goodbye|bye&quot;, user_input):
+    return &quot;Goodbye! Have a great day!&quot;
+  else:
+    return &quot;I'm sorry, I don't understand.  Can you rephrase that?&quot;
+
+# Example usage
+while True:
+  user_input = input(&quot;You: &quot;)
+  response = simple_chatbot(user_input)
+  print(&quot;Chatbot:&quot;, response)
+  if user_input.lower() in [&quot;goodbye&quot;, &quot;bye&quot;]:
+    break
+</code></pre>
+
+<p>This code defines a function <code>simple_chatbot</code> that takes user input as a string, converts it to lowercase, and uses regular expressions to check for keywords. Based on the keywords found, it returns a predefined response. The <code>while</code> loop keeps the conversation going until the user says "goodbye" or "bye". This example is a basic illustration and could be expanded with more complex rules and patterns.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the main differences between rule-based chatbots and AI-powered chatbots (using machine learning techniques), and what are the advantages and disadvantages of each approach?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
