@@ -107,14 +107,34 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #0f172a;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      font-weight: 600;
+      border-bottom-right-radius: 6px;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content">
 
 
 <h1 id="topic-deterministic-vs-stochastic-models-recourse-adaptivity-and-information">Topic: Deterministic vs Stochastic Models: recourse, adaptivity, and information</h1>
@@ -197,7 +217,8 @@ for scenario in scenarios:
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the choice of the probability distribution used to model the uncertainty influence the solution of a stochastic program, and what are the potential pitfalls of using an inaccurate or poorly estimated distribution?</p>
 
-  <script>
+    </main>
+<script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
     

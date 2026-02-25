@@ -107,14 +107,34 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #0f172a;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      font-weight: 600;
+      border-bottom-right-radius: 6px;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content">
 
 <h1 id="topic-topic-modeling-latent-semantic-analysis-lsa">Topic: Topic Modeling: Latent Semantic Analysis (LSA)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -207,7 +227,8 @@ print(f&quot;\nTopic distribution for document 1: {document_topic_matrix[0]}&quo
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does LSA handle polysemy (words with multiple meanings) and synonymy (different words with similar meanings), and what are its limitations in addressing these challenges compared to more advanced topic modeling techniques like LDA (Latent Dirichlet Allocation)?</p>
-  <script>
+    </main>
+<script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
     
