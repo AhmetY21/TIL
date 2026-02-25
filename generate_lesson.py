@@ -437,11 +437,30 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }}
+
+    .skip-link {{
+      position: absolute;
+      top: -9999px;
+      left: 20px;
+      background: #2563eb;
+      color: white;
+      padding: 12px 20px;
+      z-index: 1000;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 0 0 8px 8px;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 {header_html}
+  <main id="main-content">
 {html_body}
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
@@ -739,13 +758,30 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .dark .week-title {{
       border-bottom-color: #334155;
     }}
+
+    .skip-link {{
+      position: absolute;
+      top: -9999px;
+      left: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      z-index: 1000;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 0 0 8px 8px;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   <div class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
-    <header>
+    <header id="main-content">
       <h1>{meta.subject} Learning Hub</h1>
       <p class="subtitle">{meta.subtitle}</p>
     </header>
