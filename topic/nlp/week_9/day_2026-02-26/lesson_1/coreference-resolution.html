@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coreference Resolution</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-coreference-resolution">Topic: Coreference Resolution</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Coreference resolution is the task of identifying all mentions within a text that refer to the same entity. A "mention" is any expression (usually a noun phrase) that refers to an entity. An "entity" is a real-world object, concept, or individual.  Coreference resolution aims to link these mentions together into clusters representing the same underlying entity.</p>
+<p>Formally, given a text, the task is to identify all mentions and partition them into equivalence classes such that mentions within the same equivalence class (or cluster) refer to the same entity.</p>
+<p>We can use coreference resolution in several ways:</p>
+<ul>
+<li><strong>Text Understanding:</strong>  By identifying which mentions refer to the same entities, we can better understand the relationships and flow of information within a text.</li>
+<li><strong>Information Extraction:</strong> Coreference resolution can help extract more complete information about entities.  For example, if we're trying to extract information about a person, we can combine information from all mentions of that person across the document.</li>
+<li><strong>Question Answering:</strong>  Understanding who or what is being referred to in a question and in the relevant text passage is crucial for accurate question answering.</li>
+<li><strong>Summarization:</strong> Coreference resolution can help avoid redundancy in summaries by ensuring that the same entity is not repeatedly referred to with different mentions.</li>
+<li><strong>Machine Translation:</strong>  Maintaining coreference across languages is important for accurate and coherent translations.</li>
+<li><strong>Chatbots/Dialogue Systems:</strong>  Tracking entities and their references across turns in a conversation is critical for maintaining context and providing relevant responses.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the following text:</p>
+<p>"John went to the store. He bought a loaf of bread and some milk. After that, he went home. He put the milk in the refrigerator and ate the bread."</p>
+<p>In this scenario, coreference resolution would identify that "John", "He" (all instances), and "he" refer to the same person (the entity "John").  Therefore, they would be clustered together.  Similarly, "the store" and "home" are also entities that might be considered in a more detailed coreference analysis. "the milk", "the bread" would be separate entities.</p>
+<p>An application of this would be in building a chatbot. If a user then asked "What happened next?", the chatbot, having resolved the coreferences, could correctly infer that "next" refers to what John did after putting the milk in the refrigerator and eating the bread. Without coreference resolution, the chatbot wouldn't know who "he" is and would struggle to understand the question's context.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>There are several Python libraries for coreference resolution. One popular option is <code>spaCy</code> with the <code>neuralcoref</code> extension (although this library is no longer maintained, it serves as a useful example). Another increasingly popular option is <code>huggingface/transformers</code> integrated with coreference models. Below is an example using <code>spaCy</code> and <code>neuralcoref</code> (which you'll need to install: <code>pip install spacy neuralcoref</code>).  Note: Since neuralcoref is no longer actively maintained, you might need to downgrade spaCy to a compatible version, such as <code>pip install spacy==2.3.5</code>. Also be aware that this example is provided for illustration purposes and may require adjustment for full compatibility and optimal performance.</p>
+<pre class="codehilite"><code class="language-python">import spacy
+# Download the large English model: python -m spacy download en_core_web_lg
+nlp = spacy.load('en_core_web_lg')
+
+import neuralcoref
+
+neuralcoref.add_to_pipe(nlp)
+
+text = &quot;John went to the store. He bought a loaf of bread and some milk. After that, he went home. He put the milk in the refrigerator and ate the bread.&quot;
+
+doc = nlp(text)
+
+print(doc._.has_coref)  # True if coreference clusters were found
+
+if doc._.has_coref:
+  print(doc._.coref_clusters) # Print coreference clusters
+  # Accessing the resolved text
+  print(doc._.coref_resolved) #Text with coreferences resolved
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Load spaCy and add neuralcoref:</strong>  The code loads the <code>en_core_web_lg</code> spaCy model and adds the <code>neuralcoref</code> pipeline component to it.</li>
+<li><strong>Process the text:</strong> The <code>nlp(text)</code> line processes the input text using the spaCy pipeline, including the coreference resolution component.</li>
+<li><strong>Check for Coreference:</strong> Checks if coreferences were found.</li>
+<li><strong>Print Coreference Clusters:</strong>  The <code>doc._.coref_clusters</code> attribute provides access to the identified coreference clusters. Each cluster contains a list of mentions that refer to the same entity.</li>
+<li><strong>Access the resolved text:</strong> The <code>doc._.coref_resolved</code> attribute provides the input text with coreferences resolved to their main mentions.</li>
+</ol>
+<p>Note that the quality of coreference resolution depends heavily on the model used and the complexity of the text.  More advanced models, such as those based on transformers, often achieve better results but require more computational resources.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different types of mentions (e.g., pronouns, definite noun phrases, proper nouns) affect the difficulty of coreference resolution, and how are these challenges addressed in different coreference resolution approaches?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
