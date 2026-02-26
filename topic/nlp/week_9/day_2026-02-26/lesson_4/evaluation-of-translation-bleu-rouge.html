@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation of Translation (BLEU, ROUGE)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-evaluation-of-translation-bleu-rouge">Topic: Evaluation of Translation (BLEU, ROUGE)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>BLEU (Bilingual Evaluation Understudy) and ROUGE (Recall-Oriented Understudy for Gisting Evaluation) are automatic evaluation metrics used to assess the quality of machine translation (MT) or text summarization outputs. They work by comparing the generated text (candidate) against one or more reference translations or summaries produced by humans.</p>
+<p><strong>BLEU:</strong></p>
+<ul>
+<li><strong>What it is:</strong> BLEU measures the <em>precision</em> of the candidate translation by counting the number of n-grams (contiguous sequences of n words) in the candidate that also appear in the reference translations.  It also incorporates a brevity penalty to penalize translations that are too short.</li>
+<li><strong>How we can use it:</strong><ul>
+<li>Evaluate and compare different MT systems or models.</li>
+<li>Track the progress of MT system development.</li>
+<li>Automatically optimize model parameters during training (though relying solely on BLEU can be problematic, leading to over-optimization for specific metrics).</li>
+<li>Get a quantitative assessment of the similarity between generated and reference text.</li>
+</ul>
+</li>
+<li><strong>Key aspects:</strong><ul>
+<li><strong>N-gram precision:</strong> Calculates the percentage of n-grams in the candidate that appear in any of the references.  Typically, n-grams up to length 4 (BLEU-4) are used.</li>
+<li><strong>Brevity penalty:</strong> Prevents systems from achieving high scores simply by generating very short translations that happen to match the reference.  It penalizes candidates shorter than the effective reference length (the length of the reference that is closest in length to the candidate).</li>
+<li><strong>Modified precision:</strong> To prevent inflated scores from repeating words frequently, precision is modified to count a word only as many times as it appears in the <em>best matching</em> reference.</li>
+</ul>
+</li>
+</ul>
+<p><strong>ROUGE:</strong></p>
+<ul>
+<li><strong>What it is:</strong> ROUGE, in contrast to BLEU, focuses on <em>recall</em>. It measures how much of the reference text is present in the candidate translation/summary.  There are several ROUGE variants, including ROUGE-N, ROUGE-L, and ROUGE-SU.</li>
+<li>
+<p><strong>How we can use it:</strong></p>
+<ul>
+<li>Evaluate and compare text summarization systems.</li>
+<li>Assess the quality of generated text, particularly in terms of its completeness and information content compared to a reference.</li>
+<li>Analyze the effectiveness of different summarization techniques.</li>
+</ul>
+</li>
+<li>
+<p><strong>Key aspects (for common ROUGE variants):</strong></p>
+<ul>
+<li><strong>ROUGE-N:</strong> Measures the recall of n-grams.  ROUGE-1 (unigrams) and ROUGE-2 (bigrams) are commonly used.</li>
+<li><strong>ROUGE-L:</strong> Measures the longest common subsequence (LCS) between the candidate and reference, effectively capturing sentence-level structure and fluency.</li>
+<li><strong>ROUGE-SU:</strong> Measures the recall of skip-bigrams (pairs of words that can be separated by other words), allowing for some flexibility in word order and capturing semantic relationships.</li>
+</ul>
+</li>
+</ul>
+<p>In essence, BLEU asks "How much of the candidate is relevant?" (precision), while ROUGE asks "How much of the reference is covered by the candidate?" (recall). They provide different perspectives on translation or summarization quality, and are often used together for a more comprehensive evaluation.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>BLEU Application Scenario: Evaluating Machine Translation Quality</strong></p>
+<p>Imagine you are developing a machine translation system to translate English news articles into French.  You have several versions of your model (e.g., different neural network architectures, different training datasets). To determine which model performs best, you can use BLEU.  You would:</p>
+<ol>
+<li>Translate a set of English news articles (the "test set") into French using each model.</li>
+<li>Obtain human-translated French versions of the same articles (the "reference translations").</li>
+<li>Calculate the BLEU score for each model's output by comparing it to the reference translations.</li>
+</ol>
+<p>The model with the higher BLEU score is generally considered to produce better translations, at least according to the BLEU metric.</p>
+<p><strong>ROUGE Application Scenario: Evaluating Text Summarization Quality</strong></p>
+<p>Consider you are building a system to automatically summarize lengthy research papers. You want to assess how well your system captures the key information from the original papers. You would:</p>
+<ol>
+<li>Use your summarization system to generate summaries of a collection of research papers.</li>
+<li>Obtain human-written summaries of the same papers (the "reference summaries").</li>
+<li>Calculate the ROUGE score (e.g., ROUGE-L, ROUGE-1) for each generated summary by comparing it to the reference summaries.</li>
+</ol>
+<p>The system with the higher ROUGE score is considered to produce summaries that are more complete and capture a greater proportion of the important information present in the reference summaries.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Both BLEU and ROUGE are readily available in Python libraries like <code>nltk</code> and <code>rouge-score</code>.  Here's how to use them:</p>
+<p><strong>BLEU using <code>nltk</code>:</strong></p>
+<pre class="codehilite"><code class="language-python">from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+
+reference = [['this', 'is', 'a', 'test'], ['this', 'is', 'a', 'test']]  # Example reference translations
+candidate = ['this', 'is', 'a', 'test']  # Example candidate translation
+
+# Smoothing is important to avoid zero scores when n-grams are missing
+smoothing_function = SmoothingFunction().method1
+
+score = sentence_bleu(reference, candidate, smoothing_function=smoothing_function)
+print(f&quot;BLEU score: {score}&quot;)
+
+# Calculating BLEU-4 score (default is BLEU-1)
+weights = (0.25, 0.25, 0.25, 0.25) # weights for 1-gram, 2-gram, 3-gram and 4-gram
+score_bleu4 = sentence_bleu(reference, candidate, weights=weights, smoothing_function=smoothing_function)
+print(f&quot;BLEU-4 score: {score_bleu4}&quot;)
+</code></pre>
+
+<p><strong>ROUGE using <code>rouge-score</code>:</strong></p>
+<pre class="codehilite"><code class="language-python">from rouge_score import rouge_scorer
+
+reference = &quot;The quick brown fox jumps over the lazy dog.&quot;  # Example reference summary
+candidate = &quot;The quick brown fox jumps over the lazy dog.&quot;  # Example candidate summary
+
+scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
+scores = scorer.score(reference, candidate)
+
+print(f&quot;ROUGE scores: {scores}&quot;)
+# Example output:
+# {'rouge1': Score(precision=1.0, recall=1.0, fmeasure=1.0), 'rougeL': Score(precision=1.0, recall=1.0, fmeasure=1.0)}
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>nltk.translate.bleu_score.sentence_bleu</code></strong>:  Calculates the BLEU score for a single sentence.  It takes a list of reference translations (each a list of words) and a candidate translation (also a list of words) as input. The <code>SmoothingFunction</code> is crucial to handle cases where the candidate translation doesn't contain all the n-grams present in the reference(s).</li>
+<li><strong><code>rouge_score.rouge_scorer.RougeScorer</code></strong>: Creates a ROUGE scorer object, specifying which ROUGE variants to compute (e.g., 'rouge1', 'rougeL'). The <code>use_stemmer=True</code> option applies stemming to improve matching.</li>
+<li><strong><code>scorer.score</code></strong>: Calculates the ROUGE scores, returning a dictionary containing precision, recall, and F1-measure (fmeasure) for each specified ROUGE variant.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>While BLEU and ROUGE are widely used, they have limitations. For example, they primarily assess lexical similarity and might not capture semantic similarity or fluency well. What are some other, more recent, evaluation metrics that attempt to address these limitations in evaluating machine translation or text summarization?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
