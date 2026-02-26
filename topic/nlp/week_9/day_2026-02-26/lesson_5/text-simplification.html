@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Simplification</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-text-simplification">Topic: Text Simplification</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text simplification is the process of transforming a given text into a more readable and understandable version while preserving its core meaning.  This generally involves reducing the complexity of the vocabulary, grammar, and sentence structure.</p>
+<p>Formally, the goal is to map a complex text (T_c) to a simplified text (T_s) such that:</p>
+<ul>
+<li><strong>Meaning Preservation:</strong>  T_s accurately conveys the same information as T_c.  This is the most crucial aspect. Losing or distorting the original meaning renders the simplification useless or even harmful.</li>
+<li><strong>Readability Improvement:</strong> T_s is easier to read and comprehend than T_c.  This is typically measured using readability scores (e.g., Flesch-Kincaid Grade Level, SMOG index) or by subjective human evaluation.</li>
+<li><strong>Fluency:</strong> T_s should still sound natural and grammatically correct. It shouldn't read like a machine-generated translation or a chopped-up version of the original.</li>
+</ul>
+<p>We can use text simplification for:</p>
+<ul>
+<li><strong>Accessibility:</strong> Making information accessible to people with reading difficulties, cognitive impairments, or language learners.</li>
+<li><strong>Education:</strong> Providing simpler versions of educational materials for children or those learning a new subject.</li>
+<li><strong>Search Enhancement:</strong> Improving search engine performance by simplifying query text or document text, leading to better matching of keywords.</li>
+<li><strong>Information Extraction:</strong>  Simplifying text can make it easier for information extraction systems to identify key facts and relationships.</li>
+<li><strong>Summarization:</strong> Text simplification can be a preliminary step to summarization, making it easier to identify the most important content to include in the summary.</li>
+<li><strong>Cross-lingual applications:</strong> Simplifying text can improve the performance of machine translation systems, as simpler source text is often easier to translate accurately.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider the scenario of providing medical information to patients with varying levels of health literacy. A complex paragraph from a medical journal might be:</p>
+<p>"The administration of antiplatelet therapy post-myocardial infarction is critical for mitigating the risk of subsequent atherothrombotic events. Dual antiplatelet therapy, specifically, has demonstrated superior efficacy in preventing stent thrombosis; however, clinicians must carefully evaluate the potential for concomitant bleeding complications."</p>
+<p>A simplified version suitable for a patient might be:</p>
+<p>"After a heart attack, taking blood thinners is very important to prevent future blood clots. Taking two blood thinners together works best to prevent clots around stents (tubes put in your heart), but doctors need to be careful about the risk of bleeding."</p>
+<p>This simplified version uses easier vocabulary ("blood thinners" instead of "antiplatelet therapy"), avoids complex medical jargon ("atherothrombotic events," "concomitant bleeding complications"), and breaks down the complex sentence structure into shorter, more digestible sentences. It serves to inform the patient in a manner they are more likely to understand, improving adherence to treatment.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single, definitive "text simplification" function in Python, we can leverage libraries and techniques to achieve it.  One approach involves using the <code>simpletransformers</code> library, which offers pre-trained models for sequence-to-sequence tasks, including text simplification.</p>
+<pre class="codehilite"><code class="language-python">from simpletransformers.seq2seq import Seq2SeqModel
+
+# Load a pre-trained model (e.g., &quot;t5-small&quot; fine-tuned for text simplification)
+# You can find pre-trained models for simplification on Hugging Face Model Hub
+# For example &quot;ramsrigouthamg/t5_paraphraser&quot; is decent.
+
+model = Seq2SeqModel(
+    encoder_decoder_type=&quot;t5&quot;,
+    encoder_decoder_name=&quot;ramsrigouthamg/t5_paraphraser&quot;, #replace with your model
+    use_cuda=False # Change to True if you have a GPU
+)
+
+# Input text
+complex_text = &quot;The administration of antiplatelet therapy post-myocardial infarction is critical for mitigating the risk of subsequent atherothrombotic events.&quot;
+
+# Simplify the text
+simplified_text = model.predict([complex_text])
+
+print(f&quot;Original text: {complex_text}&quot;)
+print(f&quot;Simplified text: {simplified_text}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>simpletransformers</code>:</strong> This library simplifies the use of transformer models for sequence-to-sequence tasks. It builds on top of <code>transformers</code> from Hugging Face.</li>
+<li><strong><code>Seq2SeqModel</code>:</strong> This class is used to load and use sequence-to-sequence models like T5.  T5 is a powerful transformer model that can be fine-tuned for many NLP tasks, including text simplification.</li>
+<li><strong><code>encoder_decoder_type</code> &amp; <code>encoder_decoder_name</code>:</strong> specifies the model architecture and the pre-trained model to be used. Here it's set to the T5 model and a model finetuned for paraphrasing which can be adapted for simplification. You may need to experiment with different pre-trained models to find one that performs well for your specific simplification needs. Many are available on the Hugging Face Model Hub.</li>
+<li><strong><code>model.predict([complex_text])</code>:</strong> This performs the text simplification. The input is a list containing the complex text. The output is a list containing the simplified text.</li>
+<li><strong>CUDA:</strong> Using <code>use_cuda=True</code> will significantly speed up the process if you have a CUDA-enabled GPU.  Change it to <code>False</code> if you're running on a CPU.</li>
+</ul>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>You'll need to install <code>simpletransformers</code> and <code>transformers</code>: <code>pip install simpletransformers transformers</code></li>
+<li>The quality of the simplification heavily depends on the chosen pre-trained model.  Finding the right model often requires experimentation and potentially fine-tuning on a domain-specific dataset.</li>
+<li>The provided model (<code>ramsrigouthamg/t5_paraphraser</code>) works reasonably well but is <em>not</em> a dedicated text simplification model. For more robust results, you should search for and use a model specifically trained for simplification, or fine-tune an existing model on a simplification dataset.</li>
+<li>Text simplification is a complex task, and even the best models may not always produce perfect results.  Human review and editing are often necessary to ensure accuracy and fluency.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we quantitatively evaluate the quality of a text simplification system, considering the trade-off between meaning preservation and readability improvement? Are there any established metrics or evaluation frameworks for this task?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
