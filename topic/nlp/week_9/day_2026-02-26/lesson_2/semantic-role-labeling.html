@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semantic Role Labeling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-semantic-role-labeling">Topic: Semantic Role Labeling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Semantic Role Labeling (SRL), also known as shallow semantic parsing, is the process of identifying and labeling the semantic roles of the constituents in a sentence with respect to a predicate. In simpler terms, SRL answers the question "Who did what to whom, where, when, and why?" for a given sentence.</p>
+<p>More formally:</p>
+<ul>
+<li><strong>Predicate:</strong> A verb or noun that acts as the central event or state being described in the sentence.</li>
+<li><strong>Arguments (or Semantic Roles):</strong> The phrases that participate in the event or state denoted by the predicate. Common roles include:<ul>
+<li><strong>Agent (A0):</strong> The initiator of the action.</li>
+<li><strong>Patient (A1):</strong> The entity that is acted upon.</li>
+<li><strong>Instrument (A2):</strong> The means by which the action is performed.</li>
+<li><strong>Location (A3):</strong> The place where the action occurs.</li>
+<li><strong>Goal (A4):</strong> The endpoint or beneficiary of the action.</li>
+<li><strong>Temporal (AM-TMP):</strong> The time of the action.</li>
+<li><strong>Locative (AM-LOC):</strong> The location of the action.</li>
+<li><strong>Manner (AM-MNR):</strong> The manner in which the action is performed.</li>
+<li><strong>Cause (AM-CAU):</strong> The cause of the action.</li>
+</ul>
+</li>
+</ul>
+<p>SRL aims to assign these roles to the phrases in a sentence, given a particular predicate. The 'AM-' prefixes usually denote adjuncts or modifiers, providing additional information about the action.</p>
+<p><strong>How can we use it?</strong></p>
+<p>SRL has numerous applications:</p>
+<ul>
+<li><strong>Information Extraction:</strong> SRL can extract structured information from unstructured text, enabling automated knowledge base construction and population.</li>
+<li><strong>Question Answering:</strong> SRL helps understand the relationships between entities in a sentence, allowing for more accurate question answering.  For example, understanding "Who gave the book to Mary?" requires identifying the agent (giver), the patient (book), and the recipient (Mary).</li>
+<li><strong>Text Summarization:</strong> SRL can identify the most important events and entities in a text, which can be used to create more coherent and informative summaries.</li>
+<li><strong>Machine Translation:</strong> SRL can improve the accuracy of machine translation by ensuring that the semantic roles of constituents are preserved across languages.</li>
+<li><strong>Textual Entailment:</strong> SRL can determine whether one sentence logically follows from another by analyzing the semantic relationships expressed in each sentence.</li>
+<li><strong>Dialogue Systems:</strong>  SRL aids in understanding user utterances and constructing meaningful responses.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the sentence: "John gave the book to Mary yesterday in the library."</p>
+<p>An SRL system would identify "gave" as the predicate and then label the following arguments:</p>
+<ul>
+<li><strong>John:</strong> Agent (A0) - The one doing the giving</li>
+<li><strong>the book:</strong> Patient (A1) - The thing being given</li>
+<li><strong>to Mary:</strong> Goal (A4) - The recipient of the book</li>
+<li><strong>yesterday:</strong> Temporal (AM-TMP) - When the giving occurred</li>
+<li><strong>in the library:</strong> Locative (AM-LOC) - Where the giving occurred</li>
+</ul>
+<p>This structured representation of the sentence's meaning allows a computer system to understand the relationships between the entities involved and answer questions like: "Who gave the book?", "What was given?", "Who received the book?", "When did the event happen?", and "Where did the event happen?".</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While no single "perfect" Python library handles all aspects of SRL from scratch, you can leverage libraries that build upon existing NLP tools and pre-trained models.  One popular and relatively straightforward approach uses the <code>allennlp</code> library, which leverages pre-trained models for various NLP tasks, including SRL.</p>
+<pre class="codehilite"><code class="language-python">from allennlp.predictors.predictor import Predictor
+import allennlp_models.structured_prediction
+
+# Load the SRL model.  This downloads the model on the first run, so it might take a while.
+predictor = Predictor.from_path(&quot;https://storage.googleapis.com/allennlp-public-models/structured-prediction-srl-bert.2020.12.15.tar.gz&quot;)
+
+sentence = &quot;John gave the book to Mary yesterday in the library.&quot;
+
+# Predict the semantic roles.
+prediction = predictor.predict(sentence=sentence)
+
+# Print the results.
+words = prediction['words']
+verbs = prediction['verbs']
+verb_tags = prediction['verb_tags']
+
+print(f&quot;Sentence: {' '.join(words)}\n&quot;)
+
+for i, verb in enumerate(verbs):
+    print(f&quot;Predicate: {verb}&quot;)
+    tags = verb_tags[i]
+    for j, tag in enumerate(tags):
+        if tag != 'O': # O means &quot;outside&quot; any argument
+            print(f&quot;  {words[j]}: {tag}&quot;)
+    print(&quot;\n&quot;)
+
+# Example output (may vary slightly due to model versions):
+# Sentence: John gave the book to Mary yesterday in the library .
+#
+# Predicate: gave
+#   John: B-ARG0
+#   gave: B-V
+#   the: B-ARG1
+#   book: I-ARG1
+#   to: B-ARG4
+#   Mary: I-ARG4
+#   yesterday: B-AM-TMP
+#   in: B-AM-LOC
+#   the: I-AM-LOC
+#   library: I-AM-LOC
+#   .: O
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import necessary libraries:</strong> <code>Predictor</code> from <code>allennlp.predictors.predictor</code> and <code>allennlp_models.structured_prediction</code> to make sure the relevant models are installed.</li>
+<li><strong>Load the pre-trained SRL model:</strong> <code>Predictor.from_path()</code> loads a pre-trained SRL model from AllenNLP. The URL points to a BERT-based SRL model. This step downloads the model if it's not already cached.</li>
+<li><strong>Define the sentence:</strong> The sentence to be analyzed is defined.</li>
+<li><strong>Predict the semantic roles:</strong> <code>predictor.predict(sentence=sentence)</code> performs SRL on the sentence and returns a dictionary containing the results.</li>
+<li><strong>Print the results:</strong> The code iterates through the words and their corresponding semantic role tags, printing the predicate and its arguments.  The tags indicate the semantic role assigned to each word. <code>B-</code> indicates the beginning of an argument, <code>I-</code> indicates a continuation of an argument, and <code>O</code> indicates that the word is not part of any argument.  ARG0, ARG1, ARG4, AM-TMP, and AM-LOC correspond to Agent, Patient, Goal, Temporal, and Locative modifiers, respectively, as discussed in section 1.</li>
+</ol>
+<p>This example demonstrates how to use AllenNLP to perform SRL. Other libraries like <code>spaCy</code> (using extensions or custom models) can also be used, but AllenNLP offers a dedicated pre-trained SRL model that is generally more accurate out-of-the-box.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the performance of SRL systems vary depending on the complexity of the sentence structure, and what techniques are used to improve SRL accuracy on challenging sentences like those with nested clauses or complex verb phrases?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
