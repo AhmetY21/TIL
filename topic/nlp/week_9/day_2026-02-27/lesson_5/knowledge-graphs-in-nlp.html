@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knowledge Graphs in NLP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-knowledge-graphs-in-nlp">Topic: Knowledge Graphs in NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A Knowledge Graph (KG) is a structured representation of knowledge consisting of entities, concepts, and relationships between them.  Formally, a KG can be represented as a graph G = (V, E), where V is the set of vertices representing entities or concepts, and E is the set of edges representing relationships between these vertices. Each edge e ∈ E can be represented as a triple (head, relation, tail), often denoted as (h, r, t), where:</p>
+<ul>
+<li><strong>h (head):</strong> The source entity.</li>
+<li><strong>r (relation):</strong> The type of relationship between the entities (e.g., "is_a", "located_in", "authored_by").</li>
+<li><strong>t (tail):</strong> The target entity.</li>
+</ul>
+<p>In the context of NLP, knowledge graphs are used to augment text understanding, enable reasoning, and improve the performance of various NLP tasks.  They provide a way to explicitly encode background knowledge and semantic relationships that are often implicit in text.</p>
+<p>Here's how they're used:</p>
+<ul>
+<li><strong>Semantic Understanding:</strong> KGs can provide context and disambiguate word meanings. For instance, knowing "Apple" can be both a fruit and a company allows an NLP system to choose the correct meaning based on its relations within the KG.</li>
+<li><strong>Reasoning:</strong>  By traversing the KG, NLP systems can infer new information or answer complex questions.  For example, if the KG knows that "Steve Jobs" "founded" "Apple" and "Apple" "manufactures" "iPhone", the system can infer that "Steve Jobs" is related to "iPhone".</li>
+<li><strong>Text Generation:</strong> KGs can be used to guide the generation of more informative and coherent text by providing a structured source of information.</li>
+<li><strong>Question Answering:</strong> KGs can be used as a backend knowledge base to answer factual questions. A question is parsed, entities are identified, and then the KG is searched for relevant facts.</li>
+<li><strong>Entity Linking/Recognition:</strong>  KGs provide a place to link entities identified in text to canonical entries within the KG, resolving ambiguities and improving accuracy.</li>
+<li><strong>Relationship Extraction:</strong> KGs can be used as a training source for relation extraction models or as a validation check for extracted relations.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the application of Question Answering.  A user asks the question: "Who directed the movie 'Pulp Fiction'?"</p>
+<p>Without a knowledge graph, a standard NLP system might struggle if the information isn't explicitly present in the training data or requires complex text comprehension to infer.</p>
+<p>Using a knowledge graph, the process would be:</p>
+<ol>
+<li><strong>Entity Recognition:</strong> The system identifies "Pulp Fiction" as a movie entity.</li>
+<li><strong>Query Formation:</strong>  The system formulates a query to the KG to find entities related to "Pulp Fiction" via the "directed_by" relation.</li>
+<li><strong>Knowledge Retrieval:</strong>  The KG returns "Quentin Tarantino" as the director.</li>
+<li><strong>Answer Generation:</strong> The system generates the answer: "Quentin Tarantino directed the movie Pulp Fiction."</li>
+</ol>
+<p>In this scenario, the KG provides the factual knowledge needed to answer the question directly, without requiring the NLP system to deeply understand the nuances of the question or to extract the information solely from unstructured text. This is particularly valuable for questions involving complex relationships or uncommon facts.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using the <code>SPARQLWrapper</code> library to query a SPARQL endpoint of a knowledge graph (e.g., DBpedia).  This demonstrates how to access and retrieve information from a KG.</p>
+<pre class="codehilite"><code class="language-python">from SPARQLWrapper import SPARQLWrapper, JSON
+
+def query_dbpedia(query):
+    &quot;&quot;&quot;
+    Queries DBpedia with the given SPARQL query.
+
+    Args:
+        query (str): The SPARQL query.
+
+    Returns:
+        list: A list of results, where each result is a dictionary.
+    &quot;&quot;&quot;
+    sparql = SPARQLWrapper(&quot;http://dbpedia.org/sparql&quot;)
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    try:
+        results = sparql.query().convert()
+        return results[&quot;results&quot;][&quot;bindings&quot;]
+    except Exception as e:
+        print(f&quot;Error querying DBpedia: {e}&quot;)
+        return None
+
+# Example: Find the director of Pulp Fiction
+query = &quot;&quot;&quot;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+PREFIX dbo: &lt;http://dbpedia.org/ontology/&gt;
+PREFIX dbr: &lt;http://dbpedia.org/resource/&gt;
+
+SELECT ?directorLabel WHERE {
+  dbr:Pulp_Fiction dbo:director ?director .
+  ?director rdfs:label ?directorLabel .
+  FILTER (lang(?directorLabel) = &quot;en&quot;)
+}
+&quot;&quot;&quot;
+
+results = query_dbpedia(query)
+
+if results:
+    for result in results:
+        director_label = result[&quot;directorLabel&quot;][&quot;value&quot;]
+        print(f&quot;Director: {director_label}&quot;)
+else:
+    print(&quot;No results found.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>SPARQLWrapper</code>:</strong> This library provides a convenient way to query SPARQL endpoints.</li>
+<li><strong><code>query_dbpedia(query)</code> function:</strong><ul>
+<li>Takes a SPARQL query as input.</li>
+<li>Sets the SPARQL endpoint to DBpedia.</li>
+<li>Sets the return format to JSON.</li>
+<li>Executes the query and converts the results to a Python dictionary.</li>
+<li>Handles potential errors during the query process.</li>
+</ul>
+</li>
+<li><strong>SPARQL Query:</strong> The example query is designed to find the director of the movie "Pulp Fiction" in DBpedia.  It uses prefixes to shorten the URIs for common namespaces like <code>rdfs</code> (RDF Schema) and <code>dbo</code> (DBpedia Ontology).  It selects the English label of the director.</li>
+<li><strong>Result Processing:</strong> The code iterates through the results and prints the director's label.</li>
+</ol>
+<p>This code snippet demonstrates a basic interaction with a knowledge graph using SPARQL, highlighting how you can retrieve information based on specific relationships and entities. This can be embedded within an NLP pipeline to augment text understanding or question answering capabilities.  DBpedia is a large, publicly available knowledge graph derived from Wikipedia.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we automatically construct or update Knowledge Graphs from unstructured text data? What are the key challenges and techniques involved in Knowledge Graph Construction (KGC)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
