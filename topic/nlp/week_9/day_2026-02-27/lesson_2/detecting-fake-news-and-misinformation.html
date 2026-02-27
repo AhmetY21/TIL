@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detecting Fake News and Misinformation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-detecting-fake-news-and-misinformation">Topic: Detecting Fake News and Misinformation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Detecting fake news and misinformation involves identifying news articles, social media posts, or other forms of information that present intentionally false or misleading content. This can include fabricating stories, distorting facts, using manipulated images or videos, or spreading propaganda. The goal is to automatically classify or score content based on its likelihood of being untrue or intentionally misleading.</p>
+<p>Formally, we can define it as a classification problem:</p>
+<ul>
+<li><strong>Input:</strong> A piece of text (e.g., news article, social media post) and potentially associated metadata (e.g., author information, source URL).</li>
+<li><strong>Output:</strong> A label (e.g., "fake," "real," "partially true") or a probability score indicating the likelihood of the content being fake.</li>
+</ul>
+<p>We can use fake news detection for several important purposes:</p>
+<ul>
+<li><strong>Combating the spread of false information:</strong> Help social media platforms, search engines, and news aggregators filter out or flag potentially fake news.</li>
+<li><strong>Protecting public opinion:</strong> Inform readers about the reliability of information sources, helping them make informed decisions.</li>
+<li><strong>Maintaining trust in institutions:</strong> Counteract the erosion of trust in media, government, and scientific institutions caused by the dissemination of misinformation.</li>
+<li><strong>Preventing societal harm:</strong> Reduce the potential for fake news to incite violence, influence elections, or spread harmful health information.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a social media platform like Twitter. Every day, millions of tweets are posted, many containing news articles or opinions on current events. A fake news detection system can be integrated into Twitter's content moderation pipeline. The system would analyze each tweet (or the link it contains) and assign a "fake news score." If the score exceeds a certain threshold, the tweet could be flagged with a warning label ("Potentially misleading information"), downranked in users' feeds, or, in extreme cases, removed altogether. This can help to reduce the spread of fake news on the platform and protect users from being misled. Furthermore, the system could be used to analyze the source of the news, identifying websites and accounts that are repeat offenders in spreading misinformation.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use Python and libraries like <code>scikit-learn</code> and <code>transformers</code> (specifically pre-trained language models) to build a fake news detection model. Here's a simplified example using <code>scikit-learn</code> with TF-IDF and Logistic Regression:</p>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import pandas as pd
+
+# Sample data (replace with a real dataset)
+data = {'text': [&quot;This is a real news article.&quot;,
+                  &quot;Fake news: Aliens landed on Earth!&quot;,
+                  &quot;Another real news article about politics.&quot;,
+                  &quot;Breaking: Unicorns discovered!&quot;,
+                  &quot;The economy is improving.&quot;,
+                  &quot;Pandemic cured with bleach!&quot;],
+        'label': [0, 1, 0, 1, 0, 1]} # 0: real, 1: fake
+df = pd.DataFrame(data)
+
+# 1. Feature extraction: TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english')
+X = vectorizer.fit_transform(df['text'])
+
+# 2. Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, df['label'], test_size=0.2, random_state=42)
+
+# 3. Train a Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# 4. Make predictions
+y_pred = model.predict(X_test)
+
+# 5. Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f&quot;Accuracy: {accuracy}&quot;)
+
+# Example prediction on new text
+new_text = [&quot;This is potentially fake news about a celebrity scandal.&quot;]
+new_text_vectorized = vectorizer.transform(new_text)
+prediction = model.predict(new_text_vectorized)
+
+if prediction[0] == 0:
+  print(&quot;Predicted: Real news&quot;)
+else:
+  print(&quot;Predicted: Fake news&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong> We create a sample dataset with text and labels (0 for real, 1 for fake).  In a real application, you'd use a large, labeled dataset.</li>
+<li><strong>TF-IDF Vectorization:</strong> <code>TfidfVectorizer</code> converts text into numerical features based on term frequency-inverse document frequency.  This represents the importance of each word in the document relative to the corpus.</li>
+<li><strong>Train/Test Split:</strong> The data is split into training and testing sets.</li>
+<li><strong>Model Training:</strong> A <code>LogisticRegression</code> model is trained on the training data.</li>
+<li><strong>Prediction and Evaluation:</strong> The model is used to predict labels on the test data, and the accuracy is calculated.  The model is also used to predict the label of some new example text.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a very basic example.  Real-world fake news detection requires more sophisticated techniques, such as using pre-trained language models like BERT, RoBERTa, or DeBERTa, which capture contextual information better.</li>
+<li>Feature engineering is crucial.  Consider using features like source credibility, author information, writing style, and the presence of emotionally charged language.</li>
+<li>Training data quality is essential.  Use a large, diverse, and accurately labeled dataset.</li>
+<li>Ethical considerations are important.  Be aware of potential biases in the data and model, and strive for fairness and transparency.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we address the problem of adversarial attacks on fake news detection systems, where malicious actors attempt to circumvent the system by subtly altering the text of fake news articles in a way that fools the model but still conveys the misleading message to human readers?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
