@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multilingual NLP and Cross-lingual Models</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-multilingual-nlp-and-cross-lingual-models">Topic: Multilingual NLP and Cross-lingual Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Multilingual NLP deals with natural language processing tasks that involve multiple languages. It aims to develop models and techniques capable of understanding, processing, and generating text in various languages, potentially simultaneously.</p>
+<p>Cross-lingual models are a specific type of multilingual NLP model. They are designed to transfer knowledge or linguistic resources learned from one language (the <em>source</em> language) to another (the <em>target</em> language), often with limited or no data available for the target language. This is particularly useful for low-resource languages.</p>
+<p>We can use multilingual NLP and cross-lingual models to:</p>
+<ul>
+<li><strong>Machine Translation:</strong> Translate text between languages.</li>
+<li><strong>Cross-lingual Information Retrieval:</strong> Search for information in different languages using a single query.</li>
+<li><strong>Cross-lingual Question Answering:</strong> Answer questions posed in one language using text in another language.</li>
+<li><strong>Cross-lingual Text Classification:</strong> Classify text in different languages into predefined categories.</li>
+<li><strong>Zero-shot and Few-shot Learning:</strong> Train models on a high-resource language and adapt them to perform well on a low-resource language with little or no labeled data.</li>
+<li><strong>Language Identification:</strong> Determine the language of a given text.</li>
+<li><strong>Sentiment Analysis:</strong> Determine the sentiment expressed in a text, regardless of the language.</li>
+</ul>
+<p>The key idea is to leverage the shared linguistic structures and universal concepts across languages to improve performance in all involved languages, especially those with scarce data.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're building a customer support system for a global company. The company's products are sold in English, Spanish, and Japanese. You want to automatically analyze customer feedback from various sources (emails, online reviews, social media posts) to identify common issues and improve customer satisfaction.</p>
+<ul>
+<li><strong>Without Multilingual NLP:</strong> You would need to train separate sentiment analysis models for each language (English, Spanish, and Japanese). This requires substantial labeled data for each language, which can be costly and time-consuming to acquire.</li>
+<li><strong>With Multilingual NLP and Cross-lingual Models:</strong> You can train a single multilingual sentiment analysis model, potentially using a large dataset of labeled English data and smaller datasets of labeled Spanish and Japanese data. A cross-lingual model could transfer the knowledge learned from English to the other languages, improving the performance on Spanish and Japanese sentiment analysis even with limited labeled data. This reduces development costs, improves efficiency, and allows the system to handle feedback in multiple languages seamlessly.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using the <code>transformers</code> library from Hugging Face, we can leverage pre-trained multilingual models like <code>bert-base-multilingual-cased</code> for text classification. Here's a simple example:</p>
+<pre class="codehilite"><code class="language-python">from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline
+
+# Load a pre-trained multilingual model and tokenizer
+model_name = &quot;bert-base-multilingual-cased&quot; # Or xlm-roberta-base, etc.
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=3) # Example: Positive, Negative, Neutral
+
+# Create a pipeline for text classification
+classifier = pipeline(&quot;text-classification&quot;, model=model, tokenizer=tokenizer)
+
+# Example text in different languages
+text_en = &quot;This movie was amazing!&quot;
+text_es = &quot;La película fue increíble!&quot; # Spanish
+text_fr = &quot;Ce film était incroyable !&quot; # French
+
+# Classify the text
+result_en = classifier(text_en)
+result_es = classifier(text_es)
+result_fr = classifier(text_fr)
+
+# Print the results
+print(f&quot;English: {result_en}&quot;)
+print(f&quot;Spanish: {result_es}&quot;)
+print(f&quot;French: {result_fr}&quot;)
+
+
+# To fine-tune this on a specific classification task, you would need labeled data
+# and use the Trainer class from transformers.
+</code></pre>
+
+<p>This code uses <code>bert-base-multilingual-cased</code>, a multilingual BERT model, to classify text in different languages.  It demonstrates the potential of cross-lingual transfer, where the model, trained on multiple languages, can perform classification in unseen languages.  The quality of the classification might vary depending on the pre-training data and the similarity of the languages to those the model was trained on. For best performance, fine-tuning on a task-specific dataset is recommended.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different architectures (e.g., multilingual BERT, XLM-RoBERTa, mBART) impact the performance of cross-lingual transfer learning on different downstream tasks and language pairs?  Specifically, what are the advantages and disadvantages of each architecture for tasks like machine translation, text classification, and question answering in terms of accuracy, computational efficiency, and data requirements?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
