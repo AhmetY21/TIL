@@ -395,6 +395,23 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       background: rgba(255,255,255,0.1);
     }}
 
+    .skip-link {{
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 0 0 4px 0;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
+
     .dark body {{
       background: #0f172a;
       color: #e2e8f0;
@@ -440,8 +457,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
   </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to content</a>
 {header_html}
+<main id="main-content" tabindex="-1">
 {html_body}
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
@@ -733,6 +753,24 @@ def update_index_page(meta: CurriculumMeta) -> None:
       background: #1e293b;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }}
+
+    .skip-link {{
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 0 0 4px 0;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
+
     .dark h1, .dark .week-title, .dark .lesson-name {{
       color: #f1f5f9;
     }}
@@ -742,15 +780,18 @@ def update_index_page(meta: CurriculumMeta) -> None:
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   <div class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
-    <header>
-      <h1>{meta.subject} Learning Hub</h1>
-      <p class="subtitle">{meta.subtitle}</p>
-    </header>
+    <main id="main-content" tabindex="-1">
+      <header>
+        <h1>{meta.subject} Learning Hub</h1>
+        <p class="subtitle">{meta.subtitle}</p>
+      </header>
 
-    {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
+      {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
+    </main>
   </div>
   <script>
     const btn = document.getElementById('theme-toggle');
