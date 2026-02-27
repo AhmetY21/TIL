@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logic and Reasoning in LLMs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-logic-and-reasoning-in-llms">Topic: Logic and Reasoning in LLMs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Logic and Reasoning in LLMs refers to the ability of Large Language Models (LLMs) to perform tasks that require deductive, inductive, and abductive reasoning. This goes beyond simple pattern recognition and information retrieval. Instead, it requires the model to manipulate information, draw inferences, identify logical relationships, and derive new knowledge from existing knowledge.</p>
+<ul>
+<li><strong>Deductive Reasoning:</strong> Drawing certain conclusions from premises.  If A implies B, and A is true, then B is true.  LLMs should be able to apply established rules to specific cases.</li>
+<li><strong>Inductive Reasoning:</strong> Generalizing from specific observations to broader conclusions.  LLMs might observe a series of events and hypothesize a general rule. This type of reasoning is inherently uncertain.</li>
+<li><strong>Abductive Reasoning:</strong> Inferring the most likely explanation for an observation.  Given an observation and a set of possible explanations, the LLM selects the most plausible one. This is often used for diagnostic tasks.</li>
+</ul>
+<p>We can use logic and reasoning capabilities in LLMs for:</p>
+<ul>
+<li><strong>Question Answering:</strong> Answering complex questions that require reasoning steps beyond simply retrieving information.</li>
+<li><strong>Natural Language Inference (NLI):</strong> Determining the relationship between two statements (entailment, contradiction, or neutral).</li>
+<li><strong>Common Sense Reasoning:</strong> Applying everyday knowledge and intuition to understand and solve problems.</li>
+<li><strong>Planning and Decision Making:</strong> Formulating plans and making decisions based on logical consequences of actions.</li>
+<li><strong>Code Generation and Debugging:</strong> Reasoning about code to identify errors and generate solutions.</li>
+<li><strong>Scientific Discovery:</strong> Generating hypotheses and designing experiments based on existing scientific knowledge.</li>
+<li><strong>Mathematical Problem Solving:</strong> Solving mathematical problems by applying logical rules and mathematical theorems.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a scenario where we want an LLM to diagnose a patient's illness based on their symptoms.</p>
+<p><strong>Scenario:</strong> A patient reports having a fever, cough, and fatigue. We want the LLM to suggest possible diagnoses and provide a justification.</p>
+<p><strong>Expected Behavior:</strong> The LLM should consider the reported symptoms, recall common illnesses associated with those symptoms (using its knowledge base), and then apply abductive reasoning to determine the most likely diagnosis. It should also be able to articulate its reasoning process. For instance: "The patient has a fever, cough, and fatigue. These symptoms are commonly associated with the flu and the common cold. However, given the current season (assuming it's winter), the flu is a more likely diagnosis." Furthermore, it should identify that COVID-19 is a also potential candidate, but more information (e.g. sore throat, loss of taste) is needed to determine that.</p>
+<p>This application requires the LLM to go beyond simply retrieving information about symptoms and diseases. It needs to apply logical reasoning (abduction) to arrive at a diagnosis.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single "logic and reasoning" method in a Python library that magically imbues an LLM with these capabilities, we can use prompt engineering and LLM APIs to elicit reasoning from the models.  Here's how we can use the OpenAI API to demonstrate this, employing a "Chain-of-Thought" (CoT) prompting technique. CoT encourages the model to break down the reasoning process step-by-step before arriving at the final answer.</p>
+<pre class="codehilite"><code class="language-python">import openai
+import os
+
+# Replace with your actual OpenAI API key
+openai.api_key = os.environ.get(&quot;OPENAI_API_KEY&quot;) # Get API key from environment
+
+def diagnose_patient(symptoms, season=&quot;Unknown&quot;):
+    &quot;&quot;&quot;
+    Diagnoses a patient's illness based on symptoms and the current season using the OpenAI API
+    &quot;&quot;&quot;
+    prompt = f&quot;&quot;&quot;You are a helpful medical assistant. A patient has the following symptoms: {symptoms}. The current season is {season}.
+    What are some possible diagnoses, and what is your reasoning process?  Think step by step. Explain your reasoning.
+    &quot;&quot;&quot;
+
+    try:
+        response = openai.Completion.create(
+            engine=&quot;text-davinci-003&quot;,  # Or another suitable engine like GPT-3.5 or GPT-4
+            prompt=prompt,
+            max_tokens=300,
+            n=1,
+            stop=None,
+            temperature=0.7,  # Adjust temperature for more or less randomness
+        )
+
+        diagnosis = response.choices[0].text.strip()
+        return diagnosis
+
+    except Exception as e:
+        return f&quot;An error occurred: {e}&quot;
+
+
+# Example usage
+symptoms = &quot;fever, cough, fatigue&quot;
+season = &quot;Winter&quot;
+diagnosis = diagnose_patient(symptoms, season)
+print(diagnosis)
+
+symptoms = &quot;sore throat, fatigue, mild headache&quot;
+season = &quot;Spring&quot;
+diagnosis = diagnose_patient(symptoms, season)
+print(diagnosis)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import <code>openai</code>:</strong> Imports the OpenAI library.</li>
+<li><strong>API Key:</strong> Sets the OpenAI API key. <em>Crucially, this should be loaded from an environment variable, not hardcoded into the script!</em></li>
+<li><strong><code>diagnose_patient</code> Function:</strong><ul>
+<li>Takes the patient's symptoms and the current season as input.</li>
+<li>Constructs a prompt that includes the symptoms, season, and a request for the model to explain its reasoning process step-by-step (Chain-of-Thought).  The prompt is specifically designed to prime the LLM to use its knowledge base and inference capabilities.</li>
+<li>Uses the OpenAI API (<code>openai.Completion.create</code>) to generate a response based on the prompt.</li>
+<li>Extracts the diagnosis from the response and returns it.  Error handling is included for robustness.</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong> Calls the <code>diagnose_patient</code> function with sample symptoms and prints the resulting diagnosis.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>API Key Security:</strong> Never hardcode your API key directly into your code. Always store it in an environment variable or a secure configuration file.</li>
+<li><strong>Model Choice:</strong> The choice of the OpenAI engine (e.g., <code>text-davinci-003</code>, <code>gpt-3.5-turbo</code>, <code>gpt-4</code>) significantly impacts performance. Experiment with different engines to find the best one for your needs.  GPT-4 generally offers superior reasoning capabilities compared to older models.</li>
+<li><strong>Prompt Engineering:</strong> Prompt engineering is crucial. The way you phrase the prompt can greatly influence the LLM's ability to reason effectively.  Experiment with different prompts to see what works best.</li>
+<li><strong>Temperature:</strong> Adjust the <code>temperature</code> parameter to control the randomness of the output. Lower temperatures (e.g., 0.2) lead to more deterministic and predictable results, while higher temperatures (e.g., 0.9) introduce more creativity.</li>
+<li><strong>Ethical Considerations:</strong> Using LLMs for medical diagnosis is a sensitive area. This code is for demonstration purposes only and should <em>not</em> be used for actual medical diagnosis.  Always consult with a qualified healthcare professional for medical advice.</li>
+<li><strong>Few-Shot Learning:</strong> For even better results, you could provide a few examples of symptom/diagnosis pairs within the prompt (few-shot learning). This provides the model with context and helps it understand the desired reasoning process.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we quantitatively evaluate the logical reasoning capabilities of an LLM, beyond just qualitatively assessing its outputs? What metrics and benchmarks exist for this purpose?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
