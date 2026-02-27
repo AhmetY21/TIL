@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grammar Error Correction</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-grammar-error-correction">Topic: Grammar Error Correction</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Grammar Error Correction (GEC) is a subfield of Natural Language Processing (NLP) that aims to automatically identify and correct grammatical, spelling, punctuation, and stylistic errors in text.  It's essentially an automated proofreading system. More formally, GEC can be defined as the task of transforming an ungrammatical input sentence <em>x</em> into a grammatical and semantically similar output sentence <em>y</em>.</p>
+<p>We can use GEC in several ways:</p>
+<ul>
+<li><strong>Automated Proofreading:</strong> To improve the quality of written documents like articles, essays, emails, and reports.</li>
+<li><strong>Language Learning Assistance:</strong> To provide learners with immediate feedback on their writing, helping them identify and correct errors in real-time.</li>
+<li><strong>Machine Translation Post-Editing:</strong> To refine the output of machine translation systems, making them more natural and fluent.</li>
+<li><strong>Accessibility:</strong> To make written content more accessible to people with disabilities (e.g., dyslexia) or to non-native speakers.</li>
+<li><strong>Data Preprocessing:</strong> To clean and improve the quality of text data used for training other NLP models. Noisy or grammatically incorrect text can negatively impact the performance of many models.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a student is learning English as a second language and writing an essay. They might make mistakes in subject-verb agreement, article usage, preposition selection, or word choice. A GEC system could be integrated into a word processor or learning platform to automatically detect and suggest corrections for these errors.</p>
+<p>For example, consider the sentence: "I is going to the store yesterday."</p>
+<p>A GEC system would ideally identify the following errors and propose the corrections:</p>
+<ul>
+<li>"I is" -&gt; "I was" (Subject-verb agreement, tense)</li>
+<li>"going to the store yesterday" implies past continuous, so "was going" is correct.</li>
+</ul>
+<p>The corrected sentence would then be: "I was going to the store yesterday."</p>
+<p>Another scenario is in automated customer service. A customer types "I wanna no were my order is." A GEC system can correct this to "I want to know where my order is." improving the quality of the interaction and enabling more accurate processing of the customer's request.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a fully functional GEC system is complex to implement from scratch, we can use pre-trained models and libraries in Python to perform grammar correction.  One popular option is <code>grammarly-api-client</code>.</p>
+<pre class="codehilite"><code class="language-python">try:
+    import grammarly
+
+    # Replace with your Grammarly API client ID and Client Secret if needed.
+    # If you don't have any of these, you can use a dummy ID and Secret
+    # like '1234' and 'abcd'
+    client_id = &quot;YOUR_CLIENT_ID&quot;
+    client_secret = &quot;YOUR_CLIENT_SECRET&quot;
+
+    # Instantiate the Grammarly object with your client ID and client secret.
+    grammarly_instance = grammarly.Client(client_id, client_secret)
+
+    # Text to check
+    text = &quot;I is going to the store yesterday.&quot;
+
+    # Get the result
+    result = grammarly_instance.check(text)
+
+    # Correct the errors
+    corrected_text = result.suggest(text)
+
+    # Print the corrected text
+    print(f&quot;Original text: {text}&quot;)
+    print(f&quot;Corrected text: {corrected_text}&quot;)
+
+
+except ImportError:
+    print(&quot;The grammarly library is not installed. Please install it using `pip install grammarly-api-client`.&quot;)
+except Exception as e:
+    print(f&quot;An error occurred: {e}&quot;)
+    print(&quot;Make sure you have set your Grammarly API client ID and secret correctly.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Installation:</strong> The code attempts to import the <code>grammarly</code> library. If it's not found, it prints an error message and instructs the user to install it using <code>pip install grammarly-api-client</code>. Note that you typically need a Grammarly developer account to use the API.</li>
+<li><strong>API Credentials:</strong> The code expects you to replace <code>"YOUR_CLIENT_ID"</code> and <code>"YOUR_CLIENT_SECRET"</code> with your actual Grammarly API credentials.</li>
+<li><strong>Instantiation:</strong> It creates an instance of the <code>grammarly.Client</code> class using your credentials.</li>
+<li><strong>Error Checking:</strong> The <code>grammarly_instance.check(text)</code> method sends the text to the Grammarly API and receives a <code>result</code> object containing information about any detected errors.</li>
+<li><strong>Suggestion:</strong> The <code>result.suggest(text)</code> method applies the suggested corrections from the Grammarly API to the original text and returns the corrected version.</li>
+<li><strong>Output:</strong> Finally, the code prints both the original and corrected text.</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>You'll need a Grammarly developer account to use the Grammarly API. Free tier available.</li>
+<li>The exact structure and functionality of the <code>grammarly-api-client</code> library might vary depending on the version.  Refer to the library's documentation for the most up-to-date information.</li>
+<li>Other libraries and APIs are available for GEC, each with its own strengths and weaknesses. Alternatives include Hugging Face transformers with models fine-tuned for GEC.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do current GEC systems handle stylistic improvements versus strictly grammatical corrections? Are there methods to control the level of "aggressiveness" in the corrections (e.g., focusing only on fixing objective errors versus suggesting changes for better flow or conciseness)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
