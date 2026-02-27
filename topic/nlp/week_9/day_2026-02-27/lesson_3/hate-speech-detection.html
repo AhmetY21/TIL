@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hate Speech Detection</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-hate-speech-detection">Topic: Hate Speech Detection</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Hate speech detection is a subtask within Natural Language Processing (NLP) that aims to identify and categorize text or speech that expresses hatred, prejudice, discrimination, or violence against individuals or groups based on attributes such as race, ethnicity, religion, gender, sexual orientation, disability, or any other protected characteristic.  It involves analyzing textual content to determine if it contains offensive language, derogatory terms, stereotypes, slurs, or explicit calls for violence directed at a specific group.</p>
+<p>Formally, we can define a function <code>H(text, target_group)</code> that outputs a binary (or multiclass) classification.</p>
+<ul>
+<li><strong>Input:</strong><ul>
+<li><code>text</code>: A string of text (e.g., a tweet, a comment, a news article).</li>
+<li><code>target_group</code>:  (Optional, but helpful for context) The group that <em>might</em> be the target of hate. This can refine the classification by focusing on specific targets.  For example, knowing we're looking for antisemitism is different than just detecting general hate speech.</li>
+</ul>
+</li>
+<li><strong>Output:</strong><ul>
+<li>A binary classification: <code>H(text, target_group) = 1</code> if the text is considered hate speech against the target group and <code>H(text, target_group) = 0</code> otherwise.</li>
+<li>A multiclass classification:  <code>H(text, target_group) = {hate_speech, offensive_language, neither}</code>.  This is more common in practice.  More granular classifications exist as well.</li>
+</ul>
+</li>
+</ul>
+<p>We can use hate speech detection in various ways:</p>
+<ul>
+<li><strong>Content Moderation:</strong> Automatically identify and remove or flag hateful content on social media platforms, forums, and comment sections.</li>
+<li><strong>Bias Detection:</strong>  Identify and mitigate bias in algorithms and datasets by detecting hateful or discriminatory language within training data.</li>
+<li><strong>Threat Detection:</strong>  Identify online threats and potential real-world violence by monitoring online communication for hate speech and incitement to violence.</li>
+<li><strong>Research:</strong> Analyze trends and patterns of hate speech online to understand its spread and impact.</li>
+<li><strong>Early Warning Systems:</strong> Help in identifying and responding to rising tensions in communities by monitoring social media and other online sources for early signs of hate speech.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a social media platform called "ConnectAll." ConnectAll wants to maintain a safe and inclusive environment for its users.  They implement a hate speech detection system to automatically flag and remove offensive content.</p>
+<p>Here's how the system works:</p>
+<ol>
+<li><strong>User posts content:</strong> A user posts a status update on ConnectAll.</li>
+<li><strong>Content passes through the hate speech detection model:</strong> The posted text is automatically sent to a pre-trained hate speech detection model.</li>
+<li><strong>Model classifies the content:</strong> The model analyzes the text and classifies it into one of three categories: "Hate Speech," "Offensive Language," or "Neither."</li>
+<li><strong>Action based on classification:</strong><ul>
+<li>If the content is classified as "Hate Speech," it's automatically removed and the user might receive a warning or temporary suspension.</li>
+<li>If the content is classified as "Offensive Language," it's flagged for manual review by a human moderator.</li>
+<li>If the content is classified as "Neither," it's allowed to remain on the platform.</li>
+</ul>
+</li>
+</ol>
+<p>This automated system helps ConnectAll moderate content at scale, reducing the amount of hateful content visible to users and creating a more positive online environment.  Human moderators still review flagged content to ensure accuracy and handle edge cases. The system can also be configured to provide alerts when specific keywords or phrases are detected, allowing for faster response to emerging threats.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use pre-trained models from the Hugging Face Transformers library for hate speech detection. A popular choice is the <code>cardiffnlp/twitter-roberta-base-hate-speech</code> model.</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load the hate speech detection model
+classifier = pipeline(&quot;text-classification&quot;, model=&quot;cardiffnlp/twitter-roberta-base-hate-speech&quot;)
+
+# Example text to classify
+text = &quot;This is a terrible example of what one person can say about another!&quot;
+
+# Perform classification
+result = classifier(text)
+
+# Print the result
+print(result)
+
+text2 = &quot;This is a sample tweet.&quot;
+result2 = classifier(text2)
+print(result2)
+
+text3 = &quot;Go back where you came from you ignorant pig!&quot;
+result3 = classifier(text3)
+print(result3)
+
+# Explanation:
+
+# The `pipeline` function simplifies the process of loading and using pre-trained models.
+# We specify the model name &quot;cardiffnlp/twitter-roberta-base-hate-speech&quot;.
+# The `classifier(text)` function performs the classification and returns a list of dictionaries,
+# where each dictionary contains the label (e.g., &quot;hate_speech&quot;, &quot;offensive&quot;, &quot;neither&quot;) and the corresponding score (probability).
+
+# Sample output:
+# [{'label': 'offensive', 'score': 0.9524565935134888}]
+# [{'label': 'neither', 'score': 0.9777892827987671}]
+# [{'label': 'hate_speech', 'score': 0.9683271646499634}]
+</code></pre>
+
+<p>This example demonstrates how to use a pre-trained model to classify text as hate speech. However, it's important to note that these models are not perfect and can sometimes produce incorrect classifications.  Furthermore, the effectiveness of a model depends on the specific type of hate speech it was trained on.  Fine-tuning the model on a dataset relevant to your specific use case can improve accuracy. Ethical considerations must be taken into account when deploying hate speech detection systems to prevent unintended biases and censorship.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we improve the robustness of hate speech detection models to handle adversarial attacks (e.g., deliberate attempts to circumvent the detection system using obfuscation techniques like replacing letters or using subtle sarcasm)?  What are some examples of adversarial attacks against hate speech detection and how could you defend against them?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
