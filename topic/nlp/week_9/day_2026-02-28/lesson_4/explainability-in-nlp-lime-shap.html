@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explainability in NLP (LIME, SHAP)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-explainability-in-nlp-lime-shap">Topic: Explainability in NLP (LIME, SHAP)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Explainability in NLP refers to techniques that help us understand <em>why</em> a particular NLP model made a specific prediction. Instead of treating models as "black boxes," these methods aim to shed light on the factors that contribute most significantly to the model's output. This understanding allows us to:</p>
+<ul>
+<li><strong>Debug models:</strong> Identify biases, flaws, or unexpected behaviors in the model. For example, discover that a sentiment analysis model is unfairly biased against a specific demographic group because of certain keywords.</li>
+<li><strong>Build trust:</strong> Increase confidence in the model's predictions by providing a rationale behind them. This is especially important in sensitive applications like healthcare or finance.</li>
+<li><strong>Improve model design:</strong> Gain insights into which features the model is actually learning, which can inform feature engineering and model selection.</li>
+<li><strong>Ensure fairness and transparency:</strong> Detect and mitigate biases that could lead to discriminatory outcomes.</li>
+</ul>
+<p><strong>LIME (Local Interpretable Model-agnostic Explanations):</strong> LIME explains the predictions of <em>any</em> classifier in an interpretable and local way. It approximates the model locally by learning a simple, interpretable model (like a linear model) around the specific prediction we want to explain.  This is done by perturbing the input data slightly, obtaining predictions from the original model for these perturbed samples, and then weighting the perturbed samples by their proximity to the original input. The learned, interpretable model highlights the features that are most important for the prediction in the vicinity of the input.</p>
+<p><strong>SHAP (SHapley Additive exPlanations):</strong> SHAP uses concepts from game theory, specifically Shapley values, to explain the output of <em>any</em> machine learning model. Shapley values quantify the contribution of each feature to the prediction.  It considers all possible feature combinations and calculates the average marginal contribution of each feature across all combinations. This provides a more global and consistent explanation compared to LIME, though it can be computationally more expensive. SHAP provides a unified framework that includes several existing explanation methods (e.g., LIME can be considered a special case of SHAP under certain conditions).  SHAP provides individual explanations as well as global feature importances.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Sentiment Analysis:</strong> Imagine a model predicting the sentiment (positive, negative, neutral) of movie reviews.</p>
+<ul>
+<li><strong>LIME:</strong> We can use LIME to understand <em>why</em> the model predicted a specific review as negative. LIME might highlight specific words like "awful," "terrible," or "boring" as the main drivers of the negative prediction for that particular review.</li>
+<li><strong>SHAP:</strong> We can use SHAP to understand the global influence of different words on the model's sentiment predictions. SHAP might reveal that the word "amazing" consistently contributes positively to the sentiment score across many reviews, while the word "disappointing" consistently contributes negatively. It can also show how different words interact, for instance, "not bad" can show up as positive.</li>
+</ul>
+<p><strong>Spam Detection:</strong> Consider a model classifying emails as spam or not spam.</p>
+<ul>
+<li><strong>LIME:</strong> LIME can identify specific phrases or words (e.g., "urgent," "free offer," "limited time") that led the model to classify a particular email as spam.</li>
+<li><strong>SHAP:</strong> SHAP can reveal which features (e.g., sender's domain, number of links, presence of certain keywords) are most important for identifying spam emails across the entire dataset.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import shap
+import sklearn
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+import pandas as pd
+
+# Sample data (replace with your actual text data)
+data = {'text': [&quot;This is a great movie!&quot;, &quot;I hated this film&quot;, &quot;The acting was superb&quot;, &quot;It was a terrible experience&quot;, &quot;I loved it!&quot;],
+        'sentiment': [1, 0, 1, 0, 1]} # 1 for positive, 0 for negative
+df = pd.DataFrame(data)
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(df['text'], df['sentiment'], test_size=0.2, random_state=42)
+
+# Create a pipeline
+pipeline = make_pipeline(TfidfVectorizer(), LogisticRegression(solver='liblinear'))
+
+# Train the model
+pipeline.fit(X_train, y_train)
+
+# Initialize JavaScript visualization for SHAP (only needed once)
+shap.initjs()
+
+# Create explainer (SHAP)
+explainer = shap.Explainer(pipeline.predict_proba, pipeline[0].transform(X_train)) #pipeline[0] is the TF-IDF vectorizer; pipeline.predict_proba is the predict probability function
+
+# Explain the prediction for a specific example (from the test set)
+shap_values = explainer(pipeline[0].transform([X_test.iloc[0]])) # X_test.iloc[0] grabs the first element in the test set
+
+# Visualize the explanation for the first example
+shap.force_plot(explainer.expected_value[1], shap_values[0].values, feature_names=pipeline[0].get_feature_names_out(),show=False,matplotlib=True) #showing the shap explanation of the first element in the test set using a force plot
+
+import matplotlib.pyplot as plt
+plt.show()
+# Global feature importance
+shap_values_train = explainer(pipeline[0].transform(X_train))
+shap.summary_plot(shap_values_train, feature_names=pipeline[0].get_feature_names_out())
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong> Create sample text data and split into training and testing sets.</li>
+<li><strong>Model Training:</strong> Create a pipeline with TF-IDF vectorization and Logistic Regression.  Train the pipeline on the training data.</li>
+<li><strong>SHAP Explainer:</strong> Create a <code>shap.Explainer</code> object. This requires the model's prediction function (in this case, <code>pipeline.predict_proba</code>) and the training data (or a representative subset) used by <code>shap</code> to estimate background distributions needed to compute the Shapley values.  The transform function of TF-IDF vectorizer needs to be passed to the explainer to transform the input text into a format that the SHAP explainer expects.</li>
+<li><strong>SHAP Values Calculation:</strong> Calculate SHAP values for a specific example from the test set using the trained explainer.</li>
+<li><strong>Visualization:</strong> Use <code>shap.force_plot</code> to visualize the contribution of each word to the prediction.  The <code>matplotlib=True</code> argument is added so that it can show the visualization on VSCode. Also included <code>plt.show()</code> at the end so the plot will be displayed.</li>
+<li><strong>Global Feature Importance:</strong> Calculate SHAP values on the training dataset. Use <code>shap.summary_plot</code> to display the global importance of each feature.</li>
+</ol>
+<p><strong>Note:</strong>  LIME also has Python libraries available (e.g., <code>lime</code>). The general process is similar: you create an explainer object, specify the prediction function and the data, and then generate an explanation for a specific instance. The code for LIME would depend on whether it is text classification or regression. The provided example uses SHAP because it is more popular. Also, the sample data is toy data so the results will not be very insightful. Real-world examples will provide more meaningful features. Finally, remember to install <code>shap</code>, <code>sklearn</code>, <code>pandas</code> and <code>matplotlib</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we use explainability techniques to mitigate biases in NLP models that are identified through the explanations generated by LIME or SHAP? For example, if LIME reveals that a model is unfairly relying on gendered pronouns in a job description to predict whether someone is a suitable candidate, what steps can we take?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
