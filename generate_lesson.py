@@ -391,8 +391,22 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .theme-toggle:hover {{
       background: rgba(0,0,0,0.05);
     }}
+
+    /* Accessibility: Focus styles */
+    a:focus-visible, button:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }}
+    .theme-toggle:focus-visible {{
+      border-radius: 50%;
+    }}
+
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
+    }}
+    .dark a:focus-visible, .dark button:focus-visible {{
+      outline-color: #60a5fa;
     }}
 
     .dark body {{
@@ -718,6 +732,23 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .theme-toggle:hover {{
       background: rgba(0,0,0,0.05);
     }}
+
+    /* Accessibility: Focus styles */
+    a:focus-visible, button:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }}
+    .theme-toggle:focus-visible {{
+      border-radius: 50%;
+    }}
+    .lesson-card:focus-visible {{
+      border-radius: 14px;
+    }}
+    .btn:focus-visible {{
+      border-radius: 10px;
+    }}
+
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
     }}
