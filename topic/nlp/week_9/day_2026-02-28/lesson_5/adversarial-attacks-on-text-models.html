@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adversarial Attacks on Text Models</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-adversarial-attacks-on-text-models">Topic: Adversarial Attacks on Text Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Adversarial attacks on text models involve crafting subtly perturbed inputs designed to fool machine learning models into making incorrect predictions. Unlike attacks on image models where perturbations can be almost imperceptible to the human eye, adversarial attacks on text typically involve modifying words, characters, or the sequence of words in a text input. The goal is to find minimal changes that cause the model to misclassify the text, without significantly altering its meaning to a human reader.</p>
+<p>Formally, let <em>x</em> be the original input text, <em>f(x)</em> be the model's prediction for <em>x</em>, and <em>x'</em> be the adversarial example. The attack aims to find an <em>x'</em> such that:</p>
+<ul>
+<li><em>x'</em> is semantically similar to <em>x</em> (i.e., a human would perceive them as having essentially the same meaning). This can be enforced through various constraints like minimum change in edit distance, cosine similarity of word embeddings before/after modification, etc.</li>
+<li><em>f(x')</em> != <em>f(x)</em>, meaning the model's prediction for the adversarial example is different from its prediction for the original input. Ideally, we want <em>f(x')</em> to be a targeted misclassification toward a specific incorrect class.</li>
+<li>The perturbation ||x' - x|| is minimized, i.e., the change between the original and adversarial example is minimal according to a defined metric (e.g., number of words changed, character edit distance).</li>
+</ul>
+<p>We can use adversarial attacks to:</p>
+<ul>
+<li><strong>Evaluate the robustness of text models:</strong> By testing how easily a model can be fooled, we can assess its vulnerability to adversarial examples. This helps identify weaknesses and areas for improvement.</li>
+<li><strong>Train more robust models:</strong> Adversarial training involves training a model on a dataset augmented with adversarial examples. This can improve the model's ability to generalize to unseen and slightly perturbed inputs.  This technique helps make the model more resilient to adversarial perturbations during deployment.</li>
+<li><strong>Understand model behavior:</strong> Examining the changes required to fool a model can provide insights into its decision-making process and identify potential biases or vulnerabilities.</li>
+<li><strong>Data augmentation:</strong> Use generated adversarial examples to increase the diversity of the training dataset.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis system used to monitor customer feedback on social media. A malicious actor wants to manipulate the system to believe negative feedback is positive.  They could craft adversarial examples like this:</p>
+<p>Original negative review: "This product is terrible. It broke after only one use." (Model predicts: Negative sentiment)</p>
+<p>Adversarial example: "This product is terrible, but only if you want it to last a very, very long time. I guess it didn't break after only one use." (Model might predict: Positive sentiment, due to the added "but" clause and negated breaking)</p>
+<p>Here, the attacker subtly altered the wording to reverse the sentiment while maintaining (debatably) plausible English. The application scenario demonstrates how adversarial attacks can be used to mislead real-world text processing systems. Similarly, attacks could be directed against spam filters, hate speech detection systems, or question answering models. Another example is in medical chatbots where subtly changing a patient's description of symptoms might cause the chatbot to misdiagnose the condition.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simplified example using the TextAttack library, demonstrating a word substitution attack. TextAttack provides tools for crafting and defending against adversarial attacks on text. Note that you'll need to install TextAttack and its dependencies.</p>
+<pre class="codehilite"><code class="language-python">import textattack
+from textattack.datasets import HuggingFaceDataset
+from textattack.attack_recipes import TextFoolerAttack
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+# 1. Load a dataset (e.g., movie review sentiment dataset from HuggingFace)
+dataset = HuggingFaceDataset(&quot;rotten_tomatoes&quot;, None, split=&quot;test&quot;)
+
+# 2. Load a pre-trained model and tokenizer (e.g., a BERT model fine-tuned for sentiment analysis)
+model_name = &quot;distilbert-base-uncased-finetuned-sst-2-english&quot;  # Example model
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+# 3. Create a TextAttack model wrapper
+model_wrapper = textattack.models.wrappers.HuggingFaceModelWrapper(model, tokenizer)
+
+# 4. Choose an attack recipe (e.g., TextFooler)
+attack = TextFoolerAttack.build(model_wrapper)
+
+# 5. Construct the TextAttack attacker
+attacker = textattack.Attacker(attack, dataset[0])  # Attack on the first sample
+
+# 6. Perform the attack
+attack_result = attacker.attack(dataset[0])
+
+# 7. Print the results
+print(attack_result)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Load Dataset:</strong> Loads a dataset for sentiment analysis.</li>
+<li><strong>Load Model and Tokenizer:</strong> Loads a pre-trained BERT model and its tokenizer from HuggingFace Transformers. The <code>model_name</code> specifies the model to use.</li>
+<li><strong>Create Model Wrapper:</strong> Creates a TextAttack model wrapper to interface between the TextAttack library and the Hugging Face model.</li>
+<li><strong>Choose Attack Recipe:</strong> Selects the TextFooler attack recipe, which is a word substitution-based attack.</li>
+<li><strong>Construct Attacker:</strong> Creates a TextAttack Attacker object, specifying the attack recipe and the dataset sample to attack.</li>
+<li><strong>Perform Attack:</strong> Executes the attack on the chosen sample.</li>
+<li><strong>Print Results:</strong> Prints the attack result, which includes the original text, the adversarial text, and the model's predictions for both.</li>
+</ol>
+<p>This is a basic example. TextAttack offers various attack strategies (character-level, word-level, etc.), constraint mechanisms (e.g., synonym replacement), and evaluation metrics. You can customize the attack by choosing different attack recipes, models, and datasets.  Also, note that the first run of this code will download the model and tokenizer, and the dataset.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we defend against adversarial attacks on text models, and what are the trade-offs between different defense strategies (e.g., adversarial training, input sanitization, robust optimization)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
