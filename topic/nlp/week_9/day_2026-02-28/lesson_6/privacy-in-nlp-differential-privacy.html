@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy in NLP (Differential Privacy)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-privacy-in-nlp-differential-privacy">Topic: Privacy in NLP (Differential Privacy)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Differential Privacy (DP) is a mathematical framework that provides a rigorous guarantee that the presence or absence of any individual's data in a dataset will not substantially alter the outcome of an analysis performed on that dataset.  This means an adversary, even with auxiliary information, can't infer whether a specific individual's data was used to train a model or compute statistics.</p>
+<p>Formally, a randomized algorithm <em>M</em> satisfies (ε, δ)-differential privacy if for any two neighboring datasets <em>D</em> and <em>D'</em> differing by at most one record, and for all possible output sets <em>S</em>:</p>
+<p>P(<em>M</em>(D) ∈ S) ≤ exp(ε) * P(<em>M</em>(D') ∈ S) + δ</p>
+<p>Where:</p>
+<ul>
+<li><em>M</em> is the randomized algorithm (e.g., a trained model, a query on a database).</li>
+<li><em>D</em> and <em>D'</em> are neighboring datasets.  Neighboring datasets are identical except for the presence or absence of one individual's data.</li>
+<li><em>S</em> is any possible subset of the algorithm's output space.</li>
+<li>ε (epsilon) is the privacy budget.  It controls the level of privacy loss. A smaller ε indicates stronger privacy.  It is the multiplicative factor in the privacy bound.</li>
+<li>δ (delta) is the probability that the privacy guarantee fails.  It represents the additive loss and is usually a very small number (often 0).  It allows for a small probability of catastrophic privacy loss.  If δ=0, the mechanism is said to satisfy ε-differential privacy (pure differential privacy).</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>DP is achieved by injecting noise into the process.  This noise can be added to:</p>
+<ul>
+<li><strong>Input Data (Input Perturbation):</strong> Adding noise directly to the raw data.  Less common in NLP.</li>
+<li><strong>Model Parameters (Output Perturbation):</strong> Adding noise to the model parameters after training.</li>
+<li><strong>Objective Function (Objective Perturbation):</strong> Adding noise to the objective function during training.  Commonly used in differentially private SGD (DP-SGD).</li>
+<li><strong>Query Results (Output Perturbation):</strong> Adding noise to the results of queries on a dataset.</li>
+</ul>
+<p><strong>Key concepts for application:</strong></p>
+<ul>
+<li><strong>Sensitivity:</strong> The maximum amount that a query's output can change when a single individual's data is added or removed from the dataset.  This is crucial for determining the amount of noise needed.</li>
+<li><strong>Privacy Budget Composition:</strong> When multiple differentially private mechanisms are applied, the privacy loss accumulates.  There are composition theorems that specify how to calculate the overall privacy loss (ε, δ) after multiple applications. There are two main composition theorems: basic composition and advanced composition. Advanced composition usually gives tighter bounds.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Consider a hospital using patient medical records to train a language model for predicting patient readmission rates based on doctors' notes. They want to share this model with external researchers without revealing sensitive information about individual patients.</p>
+<p><strong>Application of DP:</strong> The hospital can use differentially private training methods (like DP-SGD) to train the language model. This involves adding noise to the gradients during training. The magnitude of the noise is carefully calibrated based on the sensitivity of the gradient calculation and the desired privacy parameters (ε and δ). By releasing the differentially private model, the hospital allows researchers to use the model for prediction and analysis while ensuring that the presence or absence of any single patient's data has a limited impact on the model's output. This protects patient privacy while enabling valuable research.  Specifically, we protect that a researcher cannot determine if a specific patient's data was used to train the model or not.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+import torch.optim as optim
+from opacus import PrivacyEngine
+from opacus.validators import ModuleValidator
+from opacus.utils.batch_memory_manager import BatchMemoryManager
+
+# Example model (replace with your actual NLP model)
+class SimpleLSTM(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, hidden_dim, output_dim):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim)
+        self.fc = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        embedded = self.embedding(x)
+        output, (hidden, cell) = self.lstm(embedded)
+        return self.fc(output[-1])  # Only using the last time step's output
+
+
+# Example usage with Opacus (a popular DP library)
+def train_dp_model(model, train_loader, optimizer, epochs, epsilon, delta, max_grad_norm, batch_size, sample_rate):
+    &quot;&quot;&quot;Trains a model using differentially private SGD (DP-SGD) with Opacus.&quot;&quot;&quot;
+
+    # Validate model
+    errors = ModuleValidator.validate(model, strict=False)
+    if errors:
+        print(&quot;Model validation errors:&quot;)
+        for error in errors:
+            print(f&quot;- {error}&quot;)
+        raise ValueError(&quot;Model is not compatible with differential privacy.  Fix validation errors first.&quot;)
+
+    model.train()  # Set the model to training mode
+    privacy_engine = PrivacyEngine(accountant=&quot;rdp&quot;, secure_mode=False)
+    model, optimizer, train_loader = privacy_engine.make_private_with_epsilon(
+        module=model,
+        optimizer=optimizer,
+        data_loader=train_loader,
+        epochs=epochs,
+        epsilon=epsilon,
+        delta=delta,
+        max_grad_norm=max_grad_norm,
+        sample_rate=sample_rate,
+    )
+    print(f&quot;Using secure model: {privacy_engine.secure_mode}&quot;) #secure_mode is false by default
+    # Train the model (using the DP-SGD optimizer)
+    for epoch in range(epochs):
+        losses = []
+        for i, (data, target) in enumerate(train_loader):
+            optimizer.zero_grad()
+            output = model(data)
+            loss = nn.CrossEntropyLoss()(output, target)
+            loss.backward()
+            optimizer.step()
+            losses.append(loss.item())
+        print(
+            f&quot;Epoch {epoch+1}: \t&quot;
+            f&quot;Loss: {sum(losses)/len(losses):.6f} \t&quot;
+            f&quot;(ε = {privacy_engine.get_epsilon(delta):.2f}, δ = {delta})&quot;
+        )
+
+
+
+# Example setup (replace with your actual data and model)
+if __name__ == &quot;__main__&quot;:
+    # Dummy data and setup
+    vocab_size = 1000
+    embedding_dim = 128
+    hidden_dim = 256
+    output_dim = 10
+    model = SimpleLSTM(vocab_size, embedding_dim, hidden_dim, output_dim)
+
+    # Dummy data loader (replace with your actual data loader)
+    from torch.utils.data import DataLoader, TensorDataset
+    data = torch.randint(0, vocab_size, (100, 20))  # 100 samples, sequence length 20
+    target = torch.randint(0, output_dim, (100,))
+    dataset = TensorDataset(data, target)
+    batch_size = 16 #keep batch_size fixed. This is because the sample_rate is determined from batch_size
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    # DP parameters
+    epsilon = 1.0  # Privacy budget
+    delta = 1e-5  # Failure probability
+    max_grad_norm = 1.2 #Grad clip
+    sample_rate = batch_size/len(dataset)
+
+    # Optimizer
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    # Train the model
+    num_epochs = 5
+    train_dp_model(model, train_loader, optimizer, num_epochs, epsilon, delta, max_grad_norm, batch_size, sample_rate)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The code uses the <code>opacus</code> library to implement DP-SGD.</li>
+<li>The <code>PrivacyEngine</code> is initialized with the desired privacy parameters (ε and δ).</li>
+<li><code>privacy_engine.make_private_with_epsilon()</code> modifies the model and optimizer to perform DP-SGD. The sample_rate argument needs to be specified so that epsilon and delta can be calculated accurately. The other similar method, <code>make_private</code> is deprecated.</li>
+<li>During training, gradients are clipped, and noise is added to them before updating the model parameters.</li>
+<li>The <code>ModuleValidator</code> checks if the model is compatible with Opacus.</li>
+<li><code>privacy_engine.get_epsilon(delta)</code> allows us to track the privacy budget consumption during training.</li>
+</ul>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a simplified example.  Real-world NLP models are typically much more complex.</li>
+<li>Choosing appropriate values for ε, δ, and the noise multiplier requires careful consideration and experimentation. There is a trade-off between privacy and utility. Lower epsilon means higher privacy, but also lower utility, since we add more noise.</li>
+<li>Gradient clipping is essential for controlling the sensitivity of the gradient calculation.</li>
+<li>Opacus also supports secure aggregation (using a trusted execution environment) for increased security.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the privacy budget (ε and δ) affect the utility of the trained model in NLP tasks, and what strategies can be used to find a good balance between privacy and utility in practice? Consider both text classification and text generation scenarios.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
