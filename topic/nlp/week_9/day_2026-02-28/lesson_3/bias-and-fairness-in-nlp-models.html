@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bias and Fairness in NLP Models</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-bias-and-fairness-in-nlp-models">Topic: Bias and Fairness in NLP Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Bias and fairness in NLP models refer to the presence of systematic and unfair discrimination within these models against specific groups of individuals. These biases often stem from the data used to train the models, which may reflect societal stereotypes, historical inequalities, or data collection imbalances. This can result in NLP models that perpetuate or amplify existing biases, leading to unfair or discriminatory outcomes for affected groups.</p>
+<p><strong>Formal definition:</strong></p>
+<ul>
+<li><strong>Bias:</strong> Systematic and repeatable errors in a model's predictions that are not due to randomness but rather to underlying assumptions or prejudices learned from the training data.</li>
+<li><strong>Fairness:</strong> The absence of systematic discrimination against any individual or group based on protected characteristics such as race, gender, religion, ethnicity, sexual orientation, or disability. Fairness can be defined in several ways mathematically (e.g., demographic parity, equal opportunity, predictive parity), each focusing on a different aspect of equitable treatment. There's no single universally accepted definition of fairness; the appropriate definition depends on the specific application and context.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Understanding bias and fairness is crucial for:</p>
+<ul>
+<li><strong>Developing ethical NLP systems:</strong> Ensuring that NLP models do not unfairly discriminate against or disadvantage specific groups.</li>
+<li><strong>Improving model performance:</strong> Biased models can make inaccurate predictions for certain groups, leading to overall lower performance.</li>
+<li><strong>Building trust and accountability:</strong> Creating NLP systems that are transparent, explainable, and accountable for their decisions.</li>
+<li><strong>Meeting legal and regulatory requirements:</strong> Avoiding potential legal and regulatory issues related to discrimination.</li>
+<li><strong>Advancing social justice:</strong> Mitigating the harmful effects of biased AI systems on marginalized communities.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a resume screening application that uses NLP to identify suitable candidates for job openings. The model is trained on historical resume data, which unfortunately contains a skewed representation of male candidates in leadership positions. As a result, the NLP model learns to associate male names and pronouns with leadership qualities and responsibilities.</p>
+<p>When a new resume arrives with a female name, the model might underestimate the candidate's leadership experience, even if she possesses comparable or superior qualifications to male candidates in the training data. Consequently, the female candidate may be unfairly overlooked for the job, perpetuating gender inequality in the workplace.</p>
+<p>This scenario highlights the risk of bias in NLP applications affecting hiring decisions, potentially leading to discriminatory outcomes based on gender. Similar scenarios can arise with other protected characteristics and impact other applications like loan approvals, credit scoring, or even criminal risk assessment.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a single Python method cannot magically remove all biases, there are libraries and techniques we can use to detect and mitigate them. One popular library for fairness auditing is <code>Fairlearn</code>.  This example shows how to use Fairlearn to assess the disparity in prediction outcomes for different groups.</p>
+<pre class="codehilite"><code class="language-python">from fairlearn.metrics import MetricFrame, count, selection_rate
+from sklearn.metrics import accuracy_score, recall_score, precision_score
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+# Sample data (replace with your actual dataset)
+data = {
+    'feature1': np.random.rand(100),
+    'feature2': np.random.rand(100),
+    'protected_attribute': np.random.choice(['A', 'B'], size=100), # Sensitive attribute
+    'target': np.random.randint(0, 2, size=100) # Binary target variable
+}
+
+df = pd.DataFrame(data)
+
+# Separate features, target, and protected attribute
+X = df[['feature1', 'feature2']]
+y = df['target']
+A = df['protected_attribute'] # A represents the sensitive attribute
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test, A_train, A_test = train_test_split(X, y, A, test_size=0.3, random_state=42)
+
+# Train a simple Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# Make predictions
+y_pred = model.predict(X_test)
+
+# Define metrics
+accuracy = accuracy_score
+recall = recall_score
+precision = precision_score
+
+# Evaluate performance with respect to the sensitive attribute
+grouped_on_A = MetricFrame(
+    metrics={
+        &quot;accuracy&quot;: accuracy,
+        &quot;recall&quot;: recall,
+        &quot;precision&quot;: precision,
+        &quot;selection_rate&quot;: selection_rate,
+        &quot;count&quot;: count
+    },
+    y_true=y_test,
+    y_pred=y_pred,
+    sensitive_features=A_test,
+)
+
+print(grouped_on_A.overall)
+print(&quot;------&quot;)
+print(grouped_on_A.by_group)
+</code></pre>
+
+<p>This code first defines dummy dataset. Then trains logistic regression model. Using <code>MetricFrame</code> from Fairlearn library to calculate metrics like accuracy, recall, and precision, but critically, separates these by group, as defined by the sensitive feature (e.g., <code>protected_attribute</code>). The <code>selection_rate</code> provides insight into how frequently each group receives a positive prediction. Comparing metrics across groups reveals potential disparities and highlights the need for fairness interventions. The count metric shows the number of datapoints belonging to each group.</p>
+<p>This is just a starting point. The <code>Fairlearn</code> library also provides tools for mitigation, such as reweighting and post-processing. Other libraries like <code>Aequitas</code> can also be used for bias auditing.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some specific data augmentation techniques that can be used to mitigate bias related to under-represented groups in the training data for NLP models? For example, what techniques can be used to generate synthetic examples of sentences written by people belonging to the under-represented group to improve the model’s performance for this group?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
