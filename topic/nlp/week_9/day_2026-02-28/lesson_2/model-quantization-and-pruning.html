@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Quantization and Pruning</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-model-quantization-and-pruning">Topic: Model Quantization and Pruning</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Model Quantization:</strong></p>
+<p>Quantization is a technique that reduces the precision of the weights and/or activations in a neural network. Typically, deep learning models use 32-bit floating-point numbers (FP32) to represent these values. Quantization converts these to lower-precision formats, such as 16-bit floating-point (FP16), 8-bit integers (INT8), or even binary (1-bit).</p>
+<ul>
+<li><strong>What is it?</strong> A process of converting the numerical representation of a neural network's parameters (weights and activations) from a higher-precision format (e.g., FP32) to a lower-precision format (e.g., INT8).  This is a form of model compression.</li>
+<li><strong>How can we use it?</strong> Quantization reduces model size, improves inference speed, and lowers power consumption, making models more suitable for deployment on resource-constrained devices like mobile phones, embedded systems, and edge devices. It also allows for faster computations since lower-precision arithmetic operations are typically more efficient.</li>
+</ul>
+<p><strong>Model Pruning:</strong></p>
+<p>Pruning is a technique that removes less important connections (weights) in a neural network. This results in a sparse model, meaning many weights are set to zero.</p>
+<ul>
+<li><strong>What is it?</strong> A process of removing connections (weights) from a neural network, typically by setting them to zero based on some importance criteria.</li>
+<li><strong>How can we use it?</strong> Pruning reduces model size, improves inference speed, and potentially improves generalization performance by reducing overfitting. The resulting sparse model requires less memory and fewer computations, which is beneficial for deployment on devices with limited resources. Pruning also increases energy efficiency.</li>
+</ul>
+<p>In combination, quantization and pruning can dramatically reduce the size and computational cost of deep learning models without significantly sacrificing accuracy.  They are key techniques in model optimization for deployment.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider an application scenario involving a large language model (LLM) used for sentiment analysis on a mobile phone.</p>
+<ul>
+<li><strong>Problem:</strong>  A pre-trained, highly accurate LLM in FP32 format is too large to fit on the phone and too computationally expensive to run in real-time. This leads to slow response times and excessive battery drain.</li>
+<li><strong>Solution:</strong><ul>
+<li><strong>Quantization:</strong> Apply quantization to convert the model's weights and activations from FP32 to INT8. This reduces the model size by a factor of 4 (approximately) and allows the mobile phone's CPU/GPU to perform faster integer arithmetic.</li>
+<li><strong>Pruning:</strong> Prune the model to remove less important connections. This further reduces the model size and computational complexity, improving inference speed. A sparsity of, for example, 50% to 90% might be achievable without significant loss in accuracy.</li>
+</ul>
+</li>
+<li>
+<p><strong>Benefits:</strong> The combined effect of quantization and pruning results in a smaller, faster, and more energy-efficient LLM that can be deployed on the mobile phone, enabling real-time sentiment analysis without negatively impacting the user experience or battery life. Other examples of application scenarios include:</p>
+<ul>
+<li><strong>Edge computing:</strong> Deploying computer vision models for object detection on smart cameras.</li>
+<li><strong>Embedded systems:</strong>  Running speech recognition models on microcontrollers.</li>
+<li><strong>Server-side inference:</strong> Reducing the cost and latency of serving models in the cloud.</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>TensorFlow and PyTorch provide tools for quantization and pruning. Here's an example using TensorFlow:</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow_model_optimization.python.core.sparsity.keras import prune, pruning_callbacks, pruning_schedule
+from tensorflow_model_optimization.sparsity import keras as sparsity
+
+# Assume you have a Keras model called 'model'
+
+# Example model (replace with your actual model)
+model = tf.keras.models.Sequential([
+  tf.keras.layers.Dense(10, activation='relu', input_shape=(5,)),
+  tf.keras.layers.Dense(1)
+])
+
+# Pruning
+pruning_params = {
+      'pruning_schedule': sparsity.PolynomialDecay(
+          initial_sparsity=0.50,
+          final_sparsity=0.90,
+          begin_step=2000,
+          end_step=10000,
+          frequency=100
+      )
+  }
+
+model_for_pruning = prune.prune_low_magnitude(model, **pruning_params)
+
+model_for_pruning.compile(optimizer='adam',
+              loss=tf.keras.losses.MeanSquaredError(),
+              metrics=['accuracy'])
+
+# Train the pruned model
+logdir = '/tmp/log'
+callbacks = [
+  pruning_callbacks.UpdatePruningStep(),
+  pruning_callbacks.PruningSummaries(log_dir=logdir, profile_model=True)
+]
+
+# Sample data (replace with your actual data)
+import numpy as np
+x_train = np.random.rand(1000, 5)
+y_train = np.random.rand(1000, 1)
+
+model_for_pruning.fit(x_train, y_train,
+                  batch_size=32, epochs=2,
+                  callbacks=callbacks)
+
+
+# Strip pruning wrappers for inference
+model_for_export = sparsity.strip_pruning(model_for_pruning)
+
+# Quantization
+converter = tf.lite.TFLiteConverter.from_keras_model(model_for_export)
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
+converter.target_spec.supported_ops = [
+  tf.lite.OpsSet.TFLITE_BUILTINS_INT8
+]
+converter.inference_input_type = tf.int8  # or tf.uint8
+converter.inference_output_type = tf.int8  # or tf.uint8
+# Provide a representative dataset (this is crucial for INT8 quantization!)
+def representative_data_gen():
+  for i in range(100):
+    yield [np.random.rand(1, 5).astype(np.float32)]  # Replace with your actual input shape and data type
+
+converter.representative_dataset = representative_data_gen
+
+tflite_quantized_model = converter.convert()
+
+# Save the quantized model
+with open('quantized_model.tflite', 'wb') as f:
+  f.write(tflite_quantized_model)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Pruning:</strong>  The code uses <code>tensorflow_model_optimization</code> to prune the model. It defines a pruning schedule that gradually increases the sparsity of the model during training. The <code>prune_low_magnitude</code> function applies pruning based on weight magnitudes.  The <code>UpdatePruningStep</code> and <code>PruningSummaries</code> callbacks manage the pruning process during training. Finally <code>sparsity.strip_pruning</code> removes pruning related operations from the model, creating a sparse model suitable for deployment.</li>
+<li><strong>Quantization:</strong> The code uses <code>tf.lite.TFLiteConverter</code> to convert the pruned model to a TensorFlow Lite model.  The <code>optimizations</code> parameter is set to <code>tf.lite.Optimize.DEFAULT</code> to enable post-training quantization.  For INT8 quantization, a <code>representative_dataset</code> must be provided. This dataset is used to calibrate the quantization process and determine the optimal scaling factors.</li>
+</ul>
+<p><strong>Note:</strong>  This is a simplified example. The specific pruning schedule and quantization parameters may need to be tuned to achieve the best performance for your specific model and application. The <code>representative_data_gen</code> function needs to be replaced with your actual training data samples.
+PyTorch has similar functionality, including pruning via the <code>torch.nn.utils.prune</code> module and quantization tools available in <code>torch.quantization</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of pruning strategy (e.g., weight magnitude pruning, gradient-based pruning, random pruning) affect the accuracy and speedup achieved after pruning and quantization? How do you determine the optimal balance between model size reduction and accuracy preservation during the pruning and quantization process?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
