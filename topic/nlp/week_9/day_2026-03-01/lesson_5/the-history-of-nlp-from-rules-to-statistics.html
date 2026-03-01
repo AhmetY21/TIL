@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The History of NLP: From Rules to Statistics</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-the-history-of-nlp-from-rules-to-statistics">Topic: The History of NLP: From Rules to Statistics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The "History of NLP: From Rules to Statistics" refers to the evolution of Natural Language Processing from its early, rule-based approaches to the dominance of statistical and machine learning techniques. It highlights the shift in NLP from explicitly programmed rules to models that learn patterns from large amounts of data.</p>
+<ul>
+<li>
+<p><strong>Rule-based NLP (1950s-1980s):</strong>  This era relied on defining explicit grammatical rules, dictionaries, and semantic networks to process and understand language.  These systems were handcrafted and designed by linguists. They were good at handling specific, well-defined tasks, but struggled with the ambiguity and variability inherent in natural language.  Examples include ELIZA (a simple chatbot using pattern matching) and early machine translation systems.</p>
+</li>
+<li>
+<p><strong>Statistical NLP (1990s-2010s):</strong> The rise of statistical NLP marked a significant turning point.  This approach leverages probabilistic models trained on large corpora of text and speech data.  Instead of relying on hand-crafted rules, statistical models learn patterns from the data itself. Techniques included Hidden Markov Models (HMMs), Naive Bayes classifiers, and Maximum Entropy models. This era saw significant improvements in tasks like part-of-speech tagging, named entity recognition, and machine translation.</p>
+</li>
+<li>
+<p><strong>Neural NLP (2010s-Present):</strong>  The current era is dominated by neural networks, specifically deep learning models. These models, trained on massive datasets, can learn complex representations of language and achieve state-of-the-art performance in many NLP tasks. Techniques include recurrent neural networks (RNNs), convolutional neural networks (CNNs), transformers, and large language models (LLMs) like BERT, GPT, and others. These models can handle more complex tasks, such as sentiment analysis, question answering, and text generation, with greater accuracy and fluency.</p>
+</li>
+</ul>
+<p>We can use this historical understanding to:</p>
+<ul>
+<li><strong>Appreciate the challenges of NLP:</strong> Understanding the historical limitations of rule-based systems helps us appreciate the complexity of natural language.</li>
+<li><strong>Evaluate NLP models critically:</strong> Knowledge of the underlying techniques (rules vs. statistics vs. neural networks) helps us assess the strengths and weaknesses of different NLP models.</li>
+<li><strong>Choose appropriate tools and techniques:</strong> Knowing the evolution of NLP helps us select the most suitable methods for a given task, considering factors like data availability, computational resources, and desired accuracy.</li>
+<li><strong>Understand current trends and future directions:</strong> Understanding the history helps us anticipate future developments in NLP, such as the integration of symbolic reasoning with neural networks or the development of more robust and explainable models.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the task of <strong>Sentiment Analysis</strong>.</p>
+<ul>
+<li>
+<p><strong>Rule-based Approach:</strong>  You could define a set of rules that identify positive and negative words (e.g., "good," "excellent" are positive; "bad," "terrible" are negative). The sentiment of a sentence is then determined by counting the occurrences of positive and negative words, perhaps with some rules for handling negations (e.g., "not good" reverses the sentiment). This works okay for simple cases but struggles with sarcasm, complex sentence structures, and domain-specific language.</p>
+</li>
+<li>
+<p><strong>Statistical Approach:</strong> You could train a Naive Bayes classifier on a large dataset of labeled reviews (positive, negative, neutral). The classifier learns the probabilities of words appearing in each sentiment class and uses these probabilities to predict the sentiment of new, unseen reviews.  This is more robust than the rule-based approach as it can learn more nuanced patterns from the data.</p>
+</li>
+<li>
+<p><strong>Neural Network Approach:</strong> You could use a pre-trained transformer model like BERT or a fine-tuned RoBERTa model for sentiment classification.  These models have been trained on massive datasets and can capture subtle semantic relationships and contextual information, leading to significantly better accuracy than the previous two approaches. They can understand complex sentiment and nuances that are hard to explicitly define or capture with simple word counts.</p>
+</li>
+</ul>
+<p>The evolution of NLP techniques significantly impacted the accuracy and sophistication of sentiment analysis systems, demonstrating the power of statistical and neural methods over rule-based ones.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a complete rule-based system is too extensive for this example, here is a simplified illustration of a rule-based approach in Python, followed by a demonstration of sentiment analysis using the <code>transformers</code> library, which is a common library for statistical and neural NLP:</p>
+<pre class="codehilite"><code class="language-python"># Simplified rule-based sentiment analysis
+
+def rule_based_sentiment(text):
+    positive_words = [&quot;good&quot;, &quot;excellent&quot;, &quot;amazing&quot;, &quot;wonderful&quot;]
+    negative_words = [&quot;bad&quot;, &quot;terrible&quot;, &quot;awful&quot;, &quot;horrible&quot;]
+
+    positive_count = sum(1 for word in text.lower().split() if word in positive_words)
+    negative_count = sum(1 for word in text.lower().split() if word in negative_words)
+
+    if positive_count &gt; negative_count:
+        return &quot;Positive&quot;
+    elif negative_count &gt; positive_count:
+        return &quot;Negative&quot;
+    else:
+        return &quot;Neutral&quot;
+
+# Example usage
+text1 = &quot;This movie was good, but not excellent.&quot;
+text2 = &quot;This is a terrible and awful product.&quot;
+
+print(f&quot;Rule-based sentiment for '{text1}': {rule_based_sentiment(text1)}&quot;)
+print(f&quot;Rule-based sentiment for '{text2}': {rule_based_sentiment(text2)}&quot;)
+
+
+# Using transformers for sentiment analysis (neural approach)
+from transformers import pipeline
+
+classifier = pipeline(&quot;sentiment-analysis&quot;)
+
+text3 = &quot;This movie was good, but not excellent.&quot;
+text4 = &quot;This is a terrible and awful product.&quot;
+
+result1 = classifier(text3)
+result2 = classifier(text4)
+
+print(f&quot;Transformer sentiment for '{text3}': {result1}&quot;)
+print(f&quot;Transformer sentiment for '{text4}': {result2}&quot;)
+</code></pre>
+
+<p>The first part of the code shows a simple rule-based approach that counts positive and negative words. The second part uses the <code>transformers</code> library to perform sentiment analysis using a pre-trained neural network model. You'll need to install the <code>transformers</code> library: <code>pip install transformers</code>.  The transformer approach gives much better results, especially considering the more complex sentence in <code>text1</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How are current NLP research efforts addressing the limitations of large language models, such as bias, lack of explainability, and susceptibility to adversarial attacks, and how does understanding the history of NLP inform these efforts?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
