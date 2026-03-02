@@ -391,6 +391,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .theme-toggle:hover {{
       background: rgba(0,0,0,0.05);
     }}
+    .theme-toggle:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+      border-radius: 50%;
+    }}
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
     }}
@@ -436,6 +441,20 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .copy-button:hover {{
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
+    }}
+    .copy-button:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }}
+
+    a:focus-visible, button:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+
+    .dark a:focus-visible, .dark button:focus-visible, .dark .theme-toggle:focus-visible, .dark .copy-button:focus-visible {{
+      outline-color: #60a5fa;
     }}
   </style>
 </head>
@@ -685,6 +704,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
       transform: translateY(-4px);
       box-shadow: 0 10px 18px -8px rgba(0,0,0,0.18);
     }}
+    .lesson-card:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 14px;
+    }}
 
     .lesson-date {{ font-size: 0.9rem; color: var(--secondary); font-weight: 600; }}
     .lesson-name {{ font-size: 1.2rem; font-weight: 800; margin: 10px 0 18px; color: #0f172a; }}
@@ -718,6 +742,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .theme-toggle:hover {{
       background: rgba(0,0,0,0.05);
     }}
+    .theme-toggle:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 50%;
+    }}
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
     }}
@@ -738,6 +767,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark .week-title {{
       border-bottom-color: #334155;
+    }}
+
+    a:focus-visible, button:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
   </style>
 </head>
