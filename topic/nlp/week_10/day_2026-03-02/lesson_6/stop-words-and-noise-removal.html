@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stop Words and Noise Removal</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-stop-words-and-noise-removal">Topic: Stop Words and Noise Removal</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Stop words and noise removal are crucial preprocessing steps in Natural Language Processing (NLP) that aim to clean and streamline text data for more effective analysis.</p>
+<ul>
+<li>
+<p><strong>Stop Words:</strong> These are common words in a language that occur very frequently but contribute little to the meaning or sentiment of a text. Examples in English include "the," "a," "is," "are," "and," "of," "to," and "in." Their removal helps to reduce the size of the vocabulary, improve the efficiency of subsequent processing steps (like feature extraction), and often enhance the performance of machine learning models.  Stop words are often domain-specific. While a standard list exists, specialized areas (e.g., medical research, legal documents) might define additional stop words relevant to their specific corpora.</p>
+</li>
+<li>
+<p><strong>Noise Removal:</strong> This is a broader term encompassing the removal of any irrelevant characters, symbols, or text segments that do not contribute to the core information or task at hand. This can include:</p>
+<ul>
+<li>Punctuation marks (!, ?, ., etc.)</li>
+<li>HTML tags (e.g., <code>&lt;p&gt;</code>, <code>&lt;b&gt;</code>)</li>
+<li>Special characters (e.g., @, #, $)</li>
+<li>Numbers (depending on the application)</li>
+<li>Whitespace (extra spaces, tabs)</li>
+<li>Irrelevant or boilerplate text (e.g., copyright notices, disclaimers).</li>
+<li>Rare words or character sequences that might be the result of errors.</li>
+</ul>
+</li>
+</ul>
+<p>We use these techniques to:</p>
+<ul>
+<li><strong>Improve model accuracy:</strong> By removing irrelevant information, models can focus on the most important features.</li>
+<li><strong>Reduce computational cost:</strong> A smaller vocabulary size leads to faster training and inference.</li>
+<li><strong>Enhance interpretability:</strong> Clearer text data makes it easier to understand the underlying patterns and insights.</li>
+<li><strong>Prepare data for specific tasks:</strong> Some tasks (e.g., sentiment analysis) are highly sensitive to noise, while others (e.g., part-of-speech tagging) might require retaining certain types of punctuation.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a scenario where we want to perform sentiment analysis on a collection of tweets about a new product launch. The tweets contain a lot of noise (hashtags, mentions, URLs) and common words that don't carry much sentiment information.</p>
+<p>Without stop word and noise removal, the sentiment analysis model might get distracted by these irrelevant features. For example, the presence of "the" or "a" wouldn't indicate whether the tweet is positive or negative. Similarly, a hashtag like "#newproduct" is informative about the topic but not the sentiment.</p>
+<p>By removing stop words (like "the," "a," "is") and noise (like hashtags, mentions, URLs, punctuation), we can ensure that the model focuses on the words that truly express sentiment (e.g., "amazing," "disappointing," "love," "hate"). This will lead to a more accurate and reliable sentiment analysis.  Furthermore, removing urls and user mentions can help with privacy concerns as the data is being processed.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example of how to perform stop word and noise removal using the <code>nltk</code> and <code>re</code> libraries in Python:</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.corpus import stopwords
+import re
+
+nltk.download('stopwords', quiet=True) # Download stopwords if you haven't already
+stop_words = set(stopwords.words('english'))
+
+def remove_noise(text):
+    # Remove URLs
+    text = re.sub(r'http\S+', '', text)
+
+    # Remove mentions
+    text = re.sub(r'@\S+', '', text)
+
+    # Remove hashtags
+    text = re.sub(r'#\S+', '', text)
+
+    # Remove punctuation
+    text = re.sub(r'[^\w\s]', '', text) # Keep alphanumeric characters and whitespace
+
+    # Remove numbers
+    text = re.sub(r'\d+', '', text) # removes numbers
+
+    # Remove stop words
+    words = text.lower().split()
+    filtered_words = [word for word in words if word not in stop_words]
+    return ' '.join(filtered_words)
+
+
+# Example usage
+text = &quot;This is a sample tweet! It's about a new product #awesome @user123 https://example.com. I absolutely LOVE it!&quot;
+cleaned_text = remove_noise(text)
+print(f&quot;Original text: {text}&quot;)
+print(f&quot;Cleaned text: {cleaned_text}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports <code>nltk</code> for stop words and <code>re</code> for regular expressions.</li>
+<li><strong>Download Stop Words:</strong> Downloads the English stop words list from <code>nltk.corpus.stopwords</code>.</li>
+<li><strong>Define <code>remove_noise</code> function:</strong><ul>
+<li>Uses <code>re.sub()</code> to remove URLs, mentions, and hashtags using regular expressions. The regular expressions target patterns like <code>http...</code>, <code>@...</code>, and <code>#...</code>.</li>
+<li>Removes punctuation using another regular expression that replaces any character that is not a word character (<code>\w</code>) or whitespace (<code>\s</code>) with an empty string.</li>
+<li>Removes numbers using the regex <code>\d+</code>.</li>
+<li>Converts the text to lowercase and splits it into words.</li>
+<li>Filters out stop words using a list comprehension.</li>
+<li>Joins the filtered words back into a string.</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong> Demonstrates how to use the <code>remove_noise</code> function on a sample tweet.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we customize the stop word list to better suit a specific domain or task? For example, if we are analyzing technical documents, are there common words within that context that should be considered as stop words even if they aren't in the standard English stop word list? Also, how does noise removal impact the effectiveness of different NLP techniques like stemming and lemmatization?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
