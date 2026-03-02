@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Standard NLP Pipeline Overview</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-the-standard-nlp-pipeline-overview">Topic: The Standard NLP Pipeline Overview</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Standard NLP Pipeline is a sequence of common processing steps applied to raw text data to prepare it for analysis, understanding, and further downstream tasks. It's a structured approach to breaking down complex text into smaller, more manageable components and extracting relevant features. Using a pipeline allows for modularity, reusability, and easier debugging of NLP systems. Each stage in the pipeline performs a specific task, transforming the input text at each step.</p>
+<p>The pipeline typically includes the following stages (though the specific stages and their order may vary based on the application):</p>
+<ol>
+<li><strong>Text Acquisition:</strong> Obtaining the raw text data from various sources like web pages, documents, databases, APIs, etc.</li>
+<li><strong>Text Cleaning:</strong> Removing irrelevant characters, HTML tags, and noise from the raw text. This stage prepares the text for further processing.</li>
+<li><strong>Tokenization:</strong> Breaking down the text into individual words or tokens. This is often the first step in analyzing the text's components.</li>
+<li><strong>Stop Word Removal:</strong> Removing common words like "the," "a," "is," which often don't contribute much to the overall meaning of the text, reducing noise and improving efficiency.</li>
+<li><strong>Lowercasing:</strong> Converting all text to lowercase.  This helps to normalize the data and ensure that the same word is treated the same way regardless of its capitalization.</li>
+<li><strong>Stemming/Lemmatization:</strong> Reducing words to their root form (stem or lemma). Stemming is a rule-based process that removes suffixes, while lemmatization uses a vocabulary and morphological analysis to find the base or dictionary form of a word.  This allows for grouping together different inflections of the same word.</li>
+<li><strong>Part-of-Speech (POS) Tagging:</strong> Assigning grammatical tags (noun, verb, adjective, etc.) to each token. This helps to understand the grammatical structure of the text.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities (people, organizations, locations, dates, etc.) in the text.</li>
+<li><strong>Parsing/Syntactic Analysis:</strong> Analyzing the grammatical structure of sentences to understand the relationships between words.</li>
+<li><strong>Vectorization/Feature Extraction:</strong> Converting text into numerical representations (e.g., TF-IDF, Word Embeddings) suitable for machine learning models.</li>
+</ol>
+<p>We can use the Standard NLP Pipeline to:</p>
+<ul>
+<li>Prepare text data for machine learning tasks like classification, sentiment analysis, and machine translation.</li>
+<li>Extract meaningful information from unstructured text data.</li>
+<li>Improve the accuracy and efficiency of NLP models.</li>
+<li>Build scalable and maintainable NLP applications.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Sentiment Analysis of Customer Reviews:</strong></p>
+<p>Imagine a company wants to analyze customer reviews on their products to understand customer sentiment (positive, negative, neutral).  The Standard NLP Pipeline can be applied as follows:</p>
+<ol>
+<li><strong>Text Acquisition:</strong> Scrape customer reviews from various online platforms (e.g., Amazon, Yelp).</li>
+<li><strong>Text Cleaning:</strong> Remove HTML tags, special characters, and any irrelevant noise from the reviews.</li>
+<li><strong>Tokenization:</strong> Break down each review into individual words.</li>
+<li><strong>Lowercasing:</strong> Convert all words to lowercase.</li>
+<li><strong>Stop Word Removal:</strong> Remove common words like "the," "a," "is."</li>
+<li><strong>Lemmatization:</strong> Reduce words to their base form (e.g., "running" becomes "run").</li>
+<li><strong>Vectorization:</strong> Convert the processed text into numerical vectors using techniques like TF-IDF or word embeddings.</li>
+<li><strong>Sentiment Classification:</strong> Train a machine learning model (e.g., Naive Bayes, Support Vector Machine, or a neural network) on labeled review data to predict the sentiment of new reviews based on the generated vectors.</li>
+</ol>
+<p>By using the pipeline, the company can automate the process of analyzing customer reviews, gain valuable insights into customer satisfaction, and identify areas for improvement.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>spaCy</code> and <code>NLTK</code> libraries in Python are commonly used to implement NLP pipelines.  Here's a simplified example using spaCy demonstrating text cleaning, tokenization, stop word removal, and lemmatization:</p>
+<pre class="codehilite"><code class="language-python">import spacy
+
+# Load the English language model
+nlp = spacy.load(&quot;en_core_web_sm&quot;)
+
+def process_text(text):
+  &quot;&quot;&quot;Processes text using spaCy for cleaning, tokenization, stop word removal, and lemmatization.&quot;&quot;&quot;
+
+  # Create a Doc object
+  doc = nlp(text)
+
+  # Tokenize, remove stop words, and lemmatize
+  processed_tokens = [token.lemma_ for token in doc if not token.is_stop and token.is_alpha]
+
+  return &quot; &quot;.join(processed_tokens)
+
+# Example usage
+raw_text = &quot;This is an example sentence with some common stop words and variations like running and ran.  It also includes punctuation!&quot;
+processed_text = process_text(raw_text)
+print(f&quot;Original text: {raw_text}&quot;)
+print(f&quot;Processed text: {processed_text}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><code>spacy.load("en_core_web_sm")</code>: Loads a pre-trained English language model.  You might need to download this model first: <code>python -m spacy download en_core_web_sm</code></li>
+<li><code>nlp(text)</code>: Creates a <code>Doc</code> object, which is a container for accessing linguistic annotations.</li>
+<li><code>token.lemma_</code>:  Accesses the lemma (base form) of each token.</li>
+<li><code>token.is_stop</code>: Checks if a token is a stop word.</li>
+<li><code>token.is_alpha</code>: Checks if a token is purely alphabetic (removes punctuation etc.)</li>
+<li>The code iterates through the tokens in the <code>Doc</code> object and applies the specified operations to filter the tokens.</li>
+<li>Finally, the remaining tokens are joined back into a string.</li>
+</ul>
+<p>This example is a basic illustration and can be extended to include other stages of the pipeline, such as POS tagging and NER, by leveraging the capabilities of the <code>spaCy</code> library.  NLTK offers similar functionality with different implementation approaches.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can transfer learning techniques, like using pre-trained language models such as BERT or RoBERTa, be integrated into the standard NLP pipeline, and how do these techniques potentially change or simplify the traditional pipeline stages?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
