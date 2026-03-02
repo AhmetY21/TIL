@@ -86,6 +86,12 @@
       box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
     }
 
+    .hub-card:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 18px;
+    }
+
     .hub-icon {
       font-size: 2.2rem;
     }
@@ -134,6 +140,11 @@
     .theme-toggle:hover {
       background: rgba(0,0,0,0.05);
     }
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 50%;
+    }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);
     }
@@ -156,6 +167,11 @@
       background: #1e293b;
       color: var(--primary);
       border: 1px solid #334155;
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }
   </style>
 </head>
