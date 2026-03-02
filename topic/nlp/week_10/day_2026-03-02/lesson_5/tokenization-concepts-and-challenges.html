@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tokenization: Concepts and Challenges</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-tokenization-concepts-and-challenges">Topic: Tokenization: Concepts and Challenges</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Tokenization is the process of breaking down a text string (sequence of characters) into smaller units called "tokens." These tokens can be words, sub-words, or even individual characters, depending on the level of granularity desired.</p>
+<p><strong>What is it?</strong></p>
+<p>Essentially, it's the first step in many NLP pipelines that converts raw text into a format that can be more easily processed by machine learning models. Instead of treating the entire text as a single entity, tokenization allows us to represent the text as a sequence of meaningful units.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Feature Engineering:</strong> Tokens become the basic features that are used to train models for tasks like sentiment analysis, text classification, and machine translation. The frequency of tokens, their presence or absence, or their embeddings (vector representations) can be used as input to the models.</li>
+<li><strong>Information Retrieval:</strong> When searching for documents based on keywords, tokenization allows us to match queries (which are also tokenized) against the tokens found in the document corpus.</li>
+<li><strong>Text Analysis:</strong> Tokenizing text makes it easier to count word frequencies, identify common phrases, and perform other statistical analyses that reveal patterns in the text.</li>
+<li><strong>Preprocessing for other NLP tasks:</strong> Almost all other NLP tasks, such as part-of-speech tagging, named entity recognition, and dependency parsing, rely on a tokenized input.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a customer review for a restaurant:</p>
+<p>"The food was great, but the service was terribly slow! I wouldn't recommend it."</p>
+<p>Without tokenization, it would be difficult for a sentiment analysis model to understand the nuanced sentiment expressed. Tokenization breaks the sentence into individual units like:</p>
+<p><code>['The', 'food', 'was', 'great', ',', 'but', 'the', 'service', 'was', 'terribly', 'slow', '!', 'I', 'wouldn', "'t", 'recommend', 'it', '.']</code></p>
+<p>Now, the model can learn that "great" is generally associated with positive sentiment, "terribly slow" with negative sentiment, and "wouldn't recommend" further reinforces the negative overall sentiment. This tokenized form allows the model to accurately assess the sentiment of the review, which would be impossible if treated as a single string.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>nltk</code> (Natural Language Toolkit) library is a popular choice for tokenization in Python. Here's a simple example using the <code>word_tokenize</code> function:</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.tokenize import word_tokenize
+
+nltk.download('punkt') # Download the punkt sentence tokenizer (required for word_tokenize)
+
+text = &quot;The food was great, but the service was terribly slow! I wouldn't recommend it.&quot;
+tokens = word_tokenize(text)
+print(tokens)
+</code></pre>
+
+<p>This code snippet first downloads the <code>punkt</code> resource, which is a pre-trained model used for sentence tokenization (required for <code>word_tokenize</code>).  Then, it imports the <code>word_tokenize</code> function from <code>nltk.tokenize</code>.  Finally, it applies the function to the example text and prints the resulting list of tokens. The output will be the same as shown in the Application scenario.</p>
+<p>Other tokenization methods and libraries exist, such as:</p>
+<ul>
+<li><code>str.split()</code> (Python's built-in method, good for simple whitespace tokenization)</li>
+<li>SpaCy</li>
+<li>Transformers library tokenizers (e.g., for BERT, RoBERTa)</li>
+</ul>
+<p>These libraries offer different tokenization algorithms, each with its own strengths and weaknesses. For example, SpaCy is known for its speed and efficiency, while Transformers tokenizers are designed to work with specific pre-trained language models.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some of the key challenges in tokenization, particularly when dealing with complex language features like contractions, hyphenated words, or languages with no clear word boundaries? How do different tokenization methods address these challenges, and what are the trade-offs involved in choosing one method over another for a specific NLP task?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
