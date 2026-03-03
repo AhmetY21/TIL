@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stemming vs. Lemmatization: When to use which?</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-stemming-vs-lemmatization-when-to-use-which">Topic: Stemming vs. Lemmatization: When to use which?</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Stemming and lemmatization are text normalization techniques used in Natural Language Processing (NLP) to reduce words to their base or root form. They both aim to consolidate variations of a word (e.g., "running", "ran", "runs" all become variations of "run") to improve the accuracy and efficiency of text analysis tasks.</p>
+<ul>
+<li>
+<p><strong>Stemming:</strong> A heuristic process that chops off the ends of words in the hope of achieving this goal correctly most of the time. It's a simpler and faster method, but it can sometimes result in stems that are not actual words (over-stemming) or fail to reduce related words to the same stem (under-stemming). The goal is <em>computational efficiency</em> and not necessarily linguistic accuracy.</p>
+</li>
+<li>
+<p><strong>Lemmatization:</strong> A more sophisticated process that considers the morphological analysis of words.  It uses vocabulary and morphological analysis to find the base or dictionary form of a word, which is known as the lemma.  The lemma is always a valid word.  This involves using knowledge of the word's part-of-speech (POS) and context to determine the correct base form.  The goal is <em>linguistic accuracy</em> and correct representation.</p>
+</li>
+</ul>
+<p><strong>How can we use them?</strong></p>
+<p>Both stemming and lemmatization can be used to:</p>
+<ul>
+<li><strong>Reduce vocabulary size:</strong> By reducing words to their root forms, you effectively decrease the number of unique tokens in your text data. This is useful for reducing the dimensionality of feature vectors in machine learning models.</li>
+<li><strong>Improve search results:</strong>  Users often use different forms of a word when searching.  Stemming/Lemmatization allows matching across these forms.</li>
+<li><strong>Improve text classification/clustering:</strong> By treating related words as the same, the models can focus on the core meaning of the text rather than surface-level variations.</li>
+<li><strong>Improve topic modeling:</strong> Similarly, grouping variations of words allows topic models to identify underlying themes more effectively.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider these scenarios:</p>
+<ul>
+<li><strong>Stemming:</strong>  Imagine you are building a search engine that needs to quickly return relevant results for user queries.  Speed is crucial.  You might choose stemming to rapidly process a large amount of text and index it.  High accuracy isn't <em>as</em> critical as speed. For example, a search for "connecting" might return documents containing "connect", "connection", or "connected". The fact that stemming might sometimes result in a non-word stem is acceptable for this use case.</li>
+<li><strong>Lemmatization:</strong>  Suppose you are building a chatbot that needs to understand the nuances of user input.  You want to accurately interpret the meaning of their requests. In this case, you'd prefer lemmatization. For example, correctly identifying the lemma "be" for forms like "is", "are", and "was" is important for accurately understanding the user's intent. Consider a sentence like, "The children were playing". Lemmatization will convert "were" to "be", providing useful information about the sentence's structure and meaning that simple stemming wouldn't. Also, consider medical records - accuracy is paramont, so you'd want lemmatization over stemming.</li>
+</ul>
+<p>In summary:</p>
+<ul>
+<li><strong>Stemming:</strong>  Use when speed is paramount and accuracy is less critical (e.g., information retrieval, search engines with large indices, some text categorization tasks).</li>
+<li><strong>Lemmatization:</strong>  Use when accuracy and understanding the true meaning of the text are crucial (e.g., chatbots, sentiment analysis, question answering, detailed text analysis, medical NLP).</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+
+# Download necessary NLTK resources (run this once)
+# nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('averaged_perceptron_tagger')  # Required for POS tagging in lemmatization
+
+# Example sentence
+sentence = &quot;The cats were running quickly through the city. They are better runners than mice.&quot;
+
+# Tokenize the sentence
+tokens = word_tokenize(sentence)
+
+# Stemming using PorterStemmer
+stemmer = PorterStemmer()
+stemmed_words = [stemmer.stem(word) for word in tokens]
+print(&quot;Stemmed words:&quot;, stemmed_words)
+
+# Lemmatization using WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+
+# A helper function to convert NLTK's POS tags to WordNet's POS tags
+def get_wordnet_pos(treebank_tag):
+    if treebank_tag.startswith('J'):
+        return nltk.corpus.wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return nltk.corpus.wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return nltk.corpus.wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return nltk.corpus.wordnet.ADV
+    else:
+        return nltk.corpus.wordnet.NOUN  # Default to noun
+
+# POS tag the tokens
+pos_tags = nltk.pos_tag(tokens)
+
+# Lemmatize with POS tags
+lemmatized_words = [lemmatizer.lemmatize(word, pos=get_wordnet_pos(tag)) for word, tag in pos_tags]
+print(&quot;Lemmatized words:&quot;, lemmatized_words)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Are there situations where it makes sense to apply stemming <em>after</em> lemmatization, or vice versa, to improve the normalization results? If so, what would such situations look like, and what would be the expected benefit?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
