@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Constituency Parsing vs Dependency Parsing</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-constituency-parsing-vs-dependency-parsing">Topic: Constituency Parsing vs Dependency Parsing</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Constituency Parsing:</strong></p>
+<ul>
+<li>
+<p><strong>What it is:</strong> Constituency parsing, also known as phrase structure parsing, aims to represent the syntactic structure of a sentence according to phrase structure grammar. It breaks down a sentence into its constituent parts, like noun phrases (NP), verb phrases (VP), and prepositional phrases (PP), and then further decomposes these phrases into smaller constituents, forming a tree-like structure. The root node of the tree represents the entire sentence (S), and the leaves represent the individual words. The internal nodes represent the phrase types.</p>
+</li>
+<li>
+<p><strong>How can we use it:</strong> Constituency parsing is useful for understanding the hierarchical organization of a sentence. It helps in tasks such as:</p>
+<ul>
+<li><strong>Semantic interpretation:</strong> Understanding the relationships between different parts of a sentence, which aids in extracting meaning.</li>
+<li><strong>Question answering:</strong> Identifying the subject, object, and verb phrases to better understand the question and find the answer.</li>
+<li><strong>Machine translation:</strong> Improving the accuracy of translations by understanding the grammatical structure of the source language sentence.</li>
+<li><strong>Text summarization:</strong> Identifying important phrases and clauses in a document.</li>
+<li><strong>Grammar checking:</strong> Validating the grammatical correctness of a sentence.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Dependency Parsing:</strong></p>
+<ul>
+<li>
+<p><strong>What it is:</strong> Dependency parsing represents the syntactic structure of a sentence by establishing dependencies between words. It identifies the head word (governor) and the dependent words (modifiers) for each word in the sentence, forming a directed graph. The edges in the graph are labeled with dependency relations (e.g., subject, object, adjective modifier). The root of the graph is usually the main verb of the sentence. Unlike constituency parsing, dependency parsing focuses on the relations between words rather than building phrase structures.</p>
+</li>
+<li>
+<p><strong>How can we use it:</strong> Dependency parsing is useful for understanding the grammatical relationships between words. It helps in tasks such as:</p>
+<ul>
+<li><strong>Information extraction:</strong> Identifying relationships between entities in a sentence, such as who did what to whom.</li>
+<li><strong>Semantic role labeling:</strong> Identifying the semantic roles of words in a sentence, such as agent, patient, and instrument.</li>
+<li><strong>Machine translation:</strong> Improving the accuracy of translations by understanding the dependencies between words in the source language sentence.</li>
+<li><strong>Sentiment analysis:</strong> Understanding the modifiers and dependencies affecting the sentiment of a sentence.</li>
+<li><strong>Coreference resolution:</strong> Identifying which words or phrases refer to the same entity.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Constituency Parsing Scenario:</strong></p>
+<p>Imagine you are building a grammar checker. You want to determine if a sentence is grammatically correct. Constituency parsing can help by breaking the sentence down into its phrase structure. If the resulting parse tree doesn't conform to your grammar rules, you know there's a grammatical error. For example, if the parser finds an NP with a missing determiner when the grammar requires one, you can flag that as an error.</p>
+<p><strong>Dependency Parsing Scenario:</strong></p>
+<p>Consider a scenario where you're extracting information about relationships between people and organizations from news articles. For example, you want to find instances of "CEO of Company". Dependency parsing can identify the relationships between words like "CEO" and "Company". It would identify "CEO" as the head and "Company" as a dependent with a dependency relation like "of" or "poss". This allows you to extract structured information about these relationships.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import spacy
+from nltk.tree import Tree # For visualization of constituency parse trees (if using NLTK parser)
+
+# Option 1: Using spaCy for Dependency Parsing
+def dependency_parse_spacy(sentence):
+    nlp = spacy.load(&quot;en_core_web_sm&quot;) # load small english model
+    doc = nlp(sentence)
+    for token in doc:
+        print(f&quot;{token.text} -- {token.dep_} --&gt; {token.head.text}&quot;)
+
+    # Visualize the dependency parse using displacy
+    from spacy import displacy
+    displacy.render(doc, style=&quot;dep&quot;, jupyter=True)
+
+
+# Option 2: Using NLTK with a pre-trained constituency parser (e.g., Stanford Parser or Berkeley Parser) - Requires additional setup
+#  Note: The following commented code requires the Stanford Parser or Berkeley Parser to be downloaded and configured.
+# from nltk.parse.stanford import StanfordParser
+#
+# def constituency_parse_nltk(sentence):
+#     # Replace with the path to your Stanford Parser or Berkeley Parser
+#     # Example for Stanford Parser:
+#     # parser = StanfordParser(path_to_jar='/path/to/stanford-parser.jar',
+#     #                         path_to_models_jar='/path/to/stanford-parser-models.jar')
+#
+#     # Need to load parser and perform the parse.  I do not have a parse to include here since it requires external configuration.
+#     # parsed_tree = list(parser.raw_parse(sentence))[0]
+#     # parsed_tree.draw()  # Visualizes the tree in a separate window (if you have tkinter installed)
+#     # print(parsed_tree)  # Print the tree in text format
+#     print(&quot;NLTK Constituency Parsing requires Stanford Parser or Berkeley Parser setup.  See comments in the code.&quot;)
+
+
+
+
+# Example usage for spaCy dependency parsing:
+sentence = &quot;The quick brown fox jumps over the lazy dog.&quot;
+dependency_parse_spacy(sentence)
+
+
+# Example of a possible NLTK Constituency Parse outcome (assuming setup is complete and parser is invoked as explained above):
+# (S
+#   (NP (DT The) (JJ quick) (JJ brown) (NN fox))
+#   (VP (VBZ jumps)
+#     (PP (IN over)
+#       (NP (DT the) (JJ lazy) (NN dog))))
+#   (. .))
+
+# Example usage for NLTK constituency parsing: (after proper setup!)
+#sentence = &quot;The quick brown fox jumps over the lazy dog.&quot;
+#constituency_parse_nltk(sentence)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the relative strengths and weaknesses of Constituency Parsing and Dependency Parsing in the context of processing languages like Chinese, which have relatively free word order and different grammatical structures compared to English?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
