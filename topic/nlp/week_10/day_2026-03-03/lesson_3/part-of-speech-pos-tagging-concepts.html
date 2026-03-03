@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Part-of-Speech (POS) Tagging Concepts</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-part-of-speech-pos-tagging-concepts">Topic: Part-of-Speech (POS) Tagging Concepts</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Part-of-Speech (POS) tagging, also known as grammatical tagging or word-category disambiguation, is the process of assigning a grammatical tag (part of speech) to each word in a text.  The "part of speech" refers to the grammatical role a word plays in a sentence, such as noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection, determiner, etc.  POS tags provide valuable information about the syntactic structure and semantic meaning of a sentence.</p>
+<p>Formally, POS tagging can be viewed as a sequence labeling problem. Given a sequence of words <em>w</em><sub>1</sub>, <em>w</em><sub>2</sub>, ..., <em>w</em><sub>n</sub>, the task is to find the corresponding sequence of POS tags <em>t</em><sub>1</sub>, <em>t</em><sub>2</sub>, ..., <em>t</em><sub>n</sub>, where each <em>t</em><sub>i</sub> is chosen from a predefined tagset (e.g., the Penn Treebank tagset). The objective is to find the tag sequence that maximizes the probability P(<em>t</em><sub>1</sub>, <em>t</em><sub>2</sub>, ..., <em>t</em><sub>n</sub> | <em>w</em><sub>1</sub>, <em>w</em><sub>2</sub>, ..., <em>w</em><sub>n</sub>).</p>
+<p>We can use POS tagging for:</p>
+<ul>
+<li><strong>Text analysis and understanding:</strong>  Understanding the grammatical structure of a sentence enables better analysis of its meaning and relationships between words.</li>
+<li><strong>Information retrieval:</strong> POS tags can improve search results by allowing searches for specific types of words (e.g., searching for nouns related to a concept).</li>
+<li><strong>Machine translation:</strong> POS tagging can help maintain grammatical correctness when translating sentences from one language to another.</li>
+<li><strong>Named entity recognition (NER):</strong> Identifying proper nouns (e.g., names of people, organizations, and locations) is crucial for NER, and POS tagging helps to distinguish proper nouns from common nouns.</li>
+<li><strong>Parsing:</strong> POS tags serve as input to parsers, which build syntactic trees representing the structure of sentences.</li>
+<li><strong>Sentiment analysis:</strong> Adjectives and adverbs often carry sentiment, and POS tagging helps identify these words.</li>
+<li><strong>Text-to-speech (TTS):</strong> Knowing the part of speech of a word can influence its pronunciation (e.g., "read" as a verb vs. "read" as a noun).</li>
+<li><strong>Spell checking and grammar checking:</strong> Identifying incorrect word usage based on POS context.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the sentence: "The cat sat on the mat."</p>
+<p>A POS tagger would assign the following tags:</p>
+<ul>
+<li>The: DT (Determiner)</li>
+<li>cat: NN (Noun, singular or mass)</li>
+<li>sat: VBD (Verb, past tense)</li>
+<li>on: IN (Preposition or subordinating conjunction)</li>
+<li>the: DT (Determiner)</li>
+<li>mat: NN (Noun, singular or mass)</li>
+</ul>
+<p>This tagged sentence can be used for various applications. For example, we could use this information to identify the subject and verb of the sentence, which is useful for understanding the sentence's meaning.  A sentiment analysis system could use the lack of sentiment-bearing adjectives or adverbs to infer that the sentence is neutral. A machine translation system could use the tags to maintain the grammatical structure when translating the sentence to another language. A grammar checker can use POS tags to identify incorrect word usage, for example, if a verb were used where a noun is expected.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>nltk</code> library in Python provides tools for POS tagging. Here's a simple example using the averaged perceptron tagger:</p>
+<pre class="codehilite"><code class="language-python">import nltk
+
+# Download required resources (run this once)
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+
+text = &quot;The cat sat on the mat.&quot;
+tokens = nltk.word_tokenize(text)
+pos_tags = nltk.pos_tag(tokens)
+
+print(pos_tags)
+</code></pre>
+
+<p>This code snippet first tokenizes the sentence into individual words using <code>nltk.word_tokenize()</code>. Then, it uses <code>nltk.pos_tag()</code> to assign POS tags to each token based on the Averaged Perceptron Tagger which is trained on the Penn Treebank dataset by default. The output will be a list of tuples, where each tuple contains a word and its corresponding POS tag.</p>
+<p>Other POS taggers are available in NLTK and other libraries (e.g., spaCy, Stanford CoreNLP via NLTK wrappers), and they often offer improved accuracy. The choice of POS tagger depends on the specific application and the desired level of accuracy. SpaCy is notably faster and often more accurate.</p>
+<pre class="codehilite"><code class="language-python">import spacy
+
+# Load the English language model
+nlp = spacy.load(&quot;en_core_web_sm&quot;) # can also be &quot;en_core_web_md&quot;, &quot;en_core_web_lg&quot; for higher accuracy
+
+text = &quot;The cat sat on the mat.&quot;
+doc = nlp(text)
+
+# Print the tokens and their POS tags
+for token in doc:
+    print(token.text, token.pos_)
+</code></pre>
+
+<p>This spacy example is more modern and is generally preferred for its speed and improved accuracy.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do Hidden Markov Models (HMMs) and Conditional Random Fields (CRFs) differ in their approach to POS tagging, and what are the advantages and disadvantages of each method?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
