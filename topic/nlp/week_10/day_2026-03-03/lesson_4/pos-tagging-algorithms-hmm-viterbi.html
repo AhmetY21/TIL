@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Tagging Algorithms (HMM, Viterbi)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-pos-tagging-algorithms-hmm-viterbi">Topic: POS Tagging Algorithms (HMM, Viterbi)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Part-of-Speech (POS) tagging is the process of assigning a grammatical tag (e.g., noun, verb, adjective, adverb) to each word in a sentence.  It's a crucial step in many NLP pipelines because it provides valuable syntactic information that can be used for tasks like parsing, information retrieval, and machine translation.</p>
+<p>A Hidden Markov Model (HMM) is a probabilistic sequence model used to describe systems that transition between hidden states while emitting observable symbols. In the context of POS tagging:</p>
+<ul>
+<li><strong>Hidden States:</strong> The POS tags themselves (e.g., NN, VB, JJ). We assume the 'true' POS tag sequence is hidden.</li>
+<li><strong>Observations:</strong> The words in the sentence. We <em>observe</em> the words.</li>
+<li><strong>Transition Probabilities:</strong> The probability of transitioning from one POS tag to another (e.g., P(VB | NN) - the probability of a verb following a noun). These are learned from training data.</li>
+<li><strong>Emission Probabilities:</strong> The probability of a word being generated from a particular POS tag (e.g., P("run" | VB) - the probability of the word "run" being a verb). These are also learned from training data.</li>
+</ul>
+<p>The Viterbi algorithm is a dynamic programming algorithm used to find the most likely sequence of hidden states (POS tags) given a sequence of observations (words) and the HMM parameters (transition and emission probabilities). It efficiently searches through all possible tag sequences to find the one with the highest probability.</p>
+<p><strong>How we use it:</strong> Given a sentence, we use the HMM (with trained transition and emission probabilities) and the Viterbi algorithm to predict the most probable sequence of POS tags for that sentence.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the sentence: "The cat sat on the mat."</p>
+<p>Without POS tagging, we might only know the individual words. With POS tagging, we can identify:</p>
+<ul>
+<li>The: Determiner (DT)</li>
+<li>cat: Noun (NN)</li>
+<li>sat: Verb (VBD)</li>
+<li>on: Preposition (IN)</li>
+<li>the: Determiner (DT)</li>
+<li>mat: Noun (NN)</li>
+</ul>
+<p>This POS tagged sentence can be used for:</p>
+<ul>
+<li><strong>Chunking/Shallow Parsing:</strong>  Identifying noun phrases (e.g., "The cat", "the mat") and verb phrases (e.g., "sat on the mat").</li>
+<li><strong>Information Extraction:</strong> Extracting entities and relationships from text. For example, identifying the subject (cat) and the location (on the mat).</li>
+<li><strong>Machine Translation:</strong>  POS tags can help disambiguate words with multiple meanings (e.g., "run" as a verb vs. "run" as a noun) and ensure correct grammatical structure in the target language.</li>
+<li><strong>Text-to-Speech (TTS):</strong> Proper pronunciation can depend on the POS tag (e.g., "read" (verb) vs. "read" (noun)).</li>
+<li><strong>Search Engines:</strong>  Improve search results by considering the grammatical role of keywords.  Searching for "running shoes" is different than searching for "run in the race", which would have a verb phrase.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While implementing the Viterbi algorithm and HMM from scratch is a good learning exercise, several Python libraries provide pre-trained POS taggers that utilize HMMs (and other techniques) under the hood.  One example is <code>nltk</code> (Natural Language Toolkit).</p>
+<pre class="codehilite"><code class="language-python">import nltk
+
+try:
+    nltk.data.find(&quot;taggers/averaged_perceptron_tagger&quot;)
+except LookupError:
+    nltk.download('averaged_perceptron_tagger')
+
+text = &quot;The cat sat on the mat.&quot;
+tokens = nltk.word_tokenize(text)  # Tokenize the sentence
+
+# Use the averaged_perceptron_tagger (often uses a variant of HMMs/Viterbi)
+pos_tags = nltk.pos_tag(tokens)
+
+print(pos_tags)
+
+# Sample HMM implementation (simplified, for demonstration purposes only,
+# requires significant data preparation and handling of unseen words for real use)
+import numpy as np
+
+class SimpleHMM:
+    def __init__(self, states, observations, transition_probs, emission_probs):
+        self.states = states
+        self.observations = observations
+        self.transition_probs = transition_probs  # state x state matrix
+        self.emission_probs = emission_probs      # state x observation matrix
+
+    def viterbi(self, obs):
+        n_states = len(self.states)
+        n_obs = len(obs)
+
+        viterbi_matrix = np.zeros((n_states, n_obs))
+        backpointer_matrix = np.zeros((n_states, n_obs), dtype=int)
+
+        # Initialization (t = 0)
+        for s in range(n_states):
+            viterbi_matrix[s, 0] = self.transition_probs[0, s] * self.emission_probs[s, obs[0]]  # Initial state to s
+            backpointer_matrix[s, 0] = 0
+
+        # Recursion (t &gt; 0)
+        for t in range(1, n_obs):
+            for s in range(n_states):
+                max_prob = -1
+                best_state = -1
+                for prev_s in range(n_states):
+                    prob = viterbi_matrix[prev_s, t-1] * self.transition_probs[prev_s, s] * self.emission_probs[s, obs[t]]
+                    if prob &gt; max_prob:
+                        max_prob = prob
+                        best_state = prev_s
+
+                viterbi_matrix[s, t] = max_prob
+                backpointer_matrix[s, t] = best_state
+
+        # Termination
+        best_path_prob = np.max(viterbi_matrix[:, n_obs-1])
+        best_path_end = np.argmax(viterbi_matrix[:, n_obs-1])
+
+        # Backtracking
+        best_path = [best_path_end]
+        for t in range(n_obs - 2, -1, -1):
+            best_path.insert(0, backpointer_matrix[best_path[0], t+1])
+
+        return [self.states[i] for i in best_path] #return state sequence (POS tag sequence)
+
+
+# Example usage (extremely simplified; needs robust training data)
+states = ['NN', 'VB'] #Noun, verb.
+observations = ['cat', 'sat', 'mat']
+#Assume that the transition probabilities have been learned previously
+transition_probs = np.array([
+    [0.0, 1.0],  # Start -&gt; NN or VB
+    [0.7, 0.3],  # NN -&gt; NN or VB
+    [0.4, 0.6]   # VB -&gt; NN or VB
+])
+
+#Assume that the emission probabilities have been learned previously
+emission_probs = np.array([
+    [0.8, 0.0], # P(cat | NN) and P(sat | NN)
+    [0.0, 0.7] # P(cat | VB) and P(sat | VB)
+])
+emission_probs = np.column_stack([emission_probs, [0.05, 0.0]]) #Add &quot;mat&quot;
+#Ensure probabilities sum to 1 with a smoothing
+
+# Map words to numerical indices
+observation_indices = [0,1,2] # &quot;cat sat mat&quot;
+#print(observation_indices)
+
+# Initialize and run the HMM
+hmm = SimpleHMM(states, observations, transition_probs, emission_probs)
+
+# Run Viterbi, requires to input index of observation
+predicted_tags = hmm.viterbi(observation_indices) # observation indices
+print(f&quot;Simple HMM predicted tags: {predicted_tags}&quot;) #Not properly initialized with start symbol.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>nltk.pos_tag()</code>:</strong> This function from the <code>nltk</code> library provides a pre-trained POS tagger.  It uses an averaged perceptron tagger, which achieves good accuracy and is relatively efficient. It does <em>not</em> allow you to directly control the specific HMM parameters.</li>
+<li><strong>Simple HMM</strong>: Contains <code>states</code>, <code>observations</code>, <code>transition_probs</code>, and <code>emission_probs</code>. Implements the Viterbi algorithm. This HMM contains many assumption which would need to be considered in practice.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Training Data:</strong> The accuracy of the HMM depends heavily on the quality and quantity of the training data used to estimate the transition and emission probabilities.</li>
+<li><strong>Unknown Words:</strong>  The HMM needs a strategy for handling words that were not seen during training (e.g., using smoothing techniques or assigning them a default tag).</li>
+<li><strong>Smoothing:</strong> The training data might not include every possible word and tag combination, resulting in zero probabilities. Smoothing techniques (e.g., Laplace smoothing, add-k smoothing) are used to avoid zero probabilities and improve the model's robustness.</li>
+<li><strong>Start and End Symbols:</strong>  HMMs often use special "start" and "end" symbols to model the beginning and end of sentences.</li>
+<li><strong>Scalability:</strong> Viterbi Algorithm scales linearly with observation size O(n).</li>
+<li><strong>Log Probabilities:</strong> In practice, log probabilities are used to avoid underflow issues when multiplying many small probabilities.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do more advanced POS tagging algorithms, like those based on deep learning (e.g., BiLSTM-CRF), improve upon HMM-based approaches, particularly in handling long-range dependencies and rare words?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
