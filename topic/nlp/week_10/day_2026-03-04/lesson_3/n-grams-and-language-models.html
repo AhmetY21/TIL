@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N-Grams and Language Models</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-n-grams-and-language-models">Topic: N-Grams and Language Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>N-Grams:</strong> An n-gram is a contiguous sequence of <em>n</em> items from a given sample of text or speech. The items can be phonemes, syllables, letters, words, or base pairs, depending on the application. Essentially, it's a sliding window of size <em>n</em> that moves across a piece of text. For example, given the sentence "The quick brown fox", the 2-grams (bigrams) would be "The quick", "quick brown", and "brown fox". 1-grams are called unigrams, 3-grams are called trigrams, and so on.</p>
+<p><strong>Language Models:</strong> A language model (LM) is a probabilistic model that assigns a probability to a sequence of words (or more generally, tokens). In simpler terms, given a sequence of words, the language model predicts the probability of the <em>next</em> word in the sequence.  Mathematically, a language model attempts to estimate P(w1, w2, ..., wn), the probability of the sequence of words w1 to wn occurring.</p>
+<p><strong>N-Gram Language Models:</strong> An n-gram language model is a type of language model that uses n-grams to predict the probability of the next word.  It approximates the probability of a word given its preceding words by only considering the preceding <em>n-1</em> words. This is based on the Markov assumption, which states that the probability of the next word depends only on the preceding <em>n-1</em> words.  For example, in a trigram language model, the probability of the word "fox" given the sequence "The quick brown" is approximated as P(fox | quick brown). The formula for the probability calculation using an n-gram language model is:</p>
+<p>P(w_i | w_{i-n+1}, ..., w_{i-1}) ≈ Count(w_{i-n+1}, ..., w_{i-1}, w_i) / Count(w_{i-n+1}, ..., w_{i-1})</p>
+<p>Where:</p>
+<ul>
+<li>w_i is the i-th word in the sequence.</li>
+<li>Count(w_{i-n+1}, ..., w_{i-1}, w_i) is the number of times the n-gram (w_{i-n+1}, ..., w_{i-1}, w_i) appears in the training corpus.</li>
+<li>Count(w_{i-n+1}, ..., w_{i-1}) is the number of times the (n-1)-gram (w_{i-n+1}, ..., w_{i-1}) appears in the training corpus.</li>
+</ul>
+<p><strong>How can we use it?</strong> N-gram language models can be used for:</p>
+<ul>
+<li><strong>Text generation:</strong> Generating new text that resembles the training data.</li>
+<li><strong>Speech recognition:</strong> Predicting the most likely sequence of words given an audio input.</li>
+<li><strong>Machine translation:</strong> Choosing the most fluent translation of a sentence.</li>
+<li><strong>Spelling correction:</strong> Suggesting corrections for misspelled words.</li>
+<li><strong>Autocomplete/Suggestion:</strong> Suggesting the next word or phrase as a user types.</li>
+<li><strong>Sentiment Analysis</strong>: Used as features for training sentiment classifiers.</li>
+<li><strong>Plagiarism Detection:</strong> Identifying similarities between documents based on shared n-grams.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a mobile keyboard app that suggests the next word as a user types.  Let's say the user has typed "I want to".  The keyboard app can use a trigram language model trained on a large corpus of text to predict the most likely next words.</p>
+<p>The trigram language model would look up sequences that start with "I want to" in its training data and calculate the probabilities of different words following that sequence. For example, if the model has seen "I want to eat" more often than "I want to sleep" and "I want to run", it would suggest "eat" as the most probable next word. This helps users type faster and more accurately by providing contextually relevant suggestions. Smoothing techniques (explained later) are vital to prevent zero probabilities when the model encounters unseen word combinations.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a Python example using NLTK to create and use an n-gram language model:</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.util import ngrams
+from nltk.lm import MLE
+from nltk.lm.preprocessing import padded_everygram_pipeline
+
+# Sample training text
+text = &quot;&quot;&quot;
+The quick brown fox jumps over the lazy dog.
+The dog is very lazy.
+The quick rabbit also jumps.
+&quot;&quot;&quot;
+
+# Tokenize the text
+tokenized_text = [list(map(str.lower, nltk.word_tokenize(sent)))
+                  for sent in nltk.sent_tokenize(text)]
+
+# Create padded n-grams (for smoother probability estimates)
+n = 3  # Trigram model
+train_data, padded_sents = padded_everygram_pipeline(n, tokenized_text)
+
+
+# Train the n-gram language model
+model = MLE(n)
+model.fit(train_data, padded_sents)
+
+
+# Example of calculating the probability of a word
+print(f&quot;Probability of 'fox' given 'brown' and 'jumps': {model.score('fox', ['brown', 'jumps'])}&quot;) # 0.0
+print(f&quot;Probability of 'dog' given 'lazy' and '.': {model.score('dog', ['lazy', '.'])}&quot;) #1.0
+
+
+# Example of generating text (basic)
+def generate_sentence(model, num_words=10, random_seed=42):
+    &quot;&quot;&quot;
+    Generates a sentence using the n-gram language model.
+    &quot;&quot;&quot;
+    import random
+    random.seed(random_seed)
+    text = [model.vocab.start_symbol()]
+    for i in range(num_words):
+        next_word_candidates = []
+        context = tuple(text[-(model.order-1):])  # Get n-1 previous words as context
+        for word in model.vocab:
+            prob = model.score(word, context)
+            if prob &gt; 0:
+                next_word_candidates.append((word,prob))
+        if not next_word_candidates:
+             next_word = model.vocab.end_symbol()
+        else:
+
+            next_word = random.choices([w for w, p in next_word_candidates], weights=[p for w,p in next_word_candidates], k=1)[0] # Weight probability
+        text.append(next_word)
+        if next_word == model.vocab.end_symbol():
+            break
+    return ' '.join(text[1:-1])
+
+
+print(f&quot;Generated sentence: {generate_sentence(model)}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Tokenization:</strong> The text is tokenized into sentences and then words, converting all words to lowercase for consistency.</li>
+<li><strong>Padded N-grams:</strong> <code>padded_everygram_pipeline</code> adds padding symbols ('<s>' for sentence start, '</s>' for sentence end) to each sentence and generates n-grams. This is crucial for better probability estimation, especially at the beginning and end of sentences.</li>
+<li><strong>MLE (Maximum Likelihood Estimation):</strong> <code>MLE(n)</code> creates an n-gram language model using maximum likelihood estimation. The <code>fit()</code> method trains the model on the padded n-gram data.</li>
+<li><strong>Probability Calculation:</strong> <code>model.score(word, context)</code> calculates the probability of a given word given a specific context (the preceding n-1 words).</li>
+<li><strong>Text Generation:</strong> The <code>generate_sentence</code> function shows a rudimentary way to generate text based on the probabilities learned by the model.  It starts with a start symbol and iteratively predicts the next word based on the context, using a weighted random choice based on the probabilities from the language model, until it reaches the end symbol.
+<strong>Important Notes:</strong></li>
+<li>The use of smoothing methods (e.g., Add-k smoothing, Good-Turing smoothing, Kneser-Ney smoothing) is essential in practice to handle unseen n-grams and avoid zero probabilities.  NLTK provides implementations of some smoothing techniques.  This example uses padding which helps somewhat.</li>
+<li>This is a simplified example. Real-world language models are much more complex and trained on significantly larger datasets.</li>
+<li>NLTK's <code>lm</code> module provides more sophisticated features for building and evaluating language models, including support for different smoothing techniques.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do smoothing techniques, such as Laplace smoothing (Add-1 smoothing) and Kneser-Ney smoothing, address the problem of zero probabilities in n-gram language models, and what are the trade-offs between them in terms of model performance and computational cost?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
