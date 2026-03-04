@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bag of Words (BoW) Model</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-bag-of-words-bow-model">Topic: Bag of Words (BoW) Model</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Bag of Words (BoW) model is a simplifying representation used in natural language processing and information retrieval. It represents text as an <em>unordered set of words</em>, disregarding grammar and even word order but keeping track of word counts.</p>
+<p><strong>What is it?</strong></p>
+<p>The core idea is to create a vocabulary of all unique words in the corpus (a collection of documents). Each document is then represented by a vector. The length of this vector is equal to the size of the vocabulary. Each element in the vector represents the <em>frequency</em> of the corresponding word in the document.</p>
+<p><strong>How can we use it?</strong></p>
+<p>BoW is primarily used for:</p>
+<ul>
+<li><strong>Text Classification:</strong>  Categorizing documents based on their content (e.g., spam/not spam, positive/negative sentiment).  The frequency counts of different words act as features that a machine learning classifier (e.g., Naive Bayes, Logistic Regression) can learn from.</li>
+<li><strong>Information Retrieval:</strong>  Finding documents relevant to a query. The query is also transformed into a BoW vector, and the similarity between the query vector and the document vectors is computed to rank the documents.  Techniques like cosine similarity are commonly used to measure this similarity.</li>
+<li><strong>Topic Modeling:</strong>  While not a direct application, the BoW representation can be a starting point for more sophisticated topic modeling techniques like Latent Dirichlet Allocation (LDA).</li>
+<li><strong>Feature Extraction:</strong> Converting textual data into numerical features suitable for machine learning models.</li>
+</ul>
+<p><strong>Limitations:</strong></p>
+<ul>
+<li><strong>Loss of Context:</strong>  The most significant limitation is the disregard for word order and grammar.  "This is good, not bad" and "This is bad, not good" would have very similar BoW representations.</li>
+<li><strong>Vocabulary Size:</strong> The size of the vocabulary can become very large, especially with large corpora, leading to high-dimensional and sparse feature vectors.  This can increase computational cost and potentially hurt model performance.</li>
+<li><strong>Equal Weighting:</strong>  The model treats all words equally, which may not be desirable.  Common words like "the", "a", and "is" can dominate the frequency counts without contributing much meaning. This is usually addressed with techniques like TF-IDF (Term Frequency-Inverse Document Frequency).</li>
+<li><strong>No Semantic Meaning:</strong>  Words with similar meanings are treated as completely different.  For instance, "good" and "excellent" would be considered separate features.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Sentiment analysis of customer reviews for an online product.</p>
+<p><strong>Goal:</strong> Automatically classify customer reviews as positive or negative based on the text of the reviews.</p>
+<p><strong>How BoW is used:</strong></p>
+<ol>
+<li><strong>Data Collection:</strong> Gather a set of customer reviews and label each review as either positive or negative.</li>
+<li><strong>Vocabulary Creation:</strong> Create a vocabulary of all unique words across all the reviews.</li>
+<li><strong>Vectorization:</strong>  For each review, create a BoW vector representing the frequency of each word in the vocabulary within that review.</li>
+<li><strong>Model Training:</strong> Train a classification model (e.g., Naive Bayes, Logistic Regression) using the BoW vectors as features and the sentiment labels (positive/negative) as the target variable.</li>
+<li><strong>Prediction:</strong>  For new, unseen reviews, create a BoW vector and use the trained model to predict the sentiment.</li>
+</ol>
+<p>In this scenario, BoW provides a simple and efficient way to convert textual data into numerical data that a machine learning model can understand. While it ignores the nuances of language, it can often achieve reasonable accuracy, especially when combined with other techniques like stop word removal and TF-IDF.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import CountVectorizer
+
+# Sample documents
+documents = [
+    &quot;This is the first document.&quot;,
+    &quot;This is the second second document.&quot;,
+    &quot;And this is the third one.&quot;,
+    &quot;Is this the first document?&quot;
+]
+
+# Create a CountVectorizer object
+vectorizer = CountVectorizer()
+
+# Fit the vectorizer to the documents (learn the vocabulary)
+vectorizer.fit(documents)
+
+# Transform the documents into BoW vectors
+bow_vectors = vectorizer.transform(documents)
+
+# Print the vocabulary
+print(&quot;Vocabulary:&quot;, vectorizer.vocabulary_)
+
+# Print the BoW vectors (sparse matrix format)
+print(&quot;\nBoW Vectors (Sparse Matrix):&quot;)
+print(bow_vectors)
+
+# Convert the sparse matrix to a dense array (for easier viewing)
+bow_vectors_dense = bow_vectors.toarray()
+print(&quot;\nBoW Vectors (Dense Array):&quot;)
+print(bow_vectors_dense)
+
+# Get feature names (words in the vocabulary)
+feature_names = vectorizer.get_feature_names_out()
+print(&quot;\nFeature Names:&quot;, feature_names)
+
+# You can then feed these BoW vectors into a machine learning model
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>CountVectorizer</code>:</strong>  The <code>CountVectorizer</code> class from scikit-learn is used to create the BoW representation.</li>
+<li><strong><code>fit(documents)</code>:</strong> This method learns the vocabulary from the input documents. It identifies all unique words and assigns an index to each word.</li>
+<li><strong><code>transform(documents)</code>:</strong> This method transforms the input documents into BoW vectors. Each vector represents the frequency of each word in the vocabulary within the corresponding document. The output is a sparse matrix, which is an efficient way to store matrices with many zero values.</li>
+<li><strong><code>vocabulary_</code>:</strong> This attribute stores the vocabulary as a dictionary, mapping each word to its index in the feature vector.</li>
+<li><strong><code>toarray()</code>:</strong> This method converts the sparse matrix to a dense NumPy array, which is easier to read and understand (but can consume more memory).</li>
+<li><strong><code>get_feature_names_out()</code>:</strong> This method returns an array of feature names corresponding to the columns in the BoW matrix.</li>
+<li>The output dense array represents the frequency counts. For example:
+    <code>[[1 0 0 1 1 0 1 0 1]
+     [1 0 1 1 1 0 1 2 0]
+     [0 1 0 1 1 1 1 0 0]
+     [1 0 0 1 1 0 1 0 1]]</code>
+This shows the frequency counts of the terms in the vocabulary, for each document, in the order of the terms in the vocabulary.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can the BoW model be improved to address the limitations of ignoring word importance and handle unseen words during the prediction phase (words that are not in the training vocabulary)? Explain the techniques that can be used for each of those issues separately.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
