@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Text Cleaning (Handling Emojis, URLs)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-advanced-text-cleaning-handling-emojis-urls">Topic: Advanced Text Cleaning (Handling Emojis, URLs)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Advanced text cleaning involves preprocessing textual data to remove or modify components like emojis, URLs, and other non-standard elements that might hinder accurate analysis or modeling. It goes beyond basic cleaning (like removing punctuation and stop words) to address more complex and nuanced challenges posed by modern digital communication.</p>
+<ul>
+<li><strong>Emojis:</strong> Emojis are pictorial representations of emotions, objects, or symbols. Their presence can affect sentiment analysis (by contributing emotion, or confusing the algorithm), topic modeling (by introducing noise), and machine translation (where direct translation might be impossible).  Handling emojis can involve removing them, replacing them with textual descriptions (e.g., translating 😂 to "laughing face"), or even treating them as individual tokens for sentiment analysis if you want to capture the emotional meaning.</li>
+<li><strong>URLs (Uniform Resource Locators):</strong> URLs are web addresses. Their presence can be irrelevant for many NLP tasks and can clutter the vocabulary. Handling URLs typically involves removing them or replacing them with a placeholder token like "<URL>". In some cases, extracting and analyzing the domain name might be relevant.</li>
+</ul>
+<p>The purpose of advanced text cleaning is to:</p>
+<ul>
+<li>Improve the accuracy of NLP models by removing irrelevant information.</li>
+<li>Reduce the dimensionality of the data, leading to faster processing and more efficient models.</li>
+<li>Standardize the text data to make it more consistent and easier to analyze.</li>
+<li>Focus the model on the core semantic content of the text.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a social media sentiment analysis project focused on analyzing public opinion about a new product launch.  The text data collected from Twitter and Facebook will likely contain emojis, URLs to product pages, and hashtags.</p>
+<p>Without advanced text cleaning:</p>
+<ul>
+<li>The sentiment analysis model might misinterpret tweets containing emojis. For instance, a sarcastic tweet like "This product is great 👍" could be incorrectly classified as positive if the model only focuses on the thumbs-up emoji.</li>
+<li>The URLs will be treated as distinct tokens, increasing the vocabulary size and potentially obscuring more relevant keywords related to the product.</li>
+<li>Hashtags might be incorrectly split into multiple tokens if not handled properly.</li>
+</ul>
+<p>With advanced text cleaning:</p>
+<ul>
+<li>Emojis can be replaced with textual descriptions (e.g., "thumbs_up") or removed entirely, allowing the model to focus on the textual sentiment.</li>
+<li>URLs can be replaced with a placeholder token (e.g., "<URL>") to reduce vocabulary size and remove irrelevant information.</li>
+<li>Hashtags can be preserved as single tokens to retain their significance for topic identification.</li>
+</ul>
+<p>This preprocessing enables the sentiment analysis model to produce more accurate and meaningful results. The analysis can focus on the opinions expressed in the text itself rather than being distracted by emojis or URLs.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import re
+import emoji
+
+def clean_text(text):
+  &quot;&quot;&quot;
+  Cleans text by removing URLs and handling emojis.
+
+  Args:
+      text: The input text string.
+
+  Returns:
+      The cleaned text string.
+  &quot;&quot;&quot;
+
+  # Remove URLs
+  text = re.sub(r'http\S+|www\S+|https\S+', '&lt;URL&gt;', text, flags=re.MULTILINE)
+
+  # Remove emojis
+  text = emoji.replace_emoji(text, replace='') #remove emojis
+
+  return text
+
+
+# Example usage
+text = &quot;Check out my new product! 🤩 https://example.com #awesome&quot;
+cleaned_text = clean_text(text)
+print(f&quot;Original text: {text}&quot;)
+print(f&quot;Cleaned text: {cleaned_text}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>re.sub(r'http\S+|www\S+|https\S+', '&lt;URL&gt;', text, flags=re.MULTILINE)</code>:</strong> This line uses regular expressions (<code>re</code> module) to remove URLs.<ul>
+<li><code>r'http\S+|www\S+|https\S+'</code> is the regular expression pattern that matches URLs starting with "http", "www", or "https". <code>\S+</code> matches one or more non-whitespace characters.</li>
+<li><code>&lt;URL&gt;</code> is the replacement string.  All matched URLs will be replaced with this placeholder.</li>
+<li><code>flags=re.MULTILINE</code> ensures the pattern matches across multiple lines.</li>
+</ul>
+</li>
+<li><strong><code>emoji.replace_emoji(text, replace='')</code></strong>:  This uses the <code>emoji</code> library to replace emojis.  <code>replace=''</code> means the emojis are removed. The <code>emoji</code> library needs to be installed: <code>pip install emoji</code>. It can also replace the emoji with text.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How would you adapt the cleaning function to also handle hashtags, preserving them as single tokens (e.g., "#awesome" remains as "#awesome" instead of being split into "#" and "awesome") and also remove any User Mentions (<code>@username</code>) to improve text cleaning process for social media data? What are the considerations for removing or keeping hashtags and user mentions?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
