@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confusion Matrix and Error Analysis</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-confusion-matrix-and-error-analysis">Topic: Confusion Matrix and Error Analysis</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A <strong>confusion matrix</strong> is a table that visualizes the performance of a classification model. It summarizes the results of the classification by showing the counts of correct and incorrect predictions, broken down by each class. The matrix's rows represent the actual (true) classes, and the columns represent the predicted classes (or vice versa, depending on the convention used).</p>
+<p>Key terms associated with a confusion matrix:</p>
+<ul>
+<li><strong>True Positive (TP):</strong> The model correctly predicted the positive class.</li>
+<li><strong>True Negative (TN):</strong> The model correctly predicted the negative class.</li>
+<li><strong>False Positive (FP):</strong> The model incorrectly predicted the positive class (also known as Type I error).</li>
+<li><strong>False Negative (FN):</strong> The model incorrectly predicted the negative class (also known as Type II error).</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<ul>
+<li><strong>Evaluate Model Performance:</strong> A confusion matrix provides a more detailed evaluation of a classification model than simple accuracy. It allows us to see not only <em>how many</em> predictions were correct, but <em>which types</em> of errors the model is making.</li>
+<li><strong>Identify Class-Specific Weaknesses:</strong> We can use the matrix to identify classes for which the model performs poorly. For example, a high number of false negatives for a particular class indicates the model struggles to identify instances of that class.</li>
+<li><strong>Calculate Performance Metrics:</strong> From the confusion matrix, we can derive various performance metrics such as:<ul>
+<li><strong>Accuracy:</strong> (TP + TN) / (TP + TN + FP + FN) - Overall correctness.</li>
+<li><strong>Precision:</strong> TP / (TP + FP) - Of all instances predicted as positive, how many were actually positive?</li>
+<li><strong>Recall (Sensitivity):</strong> TP / (TP + FN) - Of all actual positive instances, how many were correctly predicted?</li>
+<li><strong>F1-score:</strong> 2 * (Precision * Recall) / (Precision + Recall) - Harmonic mean of precision and recall.</li>
+<li><strong>Specificity:</strong> TN / (TN + FP) - Of all actual negative instances, how many were correctly predicted as negative?</li>
+</ul>
+</li>
+<li><strong>Guide Model Improvement:</strong> By analyzing the patterns of errors, we can get insights into how to improve the model. This may involve collecting more data for under-represented classes, adjusting the model's parameters, or trying a different modeling approach.</li>
+<li><strong>Error Analysis:</strong> Beyond the numbers in the matrix, <strong>error analysis</strong> is the process of examining the specific examples that the model misclassified. This often involves manually inspecting the input data and model predictions to understand the underlying reasons for the errors. Error analysis can uncover issues like data quality problems, ambiguity in the data, or limitations in the model's features.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis model designed to classify movie reviews as either "positive" or "negative". After training and testing the model on a dataset of movie reviews, you obtain the following confusion matrix:</p>
+<pre class="codehilite"><code>                   Predicted Negative | Predicted Positive
+Actual Negative     150                 | 20
+Actual Positive      30                 | 100
+</code></pre>
+
+<p>From this confusion matrix, we can glean the following information:</p>
+<ul>
+<li>The model correctly classified 150 negative reviews as negative (TN).</li>
+<li>The model correctly classified 100 positive reviews as positive (TP).</li>
+<li>The model incorrectly classified 20 negative reviews as positive (FP).</li>
+<li>The model incorrectly classified 30 positive reviews as negative (FN).</li>
+</ul>
+<p>Using this information:</p>
+<ul>
+<li>We can calculate metrics like precision, recall, and F1-score for each class (positive and negative). For example, precision for positive reviews is 100 / (100 + 20) = 0.833.</li>
+<li>We can identify that the model has more difficulty with positive reviews, as it incorrectly classifies them as negative 30 times, which suggests that the model might be biased toward identifying reviews as negative.</li>
+<li><strong>Error Analysis:</strong> By manually reviewing the 30 false negative reviews, you might discover that they contain subtle sarcasm, nuanced language, or implicit positive sentiment that the model fails to recognize. Further analysis could reveal common phrases or words used in these reviews that confuse the model. This could prompt you to refine the model's features or training data to better handle these cases. Maybe adding context around certain phrases would improve accuracy.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Actual and predicted labels
+y_true = np.array([0, 1, 0, 1, 0, 1, 0, 0, 1, 1]) # 0: Negative, 1: Positive
+y_pred = np.array([0, 1, 1, 1, 0, 0, 0, 0, 1, 1])
+
+# Generate the confusion matrix
+cm = confusion_matrix(y_true, y_pred)
+print(&quot;Confusion Matrix:\n&quot;, cm)
+
+# Display the confusion matrix using ConfusionMatrixDisplay
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[&quot;Negative&quot;, &quot;Positive&quot;]) #Display Labels can be modified to fit use-case
+
+disp.plot()
+plt.title(&quot;Confusion Matrix for Sentiment Analysis&quot;)
+plt.show()
+
+# Calculating Metrics from the Confusion Matrix (example)
+TN = cm[0, 0]
+FP = cm[0, 1]
+FN = cm[1, 0]
+TP = cm[1, 1]
+
+accuracy = (TP + TN) / (TP + TN + FP + FN)
+precision = TP / (TP + FP)
+recall = TP / (TP + FN)
+f1_score = 2 * (precision * recall) / (precision + recall)
+
+print(f&quot;Accuracy: {accuracy:.2f}&quot;)
+print(f&quot;Precision: {precision:.2f}&quot;)
+print(f&quot;Recall: {recall:.2f}&quot;)
+print(f&quot;F1-score: {f1_score:.2f}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can you extend error analysis using techniques beyond manual inspection, such as looking at feature importance or using explainable AI (XAI) methods, to gain deeper insights into why a model is making specific errors in an NLP task like text classification?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
