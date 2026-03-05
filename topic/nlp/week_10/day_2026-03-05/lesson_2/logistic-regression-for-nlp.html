@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logistic Regression for NLP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-logistic-regression-for-nlp">Topic: Logistic Regression for NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Logistic Regression, despite its name, is a <strong>linear classifier</strong> used for <strong>binary or multi-class classification problems</strong> in Natural Language Processing (NLP). It models the probability of a binary outcome (e.g., spam or not spam, positive or negative sentiment) or a categorical outcome (e.g., topic 1, topic 2, topic 3) based on a linear combination of input features.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>
+<p><strong>Input Features:</strong>  The input is a set of features, typically derived from text data. These features can be:</p>
+<ul>
+<li><strong>Bag-of-Words (BoW):</strong> Frequency of each word in the document.</li>
+<li><strong>TF-IDF (Term Frequency-Inverse Document Frequency):</strong> Weights words based on their importance in a document relative to a corpus.</li>
+<li><strong>N-grams:</strong> Sequences of N words (e.g., "very good", "not happy").</li>
+<li><strong>Word Embeddings (e.g., Word2Vec, GloVe, fastText):</strong> Vector representations of words capturing semantic relationships.</li>
+</ul>
+</li>
+<li>
+<p><strong>Linear Combination:</strong> The features are combined linearly with learned weights (coefficients) and a bias (intercept) term.  The equation is:</p>
+<p><code>z = w1 * x1 + w2 * x2 + ... + wn * xn + b</code></p>
+<p>where:
+*   <code>z</code> is the linear combination.
+*   <code>w1, w2, ..., wn</code> are the weights for each feature.
+*   <code>x1, x2, ..., xn</code> are the feature values.
+*   <code>b</code> is the bias.</p>
+</li>
+<li>
+<p><strong>Sigmoid Function (for binary classification):</strong>  The linear combination <code>z</code> is then passed through a sigmoid (logistic) function:</p>
+<p><code>p = 1 / (1 + e^(-z))</code></p>
+<p>The sigmoid function outputs a probability <code>p</code> between 0 and 1.</p>
+</li>
+<li>
+<p><strong>Prediction:</strong>  A threshold (usually 0.5) is used to classify the input. If <code>p &gt;= 0.5</code>, the input is classified as belonging to class 1; otherwise, it's classified as class 0.</p>
+</li>
+</ol>
+<p><strong>Multi-class Logistic Regression (Softmax Regression):</strong></p>
+<p>For multi-class problems (more than two classes), the softmax function is used instead of the sigmoid.  The softmax function outputs a probability distribution over all classes.</p>
+<p><code>p(y=i) = e^(zi) / sum(e^(zj))</code> for all classes <code>j</code></p>
+<p>The class with the highest probability is predicted as the output.</p>
+<p><strong>Training:</strong></p>
+<p>The weights <code>w</code> and bias <code>b</code> are learned during the training process using optimization algorithms like gradient descent to minimize a cost function, such as cross-entropy loss.</p>
+<p><strong>In summary, Logistic Regression in NLP maps text features to probabilities of belonging to different categories, enabling text classification and other NLP tasks.</strong></p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<ul>
+<li>
+<p><strong>Sentiment Analysis:</strong> Classifying movie reviews or product reviews as positive or negative.  Features could be word unigrams, bigrams, and/or TF-IDF scores.</p>
+</li>
+<li>
+<p><strong>Spam Detection:</strong> Identifying emails as spam or not spam. Features might include the presence of certain keywords ("free," "discount"), the sender's domain, and the email's structure.</p>
+</li>
+<li>
+<p><strong>Topic Classification:</strong> Categorizing news articles into different topics (e.g., sports, politics, technology). Features can be TF-IDF of the words appearing in the articles.</p>
+</li>
+<li>
+<p><strong>Intent Detection:</strong> Identifying the user's intention in a chatbot conversation (e.g., booking a flight, ordering food).  Features might include words and phrases related to booking, ordering, or other intents.</p>
+</li>
+<li>
+<p><strong>Language Detection:</strong> Identifying the language of a text document. Features could include the frequency of specific character n-grams.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Sample data (replace with your actual data)
+documents = [
+    &quot;This is a positive review. I loved it!&quot;,
+    &quot;This movie was terrible. I hated it.&quot;,
+    &quot;The product is amazing. Highly recommended.&quot;,
+    &quot;This is a bad experience. Do not buy.&quot;,
+    &quot;Great service and fast delivery.&quot;,
+    &quot;Extremely disappointed with the quality.&quot;
+]
+labels = [1, 0, 1, 0, 1, 0]  # 1 for positive, 0 for negative
+
+# 1. Feature extraction using TF-IDF
+vectorizer = TfidfVectorizer()
+features = vectorizer.fit_transform(documents)
+
+# 2. Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+# 3. Train the Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# 4. Make predictions on the test set
+predictions = model.predict(X_test)
+
+# 5. Evaluate the model
+accuracy = accuracy_score(y_test, predictions)
+print(f&quot;Accuracy: {accuracy}&quot;)
+
+# Example usage: predict sentiment of a new sentence
+new_sentence = [&quot;This is an okay product.&quot;]
+new_features = vectorizer.transform(new_sentence)
+new_prediction = model.predict(new_features)
+print(f&quot;Sentiment Prediction: {new_prediction}&quot;) # will predict either 0 or 1
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does Logistic Regression compare to other linear classifiers like Support Vector Machines (SVMs) in terms of performance, training time, and suitability for different NLP tasks, especially when dealing with high-dimensional feature spaces? Also, what are the common techniques to mitigate overfitting when using Logistic Regression in NLP?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
