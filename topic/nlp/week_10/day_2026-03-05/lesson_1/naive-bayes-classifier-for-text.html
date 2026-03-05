@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naive Bayes Classifier for Text</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-naive-bayes-classifier-for-text">Topic: Naive Bayes Classifier for Text</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Naive Bayes classifier is a probabilistic machine learning algorithm used for classification tasks. In the context of text, it leverages Bayes' theorem with a "naive" assumption of feature independence to determine the probability of a given text document belonging to a specific category or class.</p>
+<p><strong>Bayes' Theorem:</strong></p>
+<p>P(c|d) = [P(d|c) * P(c)] / P(d)</p>
+<p>Where:</p>
+<ul>
+<li>P(c|d) is the <strong>posterior probability</strong> of the document 'd' belonging to class 'c'. This is what we want to calculate.</li>
+<li>P(d|c) is the <strong>likelihood</strong> of observing document 'd' given that it belongs to class 'c'. This is estimated from the training data.</li>
+<li>P(c) is the <strong>prior probability</strong> of class 'c'.  This is the probability of a document belonging to class 'c' before seeing the document itself (estimated from the frequency of the class in the training data).</li>
+<li>P(d) is the <strong>probability of the document</strong> 'd'. This acts as a normalizing constant and is often ignored since it's the same for all classes being compared.</li>
+</ul>
+<p><strong>The "Naive" Assumption:</strong></p>
+<p>The "naive" part comes from the assumption that the features (words) in a document are conditionally independent given the class. In reality, this is almost never true.  For example, the word "terrible" is highly correlated with the word "movie" when talking about film reviews. Despite this unrealistic assumption, Naive Bayes often performs surprisingly well in text classification.</p>
+<p><strong>How we use it:</strong></p>
+<ol>
+<li>
+<p><strong>Training:</strong> Given a labeled training dataset (documents with known categories), the algorithm calculates the prior probabilities P(c) for each class and the likelihoods P(d|c) for each word given each class. Typically, this is done by counting the frequency of words within each class and applying smoothing (e.g., Laplace smoothing) to avoid zero probabilities for unseen words.  The document 'd' is often represented as a vector of word frequencies (Bag-of-Words).</p>
+</li>
+<li>
+<p><strong>Classification:</strong> Given a new, unseen document, the algorithm calculates the posterior probability P(c|d) for each class using the learned prior probabilities and likelihoods. The document is then assigned to the class with the highest posterior probability.</p>
+</li>
+</ol>
+<p>Different variants of Naive Bayes exist based on the assumed distribution of features, such as:</p>
+<ul>
+<li><strong>Multinomial Naive Bayes:</strong>  Suitable for discrete features, such as word counts or term frequencies.  Commonly used in text classification.</li>
+<li><strong>Bernoulli Naive Bayes:</strong> Suitable for binary features, such as the presence or absence of a word.</li>
+<li><strong>Gaussian Naive Bayes:</strong> Suitable for continuous features, assuming they follow a Gaussian distribution. Less common for text.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Naive Bayes classifiers are well-suited for various text classification tasks, including:</p>
+<ul>
+<li><strong>Spam detection:</strong> Classifying emails as spam or not spam based on the words they contain.</li>
+<li><strong>Sentiment analysis:</strong> Determining the sentiment (positive, negative, neutral) expressed in a piece of text, such as a product review or a tweet.</li>
+<li><strong>Topic classification:</strong> Categorizing news articles or research papers into different topics (e.g., sports, politics, technology).</li>
+<li><strong>Author identification:</strong> Identifying the author of a document based on their writing style and vocabulary.</li>
+<li><strong>Language detection:</strong> Determining the language of a given text.</li>
+</ul>
+<p>Naive Bayes is particularly useful when:</p>
+<ul>
+<li>The dataset is relatively large.</li>
+<li>High accuracy is not strictly required (it's often a good baseline model).</li>
+<li>Interpretability is desired (the learned probabilities can provide insights into the features that contribute to each class).</li>
+<li>Speed is important (it's a relatively fast algorithm to train and classify).</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
+
+# Sample data (replace with your actual data)
+documents = [
+    &quot;This is a positive review. I loved the movie!&quot;,
+    &quot;The movie was terrible. I hated it.&quot;,
+    &quot;This is another positive review. Excellent!&quot;,
+    &quot;The product is bad. I do not recommend it.&quot;,
+    &quot;I really enjoyed the service.  Great experience.&quot;,
+    &quot;The service was awful. Very disappointing.&quot;
+]
+labels = ['positive', 'negative', 'positive', 'negative', 'positive', 'negative']
+
+# 1. Convert text to numerical data using CountVectorizer (Bag-of-Words)
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(documents)  # Learn vocabulary and transform documents
+
+# 2. Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2, random_state=42)
+
+# 3. Train a Multinomial Naive Bayes classifier
+classifier = MultinomialNB()
+classifier.fit(X_train, y_train)
+
+# 4. Make predictions on the test set
+y_pred = classifier.predict(X_test)
+
+# 5. Evaluate the performance
+accuracy = accuracy_score(y_test, y_pred)
+print(f&quot;Accuracy: {accuracy}&quot;)
+print(classification_report(y_test, y_pred))
+
+# Example of predicting a new document
+new_document = [&quot;This is a great product!&quot;]
+new_document_vectorized = vectorizer.transform(new_document) # IMPORTANT: use transform, not fit_transform
+prediction = classifier.predict(new_document_vectorized)
+print(f&quot;Prediction for '{new_document[0]}': {prediction[0]}&quot;)
+</code></pre>
+
+<p>Explanation:</p>
+<ul>
+<li><strong>CountVectorizer:</strong> Converts the text documents into a matrix of token counts. <code>fit_transform</code> learns the vocabulary from the training data and transforms the documents into a numerical representation. It creates a sparse matrix where each row represents a document and each column represents a word in the vocabulary. The values in the matrix are the counts of each word in each document.  Importantly, when predicting on new data, you should only use <code>.transform()</code> to convert the new documents to a numerical format <em>using the vocabulary learned during training</em>.  Using <code>.fit_transform()</code> again will create a <em>new</em> vocabulary and lead to errors or poor performance.</li>
+<li><strong>train_test_split:</strong> Splits the data into training and testing sets to evaluate the model's performance on unseen data.</li>
+<li><strong>MultinomialNB:</strong>  Instantiates and trains the Multinomial Naive Bayes classifier.</li>
+<li><strong>fit(X_train, y_train):</strong>  Trains the classifier using the training data.</li>
+<li><strong>predict(X_test):</strong>  Predicts the labels for the test data.</li>
+<li><strong>accuracy_score &amp; classification_report:</strong>  Evaluate the model's performance.  The <code>classification_report</code> provides precision, recall, and F1-score for each class.</li>
+<li><strong>Example Prediction:</strong> Shows how to predict the class of a new document.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does Laplace smoothing (or other forms of smoothing) impact the performance of a Naive Bayes classifier for text data, and why is it important to use? What are some potential drawbacks of applying too much smoothing?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
