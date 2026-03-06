@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Similarity Measures (Cosine, Jaccard)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-text-similarity-measures-cosine-jaccard">Topic: Text Similarity Measures (Cosine, Jaccard)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text similarity measures quantify the degree to which two pieces of text are alike. They are used to determine how similar the content or meaning of two texts is based on their textual representation. Cosine similarity and Jaccard similarity are two popular methods.</p>
+<ul>
+<li>
+<p><strong>Cosine Similarity:</strong></p>
+<ul>
+<li><strong>What it is:</strong> Cosine similarity measures the angle between two vectors representing the texts in a multi-dimensional space. These vectors are typically term frequency-inverse document frequency (TF-IDF) vectors or word embeddings. A smaller angle indicates higher similarity. Specifically, it's the cosine of the angle between them.</li>
+<li><strong>How to use it:</strong> It provides a score between -1 and 1, where 1 means the vectors are perfectly aligned (identical), 0 means they are orthogonal (no similarity), and -1 means they are diametrically opposed (opposite).</li>
+<li><strong>Formula:</strong>  <code>cosine_similarity(A, B) = (A . B) / (||A|| * ||B||)</code>, where A and B are the vector representations of the texts, A . B is the dot product of A and B, and ||A|| and ||B|| are the magnitudes (Euclidean norms) of A and B.  It focuses on the orientation rather than the magnitude of the vectors.</li>
+</ul>
+</li>
+<li>
+<p><strong>Jaccard Similarity (also known as Jaccard Index):</strong></p>
+<ul>
+<li><strong>What it is:</strong> Jaccard similarity measures the similarity between two sets (in this case, sets of words or tokens in the texts). It is defined as the size of the intersection divided by the size of the union of the sets.</li>
+<li><strong>How to use it:</strong> It provides a score between 0 and 1, where 1 means the sets are identical, and 0 means they have no common elements.</li>
+<li><strong>Formula:</strong> <code>Jaccard(A, B) = |A ∩ B| / |A ∪ B|</code>, where A and B are the sets of words/tokens in the texts, |A ∩ B| is the cardinality (size) of the intersection of A and B, and |A ∪ B| is the cardinality of the union of A and B.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Here are examples where text similarity measures can be used:</p>
+<ul>
+<li><strong>Document Clustering:</strong> Grouping similar documents together based on content.  Cosine similarity often works well for this.</li>
+<li><strong>Information Retrieval:</strong> Ranking search results by relevance to a query.  Cosine similarity between the query and documents is frequently used.</li>
+<li><strong>Plagiarism Detection:</strong> Identifying instances where text has been copied from another source. Jaccard similarity can be useful for checking overlap in wording.</li>
+<li><strong>Question Answering:</strong> Finding the most similar question in a knowledge base to a given question to retrieve the corresponding answer.</li>
+<li><strong>Spam Detection:</strong> Identifying near-duplicate emails or messages.</li>
+<li><strong>Product Recommendation:</strong> Recommending similar products to users based on their product descriptions.</li>
+<li><strong>Paraphrase Detection:</strong> Determine if two sentences or passages convey the same meaning, even if they use different wording.</li>
+<li><strong>Duplicate detection:</strong> Finding duplicate questions on Stack Overflow for moderation.</li>
+<li><strong>Summarization:</strong> Extracting the most representative sentences from a document by measuring similarity between candidate sentences and the original document.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.tokenize import word_tokenize
+import nltk
+
+# Download required NLTK data (only needed once)
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+from nltk.corpus import stopwords
+import string
+
+def preprocess_text(text):
+    &quot;&quot;&quot;Tokenize, remove stopwords, and punctuation.&quot;&quot;&quot;
+    tokens = word_tokenize(text.lower())
+    table = str.maketrans('', '', string.punctuation) #remove punctuation
+    stripped = [w.translate(table) for w in tokens]
+
+    stop_words = set(stopwords.words('english'))
+    words = [word for word in stripped if word.isalpha() and word not in stop_words] #isalpha to remove numbers
+    return &quot; &quot;.join(words)
+
+
+def cosine_similarity_example(text1, text2):
+    &quot;&quot;&quot;Calculates cosine similarity using TF-IDF vectorization.&quot;&quot;&quot;
+
+    text1 = preprocess_text(text1)
+    text2 = preprocess_text(text2)
+
+    corpus = [text1, text2]
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(corpus)
+    similarity_score = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+    return similarity_score
+
+
+def jaccard_similarity_example(text1, text2):
+    &quot;&quot;&quot;Calculates Jaccard similarity using sets of words.&quot;&quot;&quot;
+
+    text1 = preprocess_text(text1)
+    text2 = preprocess_text(text2)
+
+    set1 = set(text1.split())
+    set2 = set(text2.split())
+    intersection = set1.intersection(set2)
+    union = set1.union(set2)
+    if len(union) == 0: #Handle the case of empty sets which would cause a division by zero error
+      return 0.0
+    return len(intersection) / len(union)
+
+
+# Example usage
+text1 = &quot;This is the first document.&quot;
+text2 = &quot;This document is the second document.&quot;
+text3 = &quot;Totally unrelated document.&quot;
+
+print(f&quot;Cosine similarity between text1 and text2: {cosine_similarity_example(text1, text2)}&quot;)
+print(f&quot;Jaccard similarity between text1 and text2: {jaccard_similarity_example(text1, text2)}&quot;)
+
+print(f&quot;Cosine similarity between text1 and text3: {cosine_similarity_example(text1, text3)}&quot;)
+print(f&quot;Jaccard similarity between text1 and text3: {jaccard_similarity_example(text1, text3)}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different text preprocessing techniques (e.g., stemming, lemmatization, stop word removal, handling synonyms) affect the results of cosine similarity and Jaccard similarity, and in what scenarios would each technique be most beneficial? Why does one need to preprocess the text first?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
