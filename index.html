@@ -86,6 +86,11 @@
       box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
     }
 
+    .hub-card:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 4px;
+    }
+
     .hub-icon {
       font-size: 2.2rem;
     }
@@ -133,6 +138,11 @@
     }
     .theme-toggle:hover {
       background: rgba(0,0,0,0.05);
+    }
+
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);

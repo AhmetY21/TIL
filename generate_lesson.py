@@ -354,6 +354,7 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     h1, h2, h3 {{ color: #111827; }}
     a {{ color: #2563eb; text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
+    a:focus-visible {{ outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 2px; }}
     code {{ background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }}
     pre {{ background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }}
     pre code {{ background: transparent; padding: 0; }}
@@ -378,6 +379,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .back-link:hover {{
       text-decoration: underline;
     }}
+    .back-link:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 4px;
+      border-radius: 2px;
+    }}
 
     .theme-toggle {{
       background: none;
@@ -390,6 +396,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
     .theme-toggle:hover {{
       background: rgba(0,0,0,0.05);
+    }}
+    .theme-toggle:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
     }}
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
@@ -436,6 +446,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .copy-button:hover {{
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
+    }}
+    .copy-button:focus-visible {{
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
     }}
   </style>
 </head>
@@ -660,6 +674,7 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .subtitle {{ color: var(--secondary); font-size: 1.1rem; }}
     .back-link {{ display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-weight: 600; }}
     .back-link:hover {{ text-decoration: underline; }}
+    .back-link:focus-visible {{ outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 2px; }}
 
     .week-title {{
       margin-top: 40px;
@@ -702,6 +717,7 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .btn-primary {{ background: var(--primary); color: white; }}
     .btn-primary:hover {{ background: var(--primary-hover); }}
+    .btn-primary:focus-visible {{ outline: 2px solid var(--primary); outline-offset: 2px; }}
 
     .theme-toggle {{
       position: absolute;
@@ -717,6 +733,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .theme-toggle:hover {{
       background: rgba(0,0,0,0.05);
+    }}
+    .theme-toggle:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
