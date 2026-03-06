@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to Word2Vec (CBOW vs Skip-gram)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-introduction-to-word2vec-cbow-vs-skip-gram">Topic: Introduction to Word2Vec (CBOW vs Skip-gram)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Word2Vec is a group of related models used to produce word embeddings. These models are shallow, two-layer neural networks that are trained to reconstruct linguistic contexts of words. Word embeddings represent words as numerical vectors in a high-dimensional space. Words that share common contexts in the training corpus are located close to one another in this space.</p>
+<p><strong>What is it?</strong></p>
+<p>Word2Vec primarily comes in two flavors:</p>
+<ul>
+<li>
+<p><strong>Continuous Bag-of-Words (CBOW):</strong> The CBOW model predicts the target word from the surrounding context words. Given a context (e.g., "the cat sat on the"), it predicts the missing word (e.g., "mat"). CBOW averages the vectors of the context words and uses the resulting vector to predict the target word.</p>
+</li>
+<li>
+<p><strong>Skip-gram:</strong> The Skip-gram model predicts the surrounding context words from a given target word. Given a word (e.g., "mat"), it predicts the surrounding words (e.g., "the", "cat", "sat", "on", "the"). Skip-gram tries to maximize the probability of predicting context words given the input word.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Word embeddings generated by Word2Vec can be used for a variety of natural language processing tasks:</p>
+<ul>
+<li><strong>Semantic Similarity:</strong> Find words that are semantically similar to a given word by calculating the cosine similarity between their embeddings. For example, find words similar to "king."</li>
+<li><strong>Word Analogies:</strong> Solve analogy questions like "man is to woman as king is to ?" by performing vector arithmetic (e.g., vector("king") - vector("man") + vector("woman")).</li>
+<li><strong>Text Classification:</strong> Use word embeddings as features in text classification models.  Instead of using raw words or TF-IDF features, using pre-trained or fine-tuned word embeddings often improves performance.</li>
+<li><strong>Machine Translation:</strong> Embeddings can be used to map words in one language to words in another, particularly when combined with other techniques like sequence-to-sequence models.</li>
+<li><strong>Recommendation Systems:</strong> Represent items or users as embeddings based on their interactions or attributes, enabling personalized recommendations.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Sentiment Analysis of Customer Reviews</p>
+<p>Imagine you're building a sentiment analysis system to analyze customer reviews for a product. You want to classify reviews as either positive, negative, or neutral.</p>
+<p><strong>How Word2Vec helps:</strong></p>
+<ol>
+<li>
+<p><strong>Pre-training:</strong> You can pre-train a Word2Vec model on a large corpus of text data (e.g., Wikipedia, a collection of product reviews) to learn meaningful word embeddings. This captures the semantic relationships between words, even if those relationships are not explicitly present in your smaller dataset of customer reviews.</p>
+</li>
+<li>
+<p><strong>Feature Extraction:</strong> You can use the pre-trained word embeddings to represent each review as a numerical vector. One common approach is to average the word embeddings of all the words in a review to create a single document embedding. Another approach would be to use the word embeddings as input into a Recurrent Neural Network or other deep learning architecture designed for sequence analysis, which allows the system to take the order of the words in a review into account.</p>
+</li>
+<li>
+<p><strong>Sentiment Classification:</strong> You can then train a classifier (e.g., Logistic Regression, Support Vector Machine, Neural Network) on these document embeddings to predict the sentiment of each review.</p>
+</li>
+</ol>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li><strong>Improved Accuracy:</strong> Word embeddings capture semantic meaning, leading to better sentiment classification compared to simpler methods like bag-of-words.</li>
+<li><strong>Handling Out-of-Vocabulary Words:</strong>  Word2Vec can sometimes provide reasonable embeddings for out-of-vocabulary words if they are similar to words seen during training.</li>
+<li><strong>Transfer Learning:</strong> The pre-trained embeddings can be reused across different sentiment analysis tasks, saving time and resources.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>gensim</code> library in Python to train Word2Vec models.</p>
+<pre class="codehilite"><code class="language-python">from gensim.models import Word2Vec
+import nltk
+from nltk.corpus import brown
+
+# Download the Brown corpus (if you don't have it already)
+try:
+    brown.words() # Check if the corpus is already downloaded.
+except LookupError:
+    nltk.download('brown')
+
+# Prepare the data: Tokenize sentences from the Brown corpus
+sentences = brown.sents()
+
+# Train the Word2Vec model
+# min_count: Ignores all words with total frequency lower than this.
+# window: Maximum distance between the current and predicted word within a sentence.
+# vector_size: Dimensionality of the word vectors.  Common values are 100-300.
+# workers: Use these many worker threads to train the model (=faster training).
+model = Word2Vec(sentences, vector_size=100, window=5, min_count=5, workers=4)
+
+# Access word vectors
+vector_king = model.wv['king']
+print(&quot;Vector for 'king':&quot;, vector_king)
+
+# Find similar words
+similar_words = model.wv.most_similar('king', topn=5)
+print(&quot;Words similar to 'king':&quot;, similar_words)
+
+# Save the model
+model.save(&quot;word2vec.model&quot;)
+
+# Load the model
+loaded_model = Word2Vec.load(&quot;word2vec.model&quot;)
+
+#Example usage with CBOW and Skipgram (explicitly defined)
+model_cbow = Word2Vec(sentences, vector_size=100, window=5, min_count=5, workers=4, sg=0) #sg=0 indicates CBOW
+model_skipgram = Word2Vec(sentences, vector_size=100, window=5, min_count=5, workers=4, sg=1) #sg=1 indicates Skipgram
+
+# Access word vectors
+vector_king_cbow = model_cbow.wv['king']
+print(&quot;CBOW Vector for 'king':&quot;, vector_king_cbow)
+
+vector_king_skipgram = model_skipgram.wv['king']
+print(&quot;Skipgram Vector for 'king':&quot;, vector_king_skipgram)
+
+# Find similar words
+similar_words_cbow = model_cbow.wv.most_similar('king', topn=5)
+print(&quot;CBOW Words similar to 'king':&quot;, similar_words_cbow)
+
+similar_words_skipgram = model_skipgram.wv.most_similar('king', topn=5)
+print(&quot;Skipgram Words similar to 'king':&quot;, similar_words_skipgram)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Import <code>Word2Vec</code> from <code>gensim.models</code> and <code>nltk</code> for data preparation.</li>
+<li><strong>Data Preparation:</strong> The example uses the Brown corpus, a readily available text corpus.  It tokenizes the corpus into sentences.  You'll typically replace this step with your own text data.</li>
+<li><strong>Model Training:</strong> <code>Word2Vec(sentences, vector_size=100, window=5, min_count=5, workers=4)</code> creates and trains the Word2Vec model.<ul>
+<li><code>sentences</code>: The training data (a list of sentences, where each sentence is a list of words).</li>
+<li><code>vector_size</code>: The dimensionality of the word vectors (e.g., 100 dimensions).</li>
+<li><code>window</code>: The maximum distance between the current and predicted word within a sentence.</li>
+<li><code>min_count</code>: Ignores all words with total frequency lower than this.</li>
+<li><code>workers</code>:  The number of worker threads to use for training.</li>
+<li><code>sg</code>:  Training algorithm: 1 for skip-gram; otherwise CBOW.  The latter part of the code demonstrates explicitly setting this parameter to 0 for CBOW and 1 for Skipgram.</li>
+</ul>
+</li>
+<li><strong>Access Word Vectors:</strong> <code>model.wv['king']</code> retrieves the vector representation for the word "king".</li>
+<li><strong>Find Similar Words:</strong> <code>model.wv.most_similar('king', topn=5)</code> finds the top 5 words most similar to "king" based on cosine similarity.</li>
+<li><strong>Save and Load Model:</strong> The <code>model.save()</code> and <code>Word2Vec.load()</code> methods allow you to save and load trained models for later use.  This is crucial to avoid retraining the model every time you need it.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p><strong>Question:</strong> How does the choice of CBOW vs. Skip-gram affect the quality of word embeddings, and under what circumstances would you prefer one over the other?  Specifically, consider cases with small datasets versus very large datasets and rare words versus frequent words.</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
