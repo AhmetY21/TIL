@@ -1,5 +1,5 @@
 {
-  "next_index": 32,
+  "next_index": 33,
   "total_topics": 100,
-  "last_topic": "Introduction to Word2Vec (CBOW vs Skip-gram)"
+  "last_topic": "Word2Vec: Negative Sampling and Optimization"
 }

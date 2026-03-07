@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word2Vec: Negative Sampling and Optimization</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-word2vec-negative-sampling-and-optimization">Topic: Word2Vec: Negative Sampling and Optimization</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Word2Vec</strong> is a popular technique for learning word embeddings, which are dense vector representations of words in a vocabulary. These embeddings capture semantic relationships between words, allowing us to perform tasks like finding similar words, analogy completion (e.g., "king is to queen as man is to woman"), and improving the performance of downstream NLP models.</p>
+<p><strong>Negative Sampling</strong> is an optimization technique used within Word2Vec to make the training process more efficient. Standard Word2Vec algorithms (like Skip-gram and CBOW) require calculating the probability of a word appearing in a context based on the entire vocabulary, which can be computationally expensive, especially for large vocabularies.  Negative sampling simplifies this by converting the multi-class classification problem into a binary classification problem.</p>
+<p>Here's how it works within the <strong>Skip-gram</strong> architecture (the most common example):</p>
+<ul>
+<li>
+<p><strong>Skip-gram Goal:</strong> Given a target word, predict the surrounding context words.</p>
+</li>
+<li>
+<p><strong>The Issue:</strong>  Originally, Skip-gram would try to maximize the probability of observing the actual context words given the target word, which requires normalizing probabilities across the entire vocabulary.</p>
+</li>
+<li>
+<p><strong>Negative Sampling Approach:</strong> Instead of trying to predict <em>all</em> context words, negative sampling trains the model to discriminate between <em>actual</em> context words (positive samples) and randomly chosen "noise" words (negative samples).</p>
+<ul>
+<li>
+<p>For each target-context word pair (positive sample), we randomly select a small number of words from the vocabulary that <em>did not</em> appear in the context of the target word (negative samples). The number of negative samples is a hyperparameter, usually between 5 and 20.</p>
+</li>
+<li>
+<p>The model then learns to predict '1' for the positive samples (actual context words) and '0' for the negative samples. This transforms the problem into a series of binary classification tasks.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>Optimization:</strong>  Negative sampling enables the use of simpler and more efficient optimization algorithms (like stochastic gradient descent - SGD) because we are only dealing with a small set of positive and negative examples during each iteration, rather than the entire vocabulary. This drastically reduces the computational cost of training, especially with large vocabularies.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Generate Word Embeddings:</strong> Train a Word2Vec model (using negative sampling for efficiency) on a large corpus of text. The resulting word vectors can then be used as features in other NLP tasks.</li>
+<li><strong>Semantic Similarity:</strong> Calculate the cosine similarity between word vectors to find words that are semantically related.</li>
+<li><strong>Analogy Completion:</strong> Solve analogy problems like "A is to B as C is to D" by using vector arithmetic (e.g., vector(B) - vector(A) + vector(C) should be close to vector(D)).</li>
+<li><strong>Input to other models:</strong> Use pre-trained word embeddings as input to more complex models, like LSTMs or Transformers, to improve performance on tasks like sentiment analysis, text classification, and machine translation.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's say you are building a sentiment analysis model for customer reviews of electronic products. Your vocabulary is quite large (e.g., 100,000 words).</p>
+<p>Without negative sampling, training a Word2Vec model to generate word embeddings from your review data would be very slow because each update requires calculations over the entire vocabulary. This makes training on a large corpus of product reviews extremely time consuming.</p>
+<p>By using negative sampling, you can significantly speed up the training process. For each review, you can create positive examples of target-context word pairs and then randomly sample a small number of negative words (e.g., 10 words) that don't appear in the immediate context. This reduces the computational burden and allows you to train the Word2Vec model much faster, enabling you to get better word embeddings and, consequently, a better sentiment analysis model.  You can then use these embeddings as input to a more complex classification model like a neural network for improved sentiment classification accuracy.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from gensim.models import Word2Vec
+from gensim.utils import simple_preprocess
+
+# Sample corpus (list of sentences, where each sentence is a list of words)
+corpus = [
+    &quot;This is the first sentence in the corpus.&quot;,
+    &quot;This is the second sentence.&quot;,
+    &quot;And another sentence.  This one is third in the series.&quot;,
+    &quot;Is this the end of the corpus?&quot;,
+]
+
+# Preprocess the corpus (tokenize and lowercase)
+tokenized_corpus = [simple_preprocess(sentence) for sentence in corpus]
+
+# Train Word2Vec model with negative sampling
+model = Word2Vec(sentences=tokenized_corpus, vector_size=100, window=5, min_count=1, workers=4, sg=1, negative=5)
+
+# Parameters explanation:
+# - sentences:  The corpus to train on (list of lists of words)
+# - vector_size: Dimensionality of the word vectors (embeddings)
+# - window: Maximum distance between the current and predicted word within a sentence.
+# - min_count: Ignores all words with total frequency lower than this.
+# - workers: Use these many worker threads to train the model (=faster training with multicore machines).
+# - sg: Training algorithm: 1 for skip-gram; otherwise CBOW.
+# - negative: If &gt; 0, negative sampling will be used, the int for negative specifies how many &quot;noise words&quot; should be drawn (usually between 5-20).
+# Access word vectors
+word_vectors = model.wv
+
+# Get the vector for a specific word
+vector_of_word = word_vectors['sentence']
+print(f&quot;Vector for 'sentence': {vector_of_word}&quot;)
+
+# Find similar words
+similar_words = model.wv.most_similar('sentence', topn=3)
+print(f&quot;Words similar to 'sentence': {similar_words}&quot;)
+
+# Save the model
+model.save(&quot;word2vec.model&quot;)
+
+# Load the model
+loaded_model = Word2Vec.load(&quot;word2vec.model&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the number of negative samples affect the quality of the resulting word embeddings and the training time?  What are some strategies for choosing the optimal number of negative samples?  Also, does the size of the corpus influence the optimal number of negative samples?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
