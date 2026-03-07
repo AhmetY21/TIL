@@ -354,6 +354,7 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     h1, h2, h3 {{ color: #111827; }}
     a {{ color: #2563eb; text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
+    a:focus-visible, button:focus-visible {{ outline: 2px solid #2563eb; outline-offset: 2px; }}
     code {{ background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }}
     pre {{ background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }}
     pre code {{ background: transparent; padding: 0; }}
@@ -401,6 +402,7 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
     .dark h1, .dark h2, .dark h3 {{ color: #f1f5f9; }}
     .dark a {{ color: #60a5fa; }}
+    .dark a:focus-visible, .dark button:focus-visible {{ outline-color: #60a5fa; }}
     .dark .page-header {{ border-bottom-color: #334155; }}
     .dark code {{ background-color: #1e293b; color: #e2e8f0; }}
     .dark pre {{
@@ -660,6 +662,7 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .subtitle {{ color: var(--secondary); font-size: 1.1rem; }}
     .back-link {{ display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-weight: 600; }}
     .back-link:hover {{ text-decoration: underline; }}
+    a:focus-visible, button:focus-visible {{ outline: 2px solid var(--primary); outline-offset: 2px; }}
 
     .week-title {{
       margin-top: 40px;
@@ -735,6 +738,9 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark h1, .dark .week-title, .dark .lesson-name {{
       color: #f1f5f9;
+    }}
+    .dark a:focus-visible, .dark button:focus-visible {{
+      outline-color: var(--primary);
     }}
     .dark .week-title {{
       border-bottom-color: #334155;
