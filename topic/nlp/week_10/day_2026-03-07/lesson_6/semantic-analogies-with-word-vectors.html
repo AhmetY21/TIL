@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semantic Analogies with Word Vectors</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-semantic-analogies-with-word-vectors">Topic: Semantic Analogies with Word Vectors</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Semantic analogies with word vectors refer to the ability to use word embeddings to solve analogies of the form "a is to b as c is to d".  We represent words as vectors in a high-dimensional space where semantically similar words are closer together.  The core idea is that the relationship between <code>a</code> and <code>b</code> can be captured as a vector difference (<code>b</code> - <code>a</code>). We hypothesize that the same relationship should hold between <code>c</code> and <code>d</code>, so we aim to find a word vector <code>d</code> such that <code>d</code> is approximately equal to <code>c + (b - a)</code>.</p>
+<p>More formally:</p>
+<p>Given words <code>a</code>, <code>b</code>, and <code>c</code>, find the word <code>d</code> such that:</p>
+<p><code>d ≈ c + (b - a)</code></p>
+<p>We measure the similarity between <code>d</code> and candidate words using cosine similarity (or other distance metrics) between their vector representations. The word vector closest to the calculated vector <code>c + (b - a)</code> is then predicted to be the answer to the analogy.</p>
+<p>We can use this technique to answer questions like:</p>
+<ul>
+<li>"king is to queen as man is to woman" (gender analogy)</li>
+<li>"Paris is to France as Berlin is to Germany" (capital analogy)</li>
+<li>"walk is to walking as eat is to eating" (verb tense analogy)</li>
+</ul>
+<p>Essentially, it allows us to explore and quantify semantic relationships between words based on their vector representations learned from large text corpora. The quality of the analogy solving depends heavily on the quality of the word embeddings themselves.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A practical application of semantic analogies is in language understanding and information retrieval systems. Imagine a system that needs to understand relationships between concepts in a document or query.  For example:</p>
+<ul>
+<li>
+<p><strong>Query Expansion:</strong> If a user searches for "car repair," a system could use analogy to expand the query to include related terms. Knowing "car is to mechanic as computer is to software engineer" allows the system to understand the user might also be interested in "computer repair" or "software engineering" related services.</p>
+</li>
+<li>
+<p><strong>Machine Translation:</strong>  Analogy can assist in finding appropriate translations by identifying parallel relationships in different languages. If "gato is to gato_s as perro is to ?", the system, understanding the plural form relationship can determine that "perro_s" would be the aporopriate translation of "perro" to plural form.</p>
+</li>
+<li>
+<p><strong>Question Answering:</strong>  In question answering systems, analogies can help in reasoning about the relationships between entities in the question and the knowledge base.  For instance, if the system knows the analogy "London is to England as Washington is to United States", and the question is "What is the capital of England?", it can use this knowledge to infer that 'capital' is the relation and apply it to the United States.</p>
+</li>
+<li>
+<p><strong>Sentiment Analysis:</strong>  Analogies can aid in capturing nuanced sentiment relationships. For example, if "good is to great as bad is to terrible," understanding the intensification relationship between sentiment words can improve the ability to accurately classify sentiment, especially in the case of sarcasm or implied opinions.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Assume you have word embeddings loaded into a dictionary like this:
+# word_embeddings = {&quot;king&quot;: [0.1, 0.2, 0.3], &quot;queen&quot;: [0.4, 0.5, 0.6], ...}
+# For demonstration purposes, let's create some dummy embeddings:
+
+word_embeddings = {
+    &quot;king&quot;: np.array([1, 1, 1]),
+    &quot;queen&quot;: np.array([2, 2, 2]),
+    &quot;man&quot;: np.array([3, 3, 3]),
+    &quot;woman&quot;: np.array([4, 4, 4]),
+    &quot;paris&quot;: np.array([5, 5, 5]),
+    &quot;france&quot;: np.array([6, 6, 6]),
+    &quot;berlin&quot;: np.array([7, 7, 7]),
+    &quot;germany&quot;: np.array([8, 8, 8]),
+    &quot;walk&quot;: np.array([9, 9, 9]),
+    &quot;walking&quot;: np.array([10, 10, 10]),
+    &quot;eat&quot;: np.array([11, 11, 11]),
+    &quot;eating&quot;: np.array([12, 12, 12])
+}
+
+
+def analogy(word_a, word_b, word_c, word_embeddings):
+    &quot;&quot;&quot;
+    Finds the word d such that a is to b as c is to d.
+
+    Args:
+        word_a: The first word in the analogy (e.g., &quot;king&quot;).
+        word_b: The second word in the analogy (e.g., &quot;queen&quot;).
+        word_c: The third word in the analogy (e.g., &quot;man&quot;).
+        word_embeddings: A dictionary mapping words to their vector embeddings.
+
+    Returns:
+        The predicted word d (string) and its cosine similarity score.  Returns None, None if any input word is not found.
+    &quot;&quot;&quot;
+
+    if word_a not in word_embeddings or word_b not in word_embeddings or word_c not in word_embeddings:
+        print(&quot;One or more input words not found in embeddings.&quot;)
+        return None, None
+
+    e_a, e_b, e_c = word_embeddings[word_a], word_embeddings[word_b], word_embeddings[word_c]
+
+    e_d_predicted = e_c + (e_b - e_a)
+
+    best_word = None
+    best_similarity = -1.0
+
+    for word, embedding in word_embeddings.items():
+        if word in [word_a, word_b, word_c]: # Exclude input words
+            continue
+        similarity = cosine_similarity(e_d_predicted.reshape(1, -1), embedding.reshape(1, -1))[0][0]
+        if similarity &gt; best_similarity:
+            best_similarity = similarity
+            best_word = word
+
+    return best_word, best_similarity
+
+
+# Example usage:
+predicted_word, similarity = analogy(&quot;king&quot;, &quot;queen&quot;, &quot;man&quot;, word_embeddings)
+print(f&quot;king is to queen as man is to {predicted_word} (similarity: {similarity})&quot;) # Output: king is to queen as man is to woman (similarity: 0.9999999999999998)
+
+predicted_word, similarity = analogy(&quot;paris&quot;, &quot;france&quot;, &quot;berlin&quot;, word_embeddings)
+print(f&quot;paris is to france as berlin is to {predicted_word} (similarity: {similarity})&quot;)
+
+predicted_word, similarity = analogy(&quot;walk&quot;, &quot;walking&quot;, &quot;eat&quot;, word_embeddings)
+print(f&quot;walk is to walking as eat is to {predicted_word} (similarity: {similarity})&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the quality of the word embeddings (e.g., trained with different algorithms like Word2Vec, GloVe, or FastText, and different corpus sizes) impact the performance of semantic analogy solving? And, are there any specific pre-processing steps that can be taken on the text corpus before training word embeddings to improve the accuracy of solving these analogies?  For example, does stemming or lemmatization help, or hurt?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
