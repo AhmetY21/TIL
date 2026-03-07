@@ -1,5 +1,5 @@
 {
-  "next_index": 35,
+  "next_index": 36,
   "total_topics": 100,
-  "last_topic": "FastText: Handling Out-of-Vocabulary Words"
+  "last_topic": "Document Embeddings (Doc2Vec)"
 }
