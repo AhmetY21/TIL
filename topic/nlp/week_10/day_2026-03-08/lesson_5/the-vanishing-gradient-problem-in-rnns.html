@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Vanishing Gradient Problem in RNNs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-the-vanishing-gradient-problem-in-rnns">Topic: The Vanishing Gradient Problem in RNNs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The vanishing gradient problem is a challenge in training deep neural networks, particularly recurrent neural networks (RNNs), where the gradients of the loss function with respect to the network's parameters become extremely small as they are backpropagated through time.  This means that the earlier layers (in time, for RNNs) or the earlier layers in a feedforward network receive negligible updates during training.  As a result, these earlier layers learn very slowly or not at all, hindering the network's ability to learn long-range dependencies.</p>
+<p>Formally, during backpropagation, gradients are calculated using the chain rule.  In RNNs, the hidden state at each time step depends on the hidden state at the previous time step. This means that to update the weights associated with earlier time steps, the gradient must be multiplied by many instances of the weight matrix (or some derivative of it). If the singular values of the weight matrix (or its derivative) are less than 1, repeated multiplication causes the gradient to shrink exponentially. This exponential decay is the vanishing gradient problem.</p>
+<p>Conversely, if the singular values are greater than 1, the gradient can explode, which is the exploding gradient problem.  While the exploding gradient problem can be addressed with gradient clipping, the vanishing gradient problem is more difficult to solve.</p>
+<p>How can we use it?  We don't directly <em>use</em> the vanishing gradient problem. Rather, we need to understand it to mitigate its effects.  Recognizing the vanishing gradient problem allows us to choose architectures and techniques designed to address it, such as:</p>
+<ul>
+<li><strong>Using different RNN architectures:</strong> LSTMs and GRUs are specifically designed to combat the vanishing gradient problem with gating mechanisms and memory cells.</li>
+<li><strong>Weight Initialization:</strong> Careful initialization of weights can help to avoid small gradients early in training.</li>
+<li><strong>Skip Connections:</strong> Skip connections, similar to those used in ResNets, can help gradients flow more easily.</li>
+<li><strong>Regularization:</strong> Applying L1 or L2 regularization can prevent weights from growing too large.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis task where we want to classify the sentiment (positive or negative) of a customer review. The review might be long, with crucial information indicating sentiment appearing at the beginning and end of the review, separated by many irrelevant sentences.</p>
+<p>If we use a standard RNN to process this review, the vanishing gradient problem can hinder the network's ability to "remember" the sentiment cues at the beginning of the review when it processes the sentiment cues at the end. The gradients from the end of the review, where the sentiment is also expressed, will have decayed significantly by the time they are backpropagated to the earlier layers that processed the initial sentiment indicators.  Consequently, the RNN might incorrectly classify the review's sentiment, failing to capture the long-range dependencies in the text.</p>
+<p>For example:</p>
+<p>"The product arrived on time and was packaged well. The instructions were a bit confusing, and it took me a while to figure out how to assemble it. Honestly, I was getting pretty frustrated. But once I got it together, it worked perfectly! I'm absolutely thrilled with my purchase."</p>
+<p>A simple RNN might struggle with this review because the positive sentiment at the end is separated from the positive signal in the beginning by a section describing frustration. The gradients carrying the "thrilled" sentiment back through the "frustrated" section may vanish before they can effectively update the weights responsible for processing the initial "arrived on time" signal.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there's no single "vanishing gradient detection" function, we can observe the gradients during training using tools like TensorFlow or PyTorch and visualize how they change over time steps or layers.  Here's a simplified example using TensorFlow to visualize the gradients during training of a simple RNN (though this code doesn't directly <em>solve</em> the vanishing gradient problem, it helps us to <em>observe</em> it):</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define a simple RNN model
+model = tf.keras.Sequential([
+    tf.keras.layers.SimpleRNN(units=10, activation='relu', return_sequences=True, input_shape=(None, 1)), #SimpleRNN is prone to vanishing gradients
+    tf.keras.layers.SimpleRNN(units=10, activation='relu'),
+    tf.keras.layers.Dense(units=1, activation='sigmoid')
+])
+
+# Define a loss function and optimizer
+loss_fn = tf.keras.losses.BinaryCrossentropy()
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
+
+# Generate some dummy data with a long sequence length
+sequence_length = 50
+num_samples = 100
+X = np.random.rand(num_samples, sequence_length, 1)
+y = np.random.randint(0, 2, size=(num_samples,))
+
+# Train the model and record gradients
+gradients = []
+with tf.GradientTape() as tape:
+    predictions = model(X)
+    loss = loss_fn(y, predictions)
+
+    # Get gradients with respect to model's trainable variables
+    grads = tape.gradient(loss, model.trainable_variables)
+
+    # Store the gradients
+    gradients.append([np.mean(np.abs(g.numpy())) if g is not None else 0 for g in grads]) # Mean absolute value of each gradient
+
+    optimizer.apply_gradients(zip(grads, model.trainable_variables))
+
+
+
+# Plot the gradients (averaged over time)
+plt.figure(figsize=(12, 6))
+plt.plot(gradients[0]) #Plot gradients for the first training step
+plt.xlabel(&quot;Layer&quot;)
+plt.ylabel(&quot;Mean Absolute Gradient Value&quot;)
+plt.title(&quot;Gradients During Training (First Step)&quot;)
+plt.xticks(range(len(model.trainable_variables)), [var.name for var in model.trainable_variables], rotation=45, ha=&quot;right&quot;) #Make x ticks readable
+plt.tight_layout()
+plt.show()
+
+#Further analysis could be to:
+#1. Train for multiple epochs and visualize the gradient change over time.
+#2. Train using LSTMs and compare the gradient magnitudes with SimpleRNN.
+</code></pre>
+
+<p>This example shows how to extract and visualize the gradients <em>for a single training step</em>. By inspecting the magnitude of the gradients for different layers, particularly the layers closer to the input, you can get an idea of whether the gradients are vanishing. Lower gradient values in earlier layers indicate the potential presence of the vanishing gradient problem. A more robust analysis would involve plotting the gradient magnitudes across multiple training epochs. This code snippet provides a method for observing the gradients and analyzing their behavior. Note that the use of <code>SimpleRNN</code> amplifies the problem to make it more visible. LSTMs and GRUs would show larger gradients in the earlier layers.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that LSTMs and GRUs are designed to mitigate the vanishing gradient problem, are they entirely immune to it? If not, what are some situations where even LSTMs and GRUs might still struggle with long-range dependencies?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
