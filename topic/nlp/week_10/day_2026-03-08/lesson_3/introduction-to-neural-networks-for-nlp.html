@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to Neural Networks for NLP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-introduction-to-neural-networks-for-nlp">Topic: Introduction to Neural Networks for NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A neural network in NLP is a computational model inspired by the structure and function of biological neural networks in the human brain. It consists of interconnected nodes (neurons) organized in layers. These layers typically include:</p>
+<ul>
+<li><strong>Input Layer:</strong> Receives the initial data, often in the form of word embeddings (vectors representing words), characters, or other relevant features.</li>
+<li><strong>Hidden Layers:</strong> Perform non-linear transformations on the input data.  These transformations involve weighted sums of the inputs followed by an activation function. Multiple hidden layers allow the network to learn more complex representations.</li>
+<li><strong>Output Layer:</strong> Produces the final prediction.  The output layer's activation function depends on the specific task (e.g., softmax for multi-class classification, sigmoid for binary classification, linear for regression).</li>
+</ul>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><strong>Forward Propagation:</strong> Input data passes through the network, layer by layer. Each neuron computes a weighted sum of its inputs, applies an activation function (e.g., ReLU, sigmoid, tanh), and passes the result to the next layer.</li>
+<li><strong>Loss Function:</strong> The network's prediction is compared to the actual target using a loss function (e.g., cross-entropy for classification, mean squared error for regression). The loss function quantifies the error.</li>
+<li><strong>Backpropagation:</strong> The error signal is propagated backward through the network to compute the gradient of the loss function with respect to each weight and bias.</li>
+<li><strong>Optimization:</strong> An optimization algorithm (e.g., stochastic gradient descent (SGD), Adam) updates the weights and biases based on the gradients, aiming to minimize the loss function.  This process is repeated iteratively over the training data.</li>
+</ol>
+<p><strong>How we can use it in NLP:</strong></p>
+<p>Neural networks are used to solve a wide range of NLP tasks, including:</p>
+<ul>
+<li><strong>Text Classification:</strong> Categorizing text into predefined classes (e.g., sentiment analysis, spam detection).</li>
+<li><strong>Machine Translation:</strong> Converting text from one language to another.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities in text (e.g., people, organizations, locations).</li>
+<li><strong>Part-of-Speech (POS) Tagging:</strong> Assigning grammatical tags to words in a sentence.</li>
+<li><strong>Question Answering:</strong> Providing answers to questions based on a given context.</li>
+<li><strong>Text Generation:</strong> Generating new text (e.g., writing summaries, completing sentences).</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the scenario of <strong>sentiment analysis</strong> for customer reviews of a product.  We want to automatically determine whether a review expresses a positive, negative, or neutral sentiment.</p>
+<p>A neural network approach could involve the following:</p>
+<ol>
+<li><strong>Input:</strong> Each review is preprocessed (e.g., tokenized, lowercased) and converted into a sequence of word embeddings. Each word embedding is a vector representation capturing the semantic meaning of the word. Common word embedding techniques include Word2Vec, GloVe, and FastText.</li>
+<li><strong>Architecture:</strong>  A Recurrent Neural Network (RNN), such as a Long Short-Term Memory (LSTM) network, is well-suited for this task because it can handle sequential data and capture long-range dependencies in the text.  Alternatively, a Transformer-based model like BERT could be used.</li>
+<li><strong>Hidden Layers:</strong> The LSTM (or Transformer) layer(s) process the sequence of word embeddings and learn a contextual representation of the review.</li>
+<li><strong>Output Layer:</strong>  A fully connected layer followed by a softmax activation function outputs a probability distribution over the three sentiment classes (positive, negative, neutral).</li>
+<li><strong>Training:</strong> The network is trained on a labeled dataset of customer reviews, where each review is labeled with its corresponding sentiment. The loss function is typically cross-entropy.</li>
+</ol>
+<p>After training, the model can predict the sentiment of new, unseen customer reviews. This information can be used to track customer satisfaction, identify areas for improvement, and make data-driven decisions.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a basic example using TensorFlow/Keras to build a simple sentiment analysis model:</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense
+
+# Assuming you have preprocessed text data and labels
+# x_train: list of tokenized sentences (represented as lists of integers)
+# y_train: numpy array of labels (e.g., 0 for negative, 1 for positive)
+# vocab_size: size of the vocabulary
+# max_length: maximum length of a sentence (for padding)
+
+vocab_size = 10000  # Example vocabulary size
+max_length = 100 #Example max length
+embedding_dim = 16 #Example embedding dimension
+
+# Create a simple LSTM model
+model = Sequential([
+    Embedding(vocab_size, embedding_dim, input_length=max_length),
+    LSTM(64),  # 64 LSTM units
+    Dense(1, activation='sigmoid')  # Binary classification (positive/negative)
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Print the model summary
+model.summary()
+
+# Example data (replace with your actual data)
+import numpy as np
+x_train = np.random.randint(0, vocab_size, size=(100, max_length))
+y_train = np.random.randint(0, 2, size=(100,))
+
+# Train the model
+model.fit(x_train, y_train, epochs=5, batch_size=32) #Adjust epoch and batch size as needed.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Embedding Layer:</strong>  Transforms integer-encoded words into dense vectors of fixed size.</li>
+<li><strong>LSTM Layer:</strong> Processes the sequence of word embeddings, capturing temporal dependencies.</li>
+<li><strong>Dense Layer:</strong> A fully connected layer that maps the LSTM output to a single value (for binary classification).</li>
+<li><strong>Sigmoid Activation:</strong> Outputs a probability between 0 and 1.</li>
+<li><strong>Binary Crossentropy Loss:</strong> A common loss function for binary classification problems.</li>
+<li><strong>Adam Optimizer:</strong>  An adaptive learning rate optimization algorithm.</li>
+<li><strong><code>model.fit()</code>:</strong>  Trains the model on the training data.</li>
+</ul>
+<p>This is a very basic example. Real-world NLP applications often involve more complex architectures, pre-trained word embeddings, and more sophisticated training techniques.  Additionally you will need to actually preprocess and tokenize your text data before you can pass it into the model, which is beyond the scope of this quick example.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different types of neural network architectures (e.g., RNNs, CNNs, Transformers) impact performance on different NLP tasks? What are the key considerations when choosing an architecture for a specific NLP problem?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
