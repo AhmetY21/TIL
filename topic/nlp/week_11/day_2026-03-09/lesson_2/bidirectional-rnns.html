@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bidirectional RNNs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-bidirectional-rnns">Topic: Bidirectional RNNs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Bidirectional Recurrent Neural Networks (BRNNs) are a type of recurrent neural network that processes input sequences in <em>both</em> forward and backward directions. Unlike traditional RNNs which only process input from the beginning to the end of the sequence, BRNNs leverage information from both past and future contexts to make predictions at each point in the sequence.</p>
+<p>Formally, a BRNN consists of two separate RNNs:</p>
+<ul>
+<li><strong>Forward RNN:</strong> Processes the input sequence <em>x = (x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>T</sub>)</em> from <em>x<sub>1</sub></em> to <em>x<sub>T</sub></em>, generating a sequence of forward hidden states <em>h<sup>f</sup> = (h<sup>f</sup><sub>1</sub>, h<sup>f</sup><sub>2</sub>, ..., h<sup>f</sup><sub>T</sub>)</em>.</li>
+<li><strong>Backward RNN:</strong> Processes the input sequence <em>x</em> in reverse order, from <em>x<sub>T</sub></em> to <em>x<sub>1</sub></em>, generating a sequence of backward hidden states <em>h<sup>b</sup> = (h<sup>b</sup><sub>1</sub>, h<sup>b</sup><sub>2</sub>, ..., h<sup>b</sup><sub>T</sub>)</em>.</li>
+</ul>
+<p>At each time step <em>t</em>, the hidden states from both the forward and backward RNNs, <em>h<sup>f</sup><sub>t</sub></em> and <em>h<sup>b</sup><sub>t</sub></em>, are combined (e.g., concatenated or summed) to produce a final representation <em>h<sub>t</sub></em>. This combined representation <em>h<sub>t</sub></em> is then used for prediction.</p>
+<p><strong>Use Cases:</strong> BRNNs are particularly useful when the prediction at a certain time step depends on information from both before and after that time step in the sequence.  This is common in many NLP tasks. They are used to:</p>
+<ul>
+<li><strong>Improve Contextual Understanding:</strong> Provides a more complete context for each element in the sequence.</li>
+<li><strong>Better Accuracy:</strong> Often leads to higher accuracy compared to unidirectional RNNs.</li>
+<li><strong>Sequence Labeling:</strong> Suitable for tasks like part-of-speech tagging or named entity recognition.</li>
+<li><strong>Machine Translation:</strong> While transformer architectures have become dominant, BRNNs were historically used, especially in encoder-decoder models.</li>
+<li><strong>Sentiment Analysis:</strong> Useful for analyzing sentiment within a larger context of a document.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider the application of part-of-speech (POS) tagging. The goal is to assign a POS tag (e.g., noun, verb, adjective) to each word in a sentence.</p>
+<p><strong>Example:</strong></p>
+<p>Sentence: "The quick brown fox jumps over the lazy dog."</p>
+<p>A unidirectional RNN would process the sentence from "The" to "dog".  When trying to tag the word "fox", it would only have information about "The quick brown". However, knowing what comes <em>after</em> "fox" ("jumps") is also helpful. For instance, if it saw "fox jumped", it'd reinforce that "fox" is likely a noun in this context.</p>
+<p>A bidirectional RNN, on the other hand, processes the sentence in both directions. The forward RNN processes from "The" to "dog", and the backward RNN processes from "dog" to "The". This allows the BRNN to capture both the preceding and subsequent context for each word. When tagging "fox", the BRNN has information about "The quick brown" (from the forward RNN) and "jumps over the lazy dog" (from the backward RNN). This combined context allows for a more accurate POS tag assignment.</p>
+<p>Therefore, using a BRNN in POS tagging allows the model to consider the entire sentence context, leading to improved accuracy in determining the correct POS tags for each word.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using TensorFlow/Keras:</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Bidirectional, LSTM, Dense
+
+# Parameters
+vocab_size = 10000  # Example vocabulary size
+embedding_dim = 128
+lstm_units = 64
+num_classes = 5  # Example number of POS tags
+
+# Model Definition
+model = Sequential([
+    Embedding(vocab_size, embedding_dim, input_length=None),  # input_length can be specified if sequences are padded to a fixed length
+    Bidirectional(LSTM(lstm_units, return_sequences=True)),  # return_sequences=True for sequence labeling
+    Dense(num_classes, activation='softmax') # Softmax for classification over POS tags
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Print model summary
+model.summary()
+
+# Example Data (Replace with your actual data)
+import numpy as np
+
+# Assume your data is already tokenized and converted to integers
+# x_train: (num_samples, sequence_length) - Integer sequences representing text
+# y_train: (num_samples, sequence_length, num_classes) - One-hot encoded POS tags
+x_train = np.random.randint(0, vocab_size, size=(100, 20))  # Example: 100 sequences, each of length 20
+y_train = np.random.randint(0, num_classes, size=(100, 20))
+y_train = tf.keras.utils.to_categorical(y_train, num_classes=num_classes)  # One-hot encode labels
+
+# Train the model (Replace with your actual training loop)
+model.fit(x_train, y_train, epochs=2, batch_size=32)
+</code></pre>
+
+<p>Explanation:</p>
+<ul>
+<li><strong>Embedding Layer:</strong> Maps integer word indices to dense vector representations.</li>
+<li><strong>Bidirectional(LSTM(...)):</strong>  This is the core of the BRNN.  <code>Bidirectional</code> wraps an LSTM layer and applies it in both directions. <code>return_sequences=True</code> is crucial for sequence labeling tasks like POS tagging, where we need an output for each time step in the input sequence. If you want to output just one vector for the entire input sequence (e.g., for sentiment analysis), you would omit  <code>return_sequences=True</code>.</li>
+<li><strong>Dense Layer:</strong>  Maps the LSTM output to the number of classes (POS tags in this case) and applies a softmax activation for probability distribution.</li>
+<li><strong>Compilation:</strong> Configures the learning process with an optimizer, loss function (categorical cross-entropy for multi-class classification), and metrics.</li>
+<li><strong>Training:</strong> The model is trained using the <code>.fit()</code> method. Remember to prepare your data (tokenization, padding if needed, and one-hot encoding for labels) before training.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do attention mechanisms improve upon the standard bidirectional RNN architecture, and in what specific scenarios would attention be preferred?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
