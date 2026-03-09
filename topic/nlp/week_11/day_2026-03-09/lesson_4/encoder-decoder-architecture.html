@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encoder-Decoder Architecture</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-encoder-decoder-architecture">Topic: Encoder-Decoder Architecture</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Encoder-Decoder architecture is a neural network architecture widely used in sequence-to-sequence tasks. It consists of two main components: an <strong>Encoder</strong> and a <strong>Decoder</strong>.</p>
+<ul>
+<li>
+<p><strong>Encoder:</strong> The encoder takes a sequence as input (e.g., a sentence in the source language) and processes it to create a fixed-length vector representation, often called the "context vector" or "thought vector." This vector aims to capture the essence and meaning of the entire input sequence.  The encoder is typically implemented using recurrent neural networks (RNNs) like LSTMs or GRUs, or transformer-based architectures, which iteratively process each element of the input sequence and update its internal state.</p>
+</li>
+<li>
+<p><strong>Decoder:</strong> The decoder takes the context vector produced by the encoder and generates a new sequence as output (e.g., a sentence in the target language, or a summary of the input).  The decoder is also typically implemented using RNNs, LSTMs, GRUs, or transformers. It uses the context vector as its initial hidden state or incorporates it throughout the decoding process.  The decoder generates the output sequence one element at a time, conditioned on the context vector and the previously generated elements.  Crucially, the decoder needs a mechanism (often an end-of-sequence token) to signal when it has finished generating the output.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong> The encoder-decoder architecture is used whenever we need to transform one sequence into another sequence. Examples include:</p>
+<ul>
+<li><strong>Machine Translation:</strong> Translating a sentence from one language to another.</li>
+<li><strong>Text Summarization:</strong> Generating a shorter summary of a longer text.</li>
+<li><strong>Image Captioning:</strong> Generating a textual description of an image (where the image features are the encoder input).</li>
+<li><strong>Speech Recognition:</strong> Converting audio input to text.</li>
+<li><strong>Chatbots and Question Answering:</strong> Responding to user queries.</li>
+<li><strong>Code generation:</strong> Transforming natural language description into executable code.</li>
+</ul>
+<p>A significant improvement over the basic encoder-decoder is the <strong>attention mechanism</strong>.  Attention allows the decoder to focus on different parts of the input sequence when generating each element of the output sequence.  This mitigates the information bottleneck inherent in compressing the entire input into a single fixed-length vector.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider the application scenario of <strong>Machine Translation</strong>.</p>
+<p>Imagine we want to translate the English sentence "Hello, how are you?" to Spanish, which would be "Hola, ¿cómo estás?".</p>
+<ol>
+<li>
+<p><strong>Encoder:</strong> The English sentence "Hello, how are you?" is fed into the encoder.  The encoder, typically an LSTM or a Transformer, processes each word sequentially (or in parallel for Transformers), updating its internal state at each step.  After processing the entire sentence, the encoder produces a context vector that represents the meaning of the sentence.</p>
+</li>
+<li>
+<p><strong>Decoder:</strong> The decoder receives the context vector from the encoder.  Starting with a special "start-of-sentence" token, the decoder generates the Spanish translation one word at a time. At each step, the decoder uses the context vector and the previously generated words to predict the next word in the Spanish sentence. For example:</p>
+<ul>
+<li>It might first predict "Hola,".</li>
+<li>Then, given the context vector and "Hola,", it might predict "¿".</li>
+<li>Then, given the context vector, "Hola," and "¿", it might predict "cómo".</li>
+<li>And so on, until it predicts the "end-of-sentence" token.</li>
+</ul>
+</li>
+<li>
+<p><strong>Attention (Optional):</strong> If attention is used, the decoder doesn't rely solely on the fixed-length context vector. Instead, at each step of the decoding process, it attends to different parts of the English sentence based on its relevance to the current word being generated in Spanish. For instance, when predicting "estás", the attention mechanism might focus more on "you" in the English sentence.</p>
+</li>
+</ol>
+<p>The decoder then combines these attention weights with the encoder's hidden states to form a context vector that's specific to the current decoding step, leading to more accurate and fluent translations.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+import torch.optim as optim
+
+# Define the Encoder
+class Encoder(nn.Module):
+    def __init__(self, input_size, embedding_size, hidden_size, num_layers):
+        super(Encoder, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.embedding = nn.Embedding(input_size, embedding_size)
+        self.lstm = nn.LSTM(embedding_size, hidden_size, num_layers, batch_first=True)
+
+    def forward(self, x):
+        # x: (batch_size, seq_len)
+        embedded = self.embedding(x) # (batch_size, seq_len, embedding_size)
+        outputs, (hidden, cell) = self.lstm(embedded)
+        # outputs: (batch_size, seq_len, hidden_size)
+        # hidden: (num_layers, batch_size, hidden_size)
+        # cell: (num_layers, batch_size, hidden_size)
+
+        return hidden, cell
+
+# Define the Decoder
+class Decoder(nn.Module):
+    def __init__(self, output_size, embedding_size, hidden_size, num_layers):
+        super(Decoder, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.embedding = nn.Embedding(output_size, embedding_size)
+        self.lstm = nn.LSTM(embedding_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x, hidden, cell):
+        # x: (batch_size, ) - single word at a time
+        # hidden: (num_layers, batch_size, hidden_size)
+        # cell: (num_layers, batch_size, hidden_size)
+
+        x = x.unsqueeze(1) # (batch_size, 1)
+        embedded = self.embedding(x) # (batch_size, 1, embedding_size)
+        outputs, (hidden, cell) = self.lstm(embedded, (hidden, cell))
+        # outputs: (batch_size, 1, hidden_size)
+        # hidden: (num_layers, batch_size, hidden_size)
+        # cell: (num_layers, batch_size, hidden_size)
+        predictions = self.fc(outputs.squeeze(1)) # (batch_size, output_size)
+        return predictions, hidden, cell
+
+# Example usage
+input_size = 10000  # Size of the input vocabulary
+output_size = 8000   # Size of the output vocabulary
+embedding_size = 256
+hidden_size = 512
+num_layers = 2
+learning_rate = 0.001
+batch_size = 64
+
+encoder = Encoder(input_size, embedding_size, hidden_size, num_layers)
+decoder = Decoder(output_size, embedding_size, hidden_size, num_layers)
+
+# Example input sequences (replace with actual data and padding)
+source_sequence = torch.randint(0, input_size, (batch_size, 20))  # (batch_size, seq_len)
+target_sequence = torch.randint(0, output_size, (batch_size, 25))  # (batch_size, seq_len)
+
+# Optimizer
+encoder_optimizer = optim.Adam(encoder.parameters(), lr=learning_rate)
+decoder_optimizer = optim.Adam(decoder.parameters(), lr=learning_rate)
+
+# Training loop (simplified)
+num_epochs = 10
+for epoch in range(num_epochs):
+    encoder_optimizer.zero_grad()
+    decoder_optimizer.zero_grad()
+
+    # Encoder forward pass
+    hidden, cell = encoder(source_sequence)
+
+    # Decoder forward pass (one word at a time)
+    decoder_input = torch.randint(0, output_size, (batch_size,)) # Start token  # (batch_size, )
+    loss = 0
+    for t in range(target_sequence.shape[1]):
+        prediction, hidden, cell = decoder(decoder_input, hidden, cell)
+        target = target_sequence[:, t]
+        loss += nn.CrossEntropyLoss()(prediction, target)
+        decoder_input = target # Feed the actual target as the next input (teacher forcing)
+        # Or, decoder_input = torch.argmax(prediction, dim=1) # Use the predicted word as the next input (no teacher forcing)
+
+    loss.backward()
+    encoder_optimizer.step()
+    decoder_optimizer.step()
+
+    print(f&quot;Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item()}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Encoder:</strong>  Takes an input sequence (represented as integers) and outputs the hidden and cell states.  <code>nn.Embedding</code> converts integers into dense vectors. <code>nn.LSTM</code> processes the sequence and generates the hidden and cell states, which encode the input sequence.</li>
+<li><strong>Decoder:</strong> Takes the current input word (represented as integers) and the hidden and cell states from the previous step. It outputs a prediction for the next word and the updated hidden and cell states. The <code>nn.Linear</code> layer maps the hidden state to a probability distribution over the output vocabulary.</li>
+<li><strong>Training Loop:</strong><ul>
+<li>The encoder processes the entire input sequence to produce the initial hidden and cell states for the decoder.</li>
+<li>The decoder then generates the output sequence one word at a time.</li>
+<li>The <code>CrossEntropyLoss</code> calculates the difference between the predicted probability distribution and the actual target word.</li>
+<li><strong>Teacher forcing:</strong> The correct target word is fed back into the decoder as the next input. This helps the model learn faster, but can lead to instability if the model relies too heavily on the provided target words.</li>
+<li><strong>No teacher forcing:</strong> The model's prediction becomes the next input. This can be more challenging but results in a more robust model.</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong> The code sets up a basic encoder-decoder model using LSTMs. It simulates the training process with random data, but you'd replace this with your actual dataset and adjust the parameters as needed.  Crucially, this code shows the <em>structure</em> and <em>flow</em>, not a fully functional training loop that produces meaningful results.</li>
+</ul>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Padding:</strong> Sequences often have varying lengths. Padding ensures all sequences in a batch have the same length.</li>
+<li><strong>Vocabulary:</strong> You'll need to create a vocabulary (mapping words to integers) for both the input and output languages.</li>
+<li><strong>Attention Mechanism:</strong> Adding an attention mechanism would significantly improve performance.</li>
+<li><strong>Evaluation:</strong> You'll need appropriate evaluation metrics (e.g., BLEU score for machine translation).</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the Transformer architecture differ from the traditional RNN-based Encoder-Decoder architecture, and what advantages does it offer in sequence-to-sequence tasks?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
