@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gated Recurrent Units (GRUs)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-gated-recurrent-units-grus">Topic: Gated Recurrent Units (GRUs)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Gated Recurrent Units (GRUs) are a type of recurrent neural network (RNN) architecture designed to address the vanishing gradient problem often encountered when training standard RNNs on long sequences. They act as "gates" that control the flow of information within the sequence, selectively remembering or forgetting information at each time step. This enables GRUs to capture long-range dependencies more effectively than traditional RNNs.</p>
+<p>Specifically, a GRU cell has two main gates:</p>
+<ul>
+<li>
+<p><strong>Update gate (z_t):</strong> Determines how much of the <em>previous</em> cell state should be updated with the <em>new</em> candidate cell state. A value close to 1 means the past information is heavily considered, and a value close to 0 means the past information is mostly discarded.</p>
+</li>
+<li>
+<p><strong>Reset gate (r_t):</strong> Determines how much of the <em>previous</em> hidden state should be ignored. A value close to 0 forces the hidden state to ignore the previous state, effectively "resetting" it. A value close to 1 allows the previous hidden state to be considered.</p>
+</li>
+</ul>
+<p>The GRU updates are defined by the following equations:</p>
+<ol>
+<li><strong>Update gate:</strong>  <code>z_t = σ(W_z x_t + U_z h_{t-1} + b_z)</code></li>
+<li><strong>Reset gate:</strong>   <code>r_t = σ(W_r x_t + U_r h_{t-1} + b_r)</code></li>
+<li><strong>Candidate hidden state:</strong> <code>h'_t = tanh(W_h x_t + U_h (r_t * h_{t-1}) + b_h)</code></li>
+<li><strong>Hidden state:</strong> <code>h_t = (1 - z_t) * h_{t-1} + z_t * h'_t</code></li>
+</ol>
+<p>Where:</p>
+<ul>
+<li><code>x_t</code> is the input at time step <code>t</code>.</li>
+<li><code>h_{t-1}</code> is the hidden state at the previous time step.</li>
+<li><code>h'_t</code> is the candidate hidden state at time step <code>t</code>.</li>
+<li><code>h_t</code> is the hidden state at time step <code>t</code>.</li>
+<li><code>W_z</code>, <code>U_z</code>, <code>b_z</code>, <code>W_r</code>, <code>U_r</code>, <code>b_r</code>, <code>W_h</code>, <code>U_h</code>, <code>b_h</code> are the weight matrices and bias vectors.</li>
+<li><code>σ</code> is the sigmoid activation function.</li>
+<li><code>tanh</code> is the hyperbolic tangent activation function.</li>
+<li><code>*</code> represents element-wise multiplication (Hadamard product).</li>
+</ul>
+<p>We use GRUs as a drop-in replacement for simple RNN layers in tasks such as:
+* Machine translation
+* Speech recognition
+* Time series prediction
+* Text generation
+* Sentiment analysis</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis task where we want to determine the sentiment of a movie review. A movie review might contain long-range dependencies, where the meaning of a word depends on words that appeared much earlier in the review.</p>
+<p>For instance: "The acting was terrible and the plot was confusing, but the <em>ending</em> was surprisingly <em>good</em>." A standard RNN might struggle to connect "good" with the negative parts of the sentence. A GRU, however, can use its gates to remember the initial negative sentiments and then correctly adjust its understanding when it encounters "good" near the end. This allows the GRU to more accurately classify the overall sentiment of the review.</p>
+<p>Another scenario is time series prediction. For instance, predicting stock prices. The current stock price may depend not only on the immediate past values, but also on values from weeks or months prior. A GRU is better suited to capture these long-term dependencies.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+
+class GRUNet(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
+        super(GRUNet, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True) # batch_first=True means input tensors are provided as (batch, seq, feature)
+        self.fc = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        # Initialize hidden state
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
+
+        # Forward propagate GRU
+        out, _ = self.gru(x, h0.detach()) # detaching the hidden state from the computation graph
+
+        # Decode the hidden state of the last time step
+        out = self.fc(out[:, -1, :])
+        return out
+
+# Example Usage
+input_dim = 10  # Number of features in the input
+hidden_dim = 20 # Number of features in the hidden state
+num_layers = 2  # Number of recurrent layers
+output_dim = 1 # Number of output features
+
+# Create a GRU model
+model = GRUNet(input_dim, hidden_dim, output_dim, num_layers)
+
+# Example input
+batch_size = 32
+seq_len = 50
+input_tensor = torch.randn(batch_size, seq_len, input_dim)
+
+# Pass the input through the model
+output = model(input_tensor)
+
+print(output.shape) #Expected: torch.Size([32, 1])
+</code></pre>
+
+<p>This code snippet shows how to implement a GRU network using PyTorch. The <code>nn.GRU</code> module handles the GRU cell computations, and the <code>batch_first=True</code> argument allows the input tensor to be of shape (batch size, sequence length, input dimension). The output of the GRU is then passed to a fully connected layer (<code>nn.Linear</code>) to produce the final output.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do GRUs compare to LSTMs (Long Short-Term Memory networks)? What are the trade-offs between using GRUs and LSTMs in different situations?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
