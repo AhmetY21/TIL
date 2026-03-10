@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Head Attention</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-multi-head-attention">Topic: Multi-Head Attention</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Multi-Head Attention is an attention mechanism that allows a model to attend to different parts of the input sequence and capture different types of relationships at different positions. It is an extension of the self-attention mechanism and is a key component of the Transformer architecture.</p>
+<p><strong>What is it?</strong></p>
+<p>The core idea behind Multi-Head Attention is to run the attention mechanism multiple times in parallel, with different learned linear projections of the query, key, and value matrices. Each "head" learns to attend to the input in a different way.</p>
+<p>Formally:</p>
+<ol>
+<li>
+<p><strong>Linear Projections:</strong> Given the query (Q), key (K), and value (V) matrices (derived from the input sequence), we first project them <em>h</em> times using different learned linear transformations:</p>
+<ul>
+<li>Qᵢ = Q Wᵢ<sup>Q</sup></li>
+<li>Kᵢ = K Wᵢ<sup>K</sup></li>
+<li>Vᵢ = V Wᵢ<sup>V</sup></li>
+</ul>
+<p>Where <em>Wᵢ<sup>Q</sup></em>, <em>Wᵢ<sup>K</sup></em>, and <em>Wᵢ<sup>V</sup></em> are the learned weight matrices for the <em>i</em>-th head. These matrices project the original Q, K, and V into lower-dimensional spaces or different representation spaces.</p>
+</li>
+<li>
+<p><strong>Scaled Dot-Product Attention (per head):</strong>  For each head <em>i</em>, we compute scaled dot-product attention:</p>
+<ul>
+<li>Attentionᵢ = softmax(Qᵢ Kᵢᵀ / √dₖ) Vᵢ</li>
+</ul>
+<p>Where dₖ is the dimensionality of the keys.  The scaling factor (√dₖ) prevents the dot products from growing too large, which can lead to small gradients after the softmax operation.</p>
+</li>
+<li>
+<p><strong>Concatenation and Final Projection:</strong> The outputs of all the <em>h</em> attention heads are then concatenated:</p>
+<ul>
+<li>Concat = Concatenate(Attention₁, Attention₂, ..., Attentionₕ)</li>
+</ul>
+<p>Finally, the concatenated output is projected linearly to produce the final output:</p>
+<ul>
+<li>MultiHead(Q, K, V) = Concat W<sup>O</sup></li>
+</ul>
+<p>Where W<sup>O</sup> is a learned weight matrix.</p>
+</li>
+</ol>
+<p><strong>How can we use it?</strong></p>
+<p>Multi-Head Attention allows the model to capture richer and more diverse relationships within the input sequence. By attending to different parts of the input in different ways, each head can specialize in capturing specific patterns or dependencies. This leads to improved performance in tasks such as machine translation, text summarization, and question answering.  Crucially, the use of multiple attention heads helps mitigate the limitations of a single attention mechanism, preventing the model from getting stuck in local optima or focusing on only one particular type of relationship.  It also provides a form of model averaging within the attention process.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A primary application scenario for Multi-Head Attention is within the Transformer architecture, used extensively in Natural Language Processing. Specifically:</p>
+<ul>
+<li>
+<p><strong>Machine Translation:</strong> In a translation task, the encoder uses multi-head self-attention to understand the relationships between words in the source sentence.  Each head can focus on different aspects, like syntactic dependencies or semantic relationships. The decoder also uses multi-head self-attention to focus on the target sentence being generated, as well as multi-head <em>encoder-decoder attention</em> which connects to the encoder outputs to align the source and target. This allows the decoder to attend to the relevant parts of the source sentence when generating each word in the target sentence.</p>
+</li>
+<li>
+<p><strong>Text Summarization:</strong>  When generating a summary, multi-head attention helps the model to identify and focus on the most important phrases and concepts in the input document, allowing it to generate a concise and informative summary. One head might focus on noun phrases, another on verbs and modifiers, and so on.</p>
+</li>
+<li>
+<p><strong>Question Answering:</strong> In a QA system, multi-head attention helps the model to attend to the relevant parts of both the question and the context passage, allowing it to identify the answer.  For instance, one head might focus on finding named entities, another on finding verbs related to the question.</p>
+</li>
+</ul>
+<p>Beyond NLP, Multi-Head Attention can be applied in other sequence modeling tasks like time series analysis and image recognition (with appropriate adaptations for image data).</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model, num_heads):
+        super().__init__()
+        self.num_heads = num_heads
+        self.d_model = d_model
+
+        assert d_model % num_heads == 0, &quot;d_model must be divisible by num_heads&quot;
+
+        self.d_k = d_model // num_heads  # Dimension of each head's key, query, and value
+
+        self.W_Q = nn.Linear(d_model, d_model)  # Query projection
+        self.W_K = nn.Linear(d_model, d_model)  # Key projection
+        self.W_V = nn.Linear(d_model, d_model)  # Value projection
+        self.W_O = nn.Linear(d_model, d_model)  # Output projection
+
+    def scaled_dot_product_attention(self, Q, K, V, mask=None):
+        &quot;&quot;&quot;
+        Compute scaled dot-product attention.
+
+        Args:
+            Q: Query tensor (batch_size, num_heads, seq_len, d_k)
+            K: Key tensor (batch_size, num_heads, seq_len, d_k)
+            V: Value tensor (batch_size, num_heads, seq_len, d_k)
+            mask: Optional mask to prevent attention to certain positions (batch_size, seq_len, seq_len)
+
+        Returns:
+            Attention tensor (batch_size, num_heads, seq_len, d_k) and attention weights (batch_size, num_heads, seq_len, seq_len)
+        &quot;&quot;&quot;
+        attn_scores = torch.matmul(Q, K.transpose(-2, -1)) / torch.sqrt(torch.tensor(self.d_k, dtype=torch.float32))  # Scaled dot-product
+
+        if mask is not None:
+            attn_scores = attn_scores.masked_fill(mask[:, None, :, :] == 0, float('-inf')) # Apply mask
+
+        attn_weights = F.softmax(attn_scores, dim=-1)  # Softmax over the last dimension to get attention weights
+        output = torch.matmul(attn_weights, V)  # Weighted sum of values
+
+        return output, attn_weights
+
+
+    def split_heads(self, x):
+        &quot;&quot;&quot;
+        Split the last dimension into (num_heads, d_k).
+        &quot;&quot;&quot;
+        batch_size, seq_len, d_model = x.size()
+        return x.view(batch_size, seq_len, self.num_heads, self.d_k).transpose(1, 2) # (batch_size, num_heads, seq_len, d_k)
+
+
+
+    def combine_heads(self, x):
+          &quot;&quot;&quot;
+          Combine the heads back into a single tensor.
+          &quot;&quot;&quot;
+          batch_size, num_heads, seq_len, d_k = x.size()
+          return x.transpose(1, 2).contiguous().view(batch_size, seq_len, self.d_model) # (batch_size, seq_len, d_model)
+
+
+    def forward(self, Q, K, V, mask=None):
+        &quot;&quot;&quot;
+        Forward pass for multi-head attention.
+
+        Args:
+            Q: Query tensor (batch_size, seq_len, d_model)
+            K: Key tensor (batch_size, seq_len, d_model)
+            V: Value tensor (batch_size, seq_len, d_model)
+            mask: Optional mask to prevent attention to certain positions (batch_size, seq_len, seq_len)
+
+        Returns:
+            Output tensor (batch_size, seq_len, d_model) and attention weights (batch_size, num_heads, seq_len, seq_len)
+        &quot;&quot;&quot;
+
+        Q = self.W_Q(Q)  # Linear projection
+        K = self.W_K(K)  # Linear projection
+        V = self.W_V(V)  # Linear projection
+
+
+        Q = self.split_heads(Q)  # Split heads
+        K = self.split_heads(K)  # Split heads
+        V = self.split_heads(V)  # Split heads
+
+
+
+        attn_output, attn_weights = self.scaled_dot_product_attention(Q, K, V, mask)  # Scaled dot-product attention for each head
+
+        output = self.combine_heads(attn_output) # Concatenate heads
+
+        output = self.W_O(output)  # Linear projection
+
+        return output, attn_weights
+
+
+if __name__ == '__main__':
+    # Example usage
+    batch_size = 2
+    seq_len = 10
+    d_model = 512
+    num_heads = 8
+
+    # Create random input tensors
+    Q = torch.randn(batch_size, seq_len, d_model)
+    K = torch.randn(batch_size, seq_len, d_model)
+    V = torch.randn(batch_size, seq_len, d_model)
+
+    # Create a mask (optional)
+    mask = torch.ones(batch_size, seq_len, seq_len)  # All ones means no masking
+    # Example of masking the future positions of the sequence
+    mask = torch.tril(mask)
+
+    # Instantiate the multi-head attention layer
+    multihead_attn = MultiHeadAttention(d_model, num_heads)
+
+    # Perform the forward pass
+    output, attn_weights = multihead_attn(Q, K, V, mask)
+
+    # Print the output shape
+    print(&quot;Output shape:&quot;, output.shape)  # Expected: torch.Size([2, 10, 512])
+    print(&quot;Attention weights shape:&quot;, attn_weights.shape) # Expected: torch.Size([2, 8, 10, 10])
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we adapt Multi-Head Attention for use with graph-structured data instead of sequential data? What modifications would be needed in the input representation, attention mechanism, and potential output processing?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
