@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Self-Attention Mechanism Explained</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-self-attention-mechanism-explained">Topic: Self-Attention Mechanism Explained</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The self-attention mechanism is a neural network layer that allows a model to attend to different parts of the input sequence when processing each element of the sequence. Unlike traditional recurrent neural networks (RNNs) or convolutional neural networks (CNNs), self-attention does not rely on recurrence or convolution to capture relationships between elements. Instead, it directly computes the relationships between all pairs of elements in the input sequence.</p>
+<p>Formally, given an input sequence $X = (x_1, x_2, ..., x_n)$, where each $x_i$ is a vector representation of a word or token, the self-attention mechanism transforms $X$ into a new sequence $Z = (z_1, z_2, ..., z_n)$ where each $z_i$ represents the contextualized representation of $x_i$.</p>
+<p>The process involves the following steps:</p>
+<ol>
+<li>
+<p><strong>Linear Projections:</strong> The input sequence $X$ is transformed into three matrices: Queries (Q), Keys (K), and Values (V) using three different learned linear transformations (weight matrices):</p>
+<ul>
+<li>$Q = XW_Q$</li>
+<li>$K = XW_K$</li>
+<li>$V = XW_V$
+where $W_Q$, $W_K$, and $W_V$ are the weight matrices learned during training.  These matrices project the input into different representational spaces, allowing the model to learn different aspects of the input.</li>
+</ul>
+</li>
+<li>
+<p><strong>Attention Weights Calculation:</strong> The attention weights are calculated by taking the dot product of the Query matrix $Q$ with the Key matrix $K$, scaling the result by the square root of the dimension of the keys ($d_k$), and then applying a softmax function:</p>
+<ul>
+<li><code>Attention(Q, K, V) = softmax((QK^T) / sqrt(d_k))V</code></li>
+<li>The dot product $QK^T$ computes the compatibility score between each query and each key. The higher the score, the more attention the query pays to the corresponding key (and value).</li>
+<li>Scaling by $\sqrt{d_k}$ helps to stabilize training by preventing the dot products from becoming too large, which can lead to very small gradients after the softmax function.</li>
+<li>The softmax function normalizes the scores into a probability distribution, representing the attention weights for each value.</li>
+</ul>
+</li>
+<li>
+<p><strong>Weighted Sum:</strong>  Finally, the attention weights are used to compute a weighted sum of the Value matrix $V$:</p>
+<ul>
+<li>The output $Z$ is the result of multiplying the attention weights by the Value matrix.  Each $z_i$ is a weighted sum of all the values in $V$, where the weights are determined by the attention mechanism. This allows each $z_i$ to incorporate information from the entire input sequence, weighted by their relevance to the $i$-th element.</li>
+</ul>
+</li>
+</ol>
+<p><strong>How to Use It:</strong>
+Self-attention is used to create contextualized word embeddings, improving the quality of NLP models. It enables the model to attend to relevant parts of the input when processing each word, addressing limitations of earlier sequence models. It is a key component of transformer-based architectures and used for a variety of tasks such as machine translation, text summarization, question answering, and natural language inference.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Machine Translation</p>
+<p>Consider the task of translating the English sentence "The cat sat on the mat" into French.  A model using self-attention can effectively capture the relationships between words to produce an accurate translation.</p>
+<ul>
+<li>
+<p><strong>Encoding:</strong> The English sentence is fed into the encoder part of the transformer model. The self-attention mechanism within the encoder allows each word to "attend" to all other words in the sentence. For instance, when processing the word "cat," the model can attend to "the" to understand the phrase "the cat." Similarly, it can attend to "sat" and "mat" to understand the overall context.</p>
+</li>
+<li>
+<p><strong>Decoding:</strong> In the decoder, the model generates the French translation "Le chat était assis sur le tapis."  Here, self-attention is used in two ways. First, within the decoder itself, to relate different parts of the French output sequence as it's being built. Second, to attend back to the encoded English sentence. For example, when generating "chat", the model will attend to the "cat" from the encoded English sentence, helping to ensure the correct word is chosen.  When generating "assis", the model may attend more strongly to "sat", indicating the relationship between the two.</p>
+</li>
+</ul>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li><strong>Handling Long-Range Dependencies:</strong> Self-attention can effectively capture relationships between words that are far apart in the sentence, which is crucial for accurately translating complex sentences.</li>
+<li><strong>Parallelization:</strong> Unlike RNNs, self-attention allows for parallel processing of the input sequence, leading to faster training and inference.</li>
+<li><strong>Improved Contextualization:</strong> By attending to different parts of the input, self-attention provides richer contextualized representations of words, resulting in more accurate translations.</li>
+</ul>
+<p>Other application scenarios include:</p>
+<ul>
+<li><strong>Text Summarization:</strong> Identifying and weighting the most important sentences or phrases.</li>
+<li><strong>Question Answering:</strong> Attending to the relevant parts of the context to answer a given question.</li>
+<li><strong>Sentiment Analysis:</strong> Identifying words or phrases that contribute the most to the overall sentiment.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class SelfAttention(nn.Module):
+    def __init__(self, embed_size, heads):
+        super(SelfAttention, self).__init__()
+        self.embed_size = embed_size
+        self.heads = heads
+        self.head_dim = embed_size // heads
+
+        assert (
+            self.head_dim * heads == embed_size
+        ), &quot;Embedding size needs to be divisible by heads&quot;
+
+        self.values = nn.Linear(self.head_dim, self.head_dim, bias=False)
+        self.keys = nn.Linear(self.head_dim, self.head_dim, bias=False)
+        self.queries = nn.Linear(self.head_dim, self.head_dim, bias=False)
+        self.fc_out = nn.Linear(heads * self.head_dim, embed_size)
+
+    def forward(self, values, keys, queries, mask):
+        # Get number of training examples
+        N = queries.shape[0]
+
+        value_len, key_len, query_len = values.shape[1], keys.shape[1], queries.shape[1]
+
+        # Split embedding into self.heads pieces
+        values = values.reshape(N, value_len, self.heads, self.head_dim)
+        keys = keys.reshape(N, key_len, self.heads, self.head_dim)
+        queries = queries.reshape(N, query_len, self.heads, self.head_dim)
+
+        values = self.values(values)  # (N, value_len, heads, head_dim)
+        keys = self.keys(keys)  # (N, key_len, heads, head_dim)
+        queries = self.queries(queries)  # (N, query_len, heads, head_dim)
+
+        # Einsum does matrix multiplication for each head of dimension head_dim
+        # with optional scaling to preserve gradients
+        # energies shape: (N, heads, query_len, key_len)
+        energies = torch.einsum(&quot;nqhd,nkhd-&gt;nhqk&quot;, [queries, keys])
+        # queries shape: (N, query_len, heads, head_dim), keys shape: (N, key_len, heads, head_dim)
+
+        # Mask padded indices so their weights become 0
+        if mask is not None:
+            energies = energies.masked_fill(mask == 0, float(&quot;-1e20&quot;))
+
+        attention = torch.softmax(energies / (self.embed_size ** (1/2)), dim=3)
+        # attention shape: (N, heads, query_len, key_len)
+
+        out = torch.einsum(&quot;nhql,nlhd-&gt;nqhd&quot;, [attention, values]).reshape(
+            N, query_len, self.heads * self.head_dim
+        )
+        # attention shape: (N, heads, query_len, key_len), values shape: (N, value_len, heads, head_dim)
+        # out after einsum (N, query_len, heads, head_dim) then reshape
+
+        # Linear layer to send it through
+        out = self.fc_out(out)
+        # (N, query_len, embed_size)
+        return out
+
+
+if __name__ == '__main__':
+    # Example usage:
+    embed_size = 256
+    heads = 8
+    seq_length = 10
+    batch_size = 32
+
+    attention = SelfAttention(embed_size, heads)
+
+    # Create dummy input
+    values = torch.randn((batch_size, seq_length, embed_size))
+    keys = torch.randn((batch_size, seq_length, embed_size))
+    queries = torch.randn((batch_size, seq_length, embed_size))
+    mask = torch.ones((batch_size, 1, seq_length, seq_length)).bool() # No masking for simplicity
+
+    output = attention(values, keys, queries, mask)
+    print(output.shape) # Should be (batch_size, seq_length, embed_size)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>The code defines a <code>SelfAttention</code> class that implements the self-attention mechanism.</li>
+<li>It takes <code>embed_size</code> (the dimensionality of the input embeddings) and <code>heads</code> (the number of attention heads) as input.</li>
+<li>The <code>forward</code> method takes the <code>values</code>, <code>keys</code>, <code>queries</code>, and an optional <code>mask</code> as input. The mask is used to prevent the model from attending to padding tokens.</li>
+<li>The input is projected into query, key, and value vectors using linear layers.  The heads are then split up, creating multiple attention mechanisms to attend to different parts of the input.</li>
+<li>The attention weights are computed using the scaled dot-product attention formula.</li>
+<li>The output is a weighted sum of the values, where the weights are determined by the attention mechanism.</li>
+<li>The <code>einsum</code> function from the <code>torch</code> library is used to perform efficient matrix multiplication. This provides a more compact notation for matrix multiplication with multiple dimensions.</li>
+<li>The code also includes a simple example of how to use the <code>SelfAttention</code> class.  It creates a dummy input and feeds it to the self-attention layer.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the multi-head attention mechanism, which uses multiple self-attention layers in parallel, improve upon a single self-attention layer, and what are the trade-offs involved in using more heads?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
