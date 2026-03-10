@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Attention Mechanism (Bahdanau Attention)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-the-attention-mechanism-bahdanau-attention">Topic: The Attention Mechanism (Bahdanau Attention)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Bahdanau Attention, also known as additive attention, is a type of attention mechanism commonly used in sequence-to-sequence (seq2seq) models, particularly in Neural Machine Translation (NMT). It allows the decoder to focus on different parts of the input sequence when generating each word in the output sequence. Unlike basic seq2seq models that rely on a fixed-length context vector (the last hidden state of the encoder), attention allows the decoder to dynamically create a context vector that is a weighted sum of all the encoder's hidden states.</p>
+<p>Formally, given:</p>
+<ul>
+<li><strong>Encoder Hidden States:</strong>  <code>H = [h1, h2, ..., hTx]</code>, where <code>hi</code> is the hidden state of the encoder at position <code>i</code>, and <code>Tx</code> is the length of the input sequence.</li>
+<li><strong>Decoder Hidden State:</strong> <code>st-1</code> is the hidden state of the decoder at time step <code>t-1</code>.</li>
+</ul>
+<p>Bahdanau Attention works as follows:</p>
+<ol>
+<li>
+<p><strong>Calculate Alignment Scores (Energies):</strong> For each encoder hidden state <code>hi</code>, compute an alignment score <code>ei,t</code> that measures how well it matches the decoder hidden state <code>st-1</code>. This is done using a feedforward neural network (the <em>alignment model</em>):</p>
+<p><code>ei,t = a(st-1, hi)</code></p>
+<p>Where <code>a</code> is a single-layer feedforward neural network with a tanh activation function and parameter matrices <code>Wa</code>, <code>Ua</code>, and <code>va</code>:</p>
+<p><code>ei,t = va^T tanh(Wa st-1 + Ua hi)</code></p>
+</li>
+<li>
+<p><strong>Compute Attention Weights:</strong> Normalize the alignment scores using a softmax function to obtain attention weights <code>αi,t</code>:</p>
+<p><code>αi,t = exp(ei,t) / Σj exp(ej,t)</code></p>
+<p>The attention weights represent the importance of each encoder hidden state for generating the current decoder output.</p>
+</li>
+<li>
+<p><strong>Calculate Context Vector:</strong> Compute the context vector <code>ct</code> as a weighted sum of the encoder hidden states, using the attention weights:</p>
+<p><code>ct = Σi αi,t hi</code></p>
+<p>The context vector <code>ct</code> captures the relevant information from the entire input sequence for generating the current output word.</p>
+</li>
+<li>
+<p><strong>Generate Output:</strong> The context vector <code>ct</code> is then concatenated with the decoder hidden state <code>st-1</code>, and passed through another neural network layer to generate the current decoder hidden state <code>st</code> and ultimately the predicted output word <code>yt</code>. This often involves combining the context vector and previous decoder state using an activation function, or using it as input to a softmax layer.</p>
+<p><code>st = f(st-1, ct, yt-1)</code> (f is a non-linear function like LSTM or GRU)</p>
+<p><code>yt = g(st, ct)</code> (g is a function predicting the output, often a softmax)</p>
+</li>
+</ol>
+<p>Using Bahdanau attention, the model can learn to focus on different parts of the input sequence for different output words. This addresses the bottleneck issue in standard seq2seq models where the entire input sequence is compressed into a single fixed-length vector.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>The primary application scenario for Bahdanau Attention is <strong>Neural Machine Translation (NMT)</strong>. It significantly improved the performance of seq2seq models in translation tasks by allowing the decoder to selectively attend to different parts of the source sentence when generating the target sentence.</p>
+<p>Beyond NMT, it can also be applied to other sequence-to-sequence tasks, such as:</p>
+<ul>
+<li><strong>Text Summarization:</strong> Focusing on the most important sentences in a document to generate a concise summary.</li>
+<li><strong>Image Captioning:</strong> Attending to different regions of an image to generate relevant captions.</li>
+<li><strong>Speech Recognition:</strong> Attending to specific segments of an audio signal to transcribe the spoken words.</li>
+<li><strong>Chatbots and Dialogue Systems:</strong> Paying attention to the important parts of the user's query to generate an appropriate response.</li>
+</ul>
+<p>Any task where the output sequence depends on different parts of the input sequence can benefit from using attention mechanisms.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simplified example of how to implement Bahdanau Attention in PyTorch:</p>
+<pre class="codehilite"><code class="language-python">import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class BahdanauAttention(nn.Module):
+    def __init__(self, hidden_size):
+        super(BahdanauAttention, self).__init__()
+        self.Wa = nn.Linear(hidden_size, hidden_size)
+        self.Ua = nn.Linear(hidden_size, hidden_size)
+        self.Va = nn.Linear(hidden_size, 1)
+
+    def forward(self, decoder_hidden, encoder_outputs):
+        &quot;&quot;&quot;
+        Args:
+            decoder_hidden (torch.Tensor): Shape (batch_size, hidden_size) - Previous decoder hidden state
+            encoder_outputs (torch.Tensor): Shape (batch_size, seq_len, hidden_size) - All encoder hidden states
+
+        Returns:
+            context (torch.Tensor): Shape (batch_size, hidden_size) - Context vector
+            attn_weights (torch.Tensor): Shape (batch_size, seq_len) - Attention weights
+        &quot;&quot;&quot;
+
+        batch_size, seq_len, hidden_size = encoder_outputs.size()
+
+        # (batch_size, seq_len, hidden_size)
+        Wa_s = self.Wa(decoder_hidden).unsqueeze(1).repeat(1, seq_len, 1)
+        Ua_h = self.Ua(encoder_outputs)
+
+        # (batch_size, seq_len, 1)
+        energies = self.Va(torch.tanh(Wa_s + Ua_h))
+
+        # (batch_size, seq_len)
+        attn_weights = F.softmax(energies.squeeze(-1), dim=1)
+
+        # (batch_size, 1, seq_len) @ (batch_size, seq_len, hidden_size) -&gt; (batch_size, 1, hidden_size)
+        context = torch.bmm(attn_weights.unsqueeze(1), encoder_outputs).squeeze(1)
+
+        return context, attn_weights
+
+if __name__ == '__main__':
+    # Example usage
+    batch_size = 32
+    hidden_size = 256
+    seq_len = 10
+
+    # Create dummy inputs
+    decoder_hidden = torch.randn(batch_size, hidden_size)
+    encoder_outputs = torch.randn(batch_size, seq_len, hidden_size)
+
+    # Initialize attention module
+    attention = BahdanauAttention(hidden_size)
+
+    # Calculate context vector and attention weights
+    context, attn_weights = attention(decoder_hidden, encoder_outputs)
+
+    print(&quot;Context vector shape:&quot;, context.shape)
+    print(&quot;Attention weights shape:&quot;, attn_weights.shape)
+</code></pre>
+
+<p>Key improvements and explanations in the code:</p>
+<ul>
+<li><strong><code>nn.Module</code> Inheritance:</strong>  The <code>BahdanauAttention</code> class inherits from <code>nn.Module</code>, making it a proper PyTorch module.</li>
+<li><strong>Linear Layers:</strong>  <code>nn.Linear</code> layers are used for the <code>Wa</code>, <code>Ua</code>, and <code>Va</code> transformations.  This is the proper way to implement learned linear transformations in PyTorch.</li>
+<li><strong><code>forward</code> Method:</strong> The <code>forward</code> method defines the computation performed when you call the attention module.  This is essential.</li>
+<li><strong>Broadcasting for Efficiency:</strong>  <code>decoder_hidden</code> is unsqueezed and repeated to match the shape of <code>encoder_outputs</code> for efficient element-wise addition. This leverages PyTorch's broadcasting capabilities.  Critically important for performance.</li>
+<li><strong><code>tanh</code> Activation:</strong> The <code>tanh</code> activation function is applied after the linear transformations.</li>
+<li><strong><code>F.softmax</code>:</strong>  The <code>F.softmax</code> function is used to normalize the energies into attention weights along the correct dimension (<code>dim=1</code> - the sequence length dimension).</li>
+<li><strong><code>torch.bmm</code>:</strong>  <code>torch.bmm</code> (batch matrix multiplication) is used for the weighted sum of the encoder outputs. This is the most efficient way to do this operation in batches.</li>
+<li><strong>Shape Comments:</strong>  Comments clearly indicate the shape of each tensor at each step. This makes the code easier to understand and debug.</li>
+<li><strong>Example Usage:</strong> The <code>if __name__ == '__main__':</code> block provides a complete example of how to use the <code>BahdanauAttention</code> module with dummy data.  This is invaluable for testing and understanding.</li>
+<li><strong>Clear Variable Names:</strong>  Meaningful variable names (e.g., <code>Wa_s</code>, <code>Ua_h</code>) are used to improve readability.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does Bahdanau Attention compare to Luong Attention (another common type of attention mechanism)? What are the key differences in their formulations and performance characteristics?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
