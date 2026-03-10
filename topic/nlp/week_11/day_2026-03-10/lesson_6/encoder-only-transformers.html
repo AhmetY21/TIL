@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encoder-only Transformers</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-encoder-only-transformers">Topic: Encoder-only Transformers</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>An Encoder-only Transformer is a type of Transformer model architecture that consists only of the encoder part of the original Transformer architecture introduced in the "Attention is All You Need" paper. It processes input sequences and produces contextualized embeddings for each token in the input.</p>
+<p>Here's a breakdown:</p>
+<ul>
+<li>
+<p><strong>Encoder Structure:</strong> The encoder stack consists of multiple identical layers. Each layer typically contains two sub-layers:</p>
+<ul>
+<li><strong>Multi-Head Self-Attention:</strong> This allows the model to attend to different parts of the input sequence when encoding a specific token. It captures relationships between different tokens in the input.</li>
+<li><strong>Feed Forward Network:</strong> This is a fully connected feed-forward network applied to each token independently.</li>
+</ul>
+</li>
+<li>
+<p><strong>Input Embedding and Positional Encoding:</strong> The input sequence is first embedded into a high-dimensional vector space.  Positional encoding is added to the embeddings to provide information about the position of each token in the sequence, as self-attention itself is order-agnostic.</p>
+</li>
+<li>
+<p><strong>How it works:</strong> The input sequence is fed into the encoder stack. Each layer in the stack processes the output of the previous layer. The self-attention mechanism allows each token to attend to all other tokens in the sequence (including itself) to capture dependencies and contextual information. The feed-forward network further processes the output of the attention mechanism.  The final layer outputs contextualized embeddings for each token in the input sequence.</p>
+</li>
+<li>
+<p><strong>Usage:</strong> Encoder-only transformers are well-suited for tasks where the entire input sequence is available upfront and the goal is to extract contextual information or representations from it.  They are <em>not</em> typically used for sequence generation tasks, where the output is built step-by-step.</p>
+</li>
+</ul>
+<p>Examples of tasks suitable for encoder-only transformers include:</p>
+<ul>
+<li><strong>Text Classification:</strong> Classifying text into different categories (e.g., sentiment analysis, topic classification).</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities in text (e.g., person, organization, location).</li>
+<li><strong>Question Answering (Extractive):</strong> Extracting the answer to a question from a given text passage.</li>
+<li><strong>Semantic Similarity:</strong> Determining the degree of similarity between two text sequences.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a <strong>sentiment analysis</strong> application.  Suppose we have a dataset of customer reviews, and we want to classify each review as either positive, negative, or neutral.</p>
+<p>An encoder-only transformer (like BERT or RoBERTa) can be used as follows:</p>
+<ol>
+<li><strong>Input:</strong> A customer review (e.g., "This product is amazing! I highly recommend it.").</li>
+<li><strong>Encoding:</strong> The review is tokenized (broken down into individual words or subwords), and each token is embedded into a vector representation. Positional encodings are added. The sequence of embeddings is then fed into the encoder stack.</li>
+<li><strong>Contextualization:</strong> The encoder layers process the input, allowing each token to attend to all other tokens in the review. This creates contextualized embeddings for each token. For example, the word "amazing" will have a different embedding in a positive review than it would in a negative or sarcastic review.</li>
+<li><strong>Classification:</strong> The contextualized embedding corresponding to a special <code>[CLS]</code> token (added to the beginning of the input sequence) is typically used as an aggregate representation of the entire review. This embedding is then fed into a classification layer (e.g., a linear layer followed by a softmax activation) to predict the sentiment of the review.  Alternatively, the contextualized embedding of each token can be used for finer-grained sentiment analysis (e.g., identifying the sentiment towards specific aspects of the product).</li>
+</ol>
+<p>In this scenario, the encoder-only transformer excels because it can capture the nuanced relationships between words in the review, enabling accurate sentiment classification.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>transformers</code> library from Hugging Face to implement this. Here's a simple example using the BERT model for text classification:</p>
+<pre class="codehilite"><code class="language-python">from transformers import BertTokenizer, BertForSequenceClassification
+import torch
+
+# Load pre-trained BERT tokenizer and model
+model_name = 'bert-base-uncased'
+tokenizer = BertTokenizer.from_pretrained(model_name)
+model = BertForSequenceClassification.from_pretrained(model_name, num_labels=3) # 3 labels: positive, negative, neutral
+
+# Example input text
+text = &quot;This product is amazing! I highly recommend it.&quot;
+
+# Tokenize the input text
+inputs = tokenizer(text, padding=True, truncation=True, return_tensors=&quot;pt&quot;) #padding to make input same size, return pytorch tensors
+
+# Perform inference
+with torch.no_grad():
+    outputs = model(**inputs) # **inputs unpacks the dictionary into keyword arguments
+    predictions = torch.softmax(outputs.logits, dim=1)  # Get probabilities
+    predicted_class = torch.argmax(predictions, dim=1) # Get the index of the highest probability
+
+# Print the predicted class
+labels = [&quot;negative&quot;, &quot;neutral&quot;, &quot;positive&quot;]
+print(f&quot;Predicted sentiment: {labels[predicted_class]}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports the necessary classes from the <code>transformers</code> library.</li>
+<li><strong>Load Pre-trained Model and Tokenizer:</strong> Loads a pre-trained BERT model and its corresponding tokenizer.  The <code>BertForSequenceClassification</code> model is specifically designed for text classification tasks. <code>num_labels</code> is set to 3 to match the number of sentiment classes.</li>
+<li><strong>Tokenize Input Text:</strong> Uses the tokenizer to convert the input text into a format that the model can understand. This includes tokenization, padding (to ensure all sequences have the same length), and creating attention masks. The <code>return_tensors="pt"</code> argument tells the tokenizer to return PyTorch tensors.</li>
+<li><strong>Perform Inference:</strong>  Passes the tokenized input to the model to generate predictions.  <code>torch.no_grad()</code> disables gradient calculation during inference, which reduces memory consumption and speeds up computation. The <code>**inputs</code> unpacks the dictionary returned by the tokenizer into keyword arguments that the model expects. The output of the model is the logits (raw, unnormalized scores) for each class. <code>torch.softmax</code> converts the logits into probabilities.</li>
+<li><strong>Get Predicted Class:</strong> Uses <code>torch.argmax</code> to get the index of the class with the highest probability.</li>
+<li><strong>Print Predicted Sentiment:</strong> Prints the predicted sentiment based on the index.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does fine-tuning an encoder-only transformer for a specific task (like the sentiment analysis example) affect its performance compared to using it directly without fine-tuning? What are the advantages and disadvantages of fine-tuning?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
