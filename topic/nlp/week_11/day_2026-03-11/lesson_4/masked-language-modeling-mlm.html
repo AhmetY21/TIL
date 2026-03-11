@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masked Language Modeling (MLM)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-masked-language-modeling-mlm">Topic: Masked Language Modeling (MLM)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Masked Language Modeling (MLM) is a training task where the model is trained to predict randomly masked words in a sentence. Specifically, during training, a percentage (typically 15%) of the words in the input sequence are randomly selected and replaced with a special "[MASK]" token. The model's objective is to predict the original, unmasked words based on the context provided by the surrounding words.</p>
+<p>Formally, given a sequence of tokens <code>x = [x_1, x_2, ..., x_n]</code>, MLM selects a random subset of indices <code>M ⊆ {1, 2, ..., n}</code>. The input to the model becomes <code>x' = [x'_1, x'_2, ..., x'_n]</code>, where <code>x'_i = x_i</code> if <code>i ∉ M</code> and <code>x'_i = [MASK]</code> if <code>i ∈ M</code>. The model then tries to maximize the conditional probability <code>P(x_M | x')</code>, where <code>x_M</code> represents the original tokens at the masked positions.</p>
+<p>We can use MLM to:</p>
+<ul>
+<li><strong>Pre-train contextualized word embeddings:</strong> MLM forces the model to learn bidirectional contextual representations of words, which are crucial for understanding the meaning of words based on their context. This pre-training can then be used to initialize the model for downstream tasks.</li>
+<li><strong>Fine-tune for various NLP tasks:</strong> After pre-training with MLM, the model can be fine-tuned on specific downstream tasks like text classification, question answering, and named entity recognition. The knowledge gained during MLM pre-training helps the model learn these tasks more efficiently.</li>
+<li><strong>Improve model robustness:</strong> By masking words during training, MLM makes the model more robust to missing or corrupted input data.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Sentiment analysis of customer reviews.</p>
+<p><strong>Use of MLM:</strong></p>
+<ol>
+<li><strong>Pre-training:</strong> We pre-train a BERT-like model on a large corpus of text data (e.g., Wikipedia, books). During pre-training, the model learns to predict masked words, building a general understanding of language.</li>
+<li><strong>Fine-tuning:</strong>  We fine-tune the pre-trained model on a dataset of customer reviews, where each review is labeled with a sentiment (e.g., positive, negative, neutral). During fine-tuning, the model learns to map the input review text to the correct sentiment label. The knowledge from the pre-training using MLM enables the fine-tuning to be performed much more efficiently and results in better overall model performance.</li>
+</ol>
+<p>Because MLM allows the model to learn bidirectional contextual representations of words, it's particularly helpful in this scenario. The model can understand the nuances of language in the reviews and determine the sentiment even if some words are ambiguous or missing (due to potential typos or slang).</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from transformers import BertTokenizer, BertForMaskedLM, pipeline
+
+# Load pre-trained tokenizer and model
+model_name = &quot;bert-base-uncased&quot;  # Or any other BERT variant
+tokenizer = BertTokenizer.from_pretrained(model_name)
+model = BertForMaskedLM.from_pretrained(model_name)
+
+
+def mask_and_predict(text, mask_index):
+    &quot;&quot;&quot;Masks a word in the text and predicts the masked word.&quot;&quot;&quot;
+    words = text.split()
+    original_word = words[mask_index]
+    words[mask_index] = &quot;[MASK]&quot;
+    masked_text = &quot; &quot;.join(words)
+
+    # Tokenize the input
+    input_ids = tokenizer.encode(masked_text, return_tensors=&quot;pt&quot;)
+
+    # Predict the masked word
+    with torch.no_grad():
+        outputs = model(input_ids)
+        predictions = outputs.logits
+
+    # Get the predicted token
+    predicted_token_index = torch.argmax(predictions[0, mask_index + 1]).item() # +1 offset for [CLS] token
+    predicted_token = tokenizer.convert_ids_to_tokens([predicted_token_index])[0]
+
+    return original_word, predicted_token, masked_text
+
+
+# Example usage
+import torch
+text = &quot;The quick brown fox jumps over the lazy dog.&quot;
+mask_index = 2 # Mask the word &quot;brown&quot;
+
+original_word, predicted_word, masked_text = mask_and_predict(text, mask_index)
+
+print(f&quot;Original text: {text}&quot;)
+print(f&quot;Masked text: {masked_text}&quot;)
+print(f&quot;Original word: {original_word}&quot;)
+print(f&quot;Predicted word: {predicted_word}&quot;)
+
+
+# Using pipeline (easier but less control)
+unmasker = pipeline('fill-mask', model=model_name)
+result = unmasker(text.replace(text.split()[mask_index], &quot;[MASK]&quot;))
+print(f&quot;\nUsing pipeline: {result[0]['token_str']}&quot;)
+</code></pre>
+
+<p>This code first loads a pre-trained BERT model and tokenizer.  Then, the <code>mask_and_predict</code> function takes a text string and the index of the word to mask. It replaces the specified word with the "[MASK]" token, feeds the masked text to the BERT model, and predicts the most likely word to fill the mask. Finally, it returns the original word, predicted word, and masked text. The code also shows how to accomplish the same task using the <code>pipeline</code> function, which provides a higher-level, easier-to-use interface. The output shows both methods and makes it clear how they relate.  You will need to install the <code>transformers</code> library: <code>pip install transformers</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the percentage of masked tokens during MLM pre-training (e.g., 15% in BERT) affect the model's performance and learning process? What are the trade-offs involved in choosing a different masking percentage? For example, how would the training change if the percentage were lowered to 5% or raised to 30%?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
