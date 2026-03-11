@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pre-training vs Fine-tuning BERT</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-pre-training-vs-fine-tuning-bert">Topic: Pre-training vs Fine-tuning BERT</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>BERT (Bidirectional Encoder Representations from Transformers) is a powerful language model that utilizes a transformer-based architecture to learn contextualized word representations. The training process for BERT, and models like it, involves two distinct stages: <strong>Pre-training</strong> and <strong>Fine-tuning</strong>.</p>
+<ul>
+<li>
+<p><strong>Pre-training:</strong> This is the initial training phase where BERT learns general-purpose language understanding from a large, unlabeled corpus of text (e.g., Wikipedia, books). The model is trained using two primary tasks:</p>
+<ul>
+<li>
+<p><strong>Masked Language Modeling (MLM):</strong> A certain percentage of the input tokens are randomly masked, and the model is trained to predict these masked tokens based on the surrounding context. This forces BERT to learn bidirectional representations, understanding words based on both preceding and following words.</p>
+</li>
+<li>
+<p><strong>Next Sentence Prediction (NSP):</strong> BERT is given pairs of sentences and tasked with predicting whether the second sentence follows the first in the original document. This helps BERT understand relationships between sentences. Although later models have found NSP less crucial and sometimes detrimental, it was a key component of the original BERT model.</p>
+</li>
+</ul>
+<p>The goal of pre-training is to equip BERT with a broad understanding of language, including vocabulary, grammar, and common sense knowledge. The output of pre-training is a set of model weights that can be used as a starting point for more specific tasks.</p>
+</li>
+<li>
+<p><strong>Fine-tuning:</strong> After pre-training, BERT is fine-tuned on a specific downstream task (e.g., text classification, question answering, named entity recognition).  This involves taking the pre-trained BERT model and further training it on a labeled dataset relevant to the target task.</p>
+<p>During fine-tuning, the entire pre-trained BERT model, including all layers, is updated using the task-specific data and loss function.  This allows the model to adapt its general-purpose language understanding to the nuances of the specific task. A task-specific layer (e.g., a linear layer for classification) is typically added on top of BERT's output.</p>
+<p>Using pre-trained models allows us to avoid training a large and complex model from scratch which is computationally expensive and data-intensive. We can leverage transfer learning and achieve good performance with less task-specific data.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a <strong>sentiment analysis</strong> scenario.  We want to build a model that can automatically classify customer reviews (e.g., from an e-commerce website) as positive, negative, or neutral.</p>
+<ul>
+<li>
+<p><strong>Pre-training:</strong> BERT has already been pre-trained on a massive dataset of text.  This means it already understands a lot about the English language, including words, grammar, and common expressions of sentiment. We <em>do not</em> need to perform pre-training ourselves; we can download the pre-trained weights from platforms like Hugging Face Model Hub.</p>
+</li>
+<li>
+<p><strong>Fine-tuning:</strong>  We take the pre-trained BERT model and fine-tune it on a dataset of labeled customer reviews.  The dataset consists of reviews labeled with their corresponding sentiment (positive, negative, or neutral). During fine-tuning, BERT learns to map the text of a review to its sentiment label.  A classification layer will be added on top of the BERT embeddings to make the sentiment prediction.  Because BERT is already familiar with language, it requires relatively few labeled examples to achieve high accuracy on this sentiment analysis task.</p>
+</li>
+</ul>
+<p>Other application scenarios include:
+*   <strong>Question Answering:</strong> Fine-tuning BERT on datasets such as SQuAD.
+*   <strong>Named Entity Recognition (NER):</strong> Fine-tuning BERT on datasets such as CoNLL-2003.
+*   <strong>Text Summarization:</strong> Utilizing BERT in an encoder-decoder architecture and fine-tuning it on a summarization dataset.
+*   <strong>Natural Language Inference (NLI):</strong> Fine-tuning BERT on datasets such as MNLI.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a basic example using the <code>transformers</code> library from Hugging Face, demonstrating fine-tuning BERT for sentiment analysis:</p>
+<pre class="codehilite"><code class="language-python">from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
+from datasets import load_dataset
+
+# 1. Load a pre-trained BERT model and tokenizer
+model_name = &quot;bert-base-uncased&quot;  # Or any other BERT variant
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=3) # Assuming 3 labels (positive, negative, neutral)
+
+# 2. Load a sentiment analysis dataset (e.g., from Hugging Face Datasets)
+dataset = load_dataset(&quot;imdb&quot;, split=&quot;train[:1000]+test[:1000]&quot;) #Use only 1000 examples from train and test
+
+# 3. Tokenize the dataset
+def tokenize_function(examples):
+    return tokenizer(examples[&quot;text&quot;], padding=&quot;max_length&quot;, truncation=True)
+
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+# 4. Define training arguments
+training_args = TrainingArguments(
+    output_dir=&quot;./results&quot;,
+    evaluation_strategy=&quot;epoch&quot;,
+    num_train_epochs=3,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
+)
+
+# 5. Create a Trainer object
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets,
+    eval_dataset=tokenized_datasets,
+    tokenizer=tokenizer,
+)
+
+# 6. Fine-tune the model
+trainer.train()
+
+# 7. Evaluate the model
+results = trainer.evaluate()
+print(results)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Load Model and Tokenizer:</strong>  We load a pre-trained BERT model and its corresponding tokenizer using <code>AutoTokenizer</code> and <code>AutoModelForSequenceClassification</code>.  We specify the desired BERT variant (e.g., "bert-base-uncased"). The number of labels must match the number of classes in your classification task.</li>
+<li><strong>Load Dataset:</strong> We load a sentiment analysis dataset from the Hugging Face Datasets library. The <code>imdb</code> dataset is used here for simplicity. Limiting the number of examples for demonstration purposes.</li>
+<li><strong>Tokenize Data:</strong> We tokenize the text data using the BERT tokenizer. This converts the text into numerical tokens that BERT can understand. <code>padding="max_length"</code> and <code>truncation=True</code> ensure all sequences have the same length.</li>
+<li><strong>Define Training Arguments:</strong> We define the training arguments using <code>TrainingArguments</code>. This includes the output directory for saving the trained model, the evaluation strategy, the number of training epochs, and the batch size.</li>
+<li><strong>Create Trainer:</strong> We create a <code>Trainer</code> object. This object handles the training and evaluation process.  It takes the model, training arguments, training dataset, evaluation dataset, and tokenizer as input.</li>
+<li><strong>Fine-tune Model:</strong>  We fine-tune the model by calling the <code>trainer.train()</code> method. This updates the weights of the pre-trained BERT model based on the sentiment analysis dataset.</li>
+<li><strong>Evaluate Model:</strong> The trained model is evaluated on the evaluation dataset.  Metrics like accuracy, precision, recall, and F1-score are calculated.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the size of the pre-training dataset impact the performance of BERT after fine-tuning on a specific downstream task?  Are there diminishing returns as the pre-training dataset gets larger, or does performance continue to improve indefinitely? What are some of the considerations related to cost and efficiency when deciding on the size of the pre-training dataset?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
