@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parameter Efficient Fine-Tuning (PEFT)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-parameter-efficient-fine-tuning-peft">Topic: Parameter Efficient Fine-Tuning (PEFT)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Parameter Efficient Fine-Tuning (PEFT) is a collection of techniques designed to fine-tune large pre-trained language models (PLMs) using a <em>fraction</em> of the parameters that would be updated in full fine-tuning. Instead of updating all (or most) of the parameters of the PLM, PEFT methods typically introduce a small number of trainable parameters while keeping the original PLM parameters frozen. This offers several advantages:</p>
+<ul>
+<li><strong>Reduced computational cost and memory requirements:</strong> Updating fewer parameters significantly reduces the computational burden during training and lowers the memory footprint.  This makes fine-tuning feasible on resource-constrained devices or with very large models.</li>
+<li><strong>Faster training and inference:</strong> Fewer parameters translate to faster training convergence and potentially faster inference, especially when compared to full fine-tuning.</li>
+<li><strong>Lower storage requirements:</strong> Storing and deploying a model with significantly fewer updated parameters is much more efficient.</li>
+<li><strong>Mitigated catastrophic forgetting:</strong> Freezing the pre-trained weights helps retain the original knowledge encoded in the PLM, reducing the risk of catastrophic forgetting on previously learned tasks.</li>
+<li><strong>Improved parameter sharing and modularity:</strong> PEFT methods often result in modular components that can be easily swapped or combined with different PLMs or tasks.</li>
+</ul>
+<p>We can use PEFT techniques to adapt a pre-trained model to a specific downstream task, such as text classification, question answering, or text generation, without having to retrain the entire model from scratch. This allows us to leverage the knowledge already learned by the PLM while specializing it for a new application.</p>
+<p>Common PEFT techniques include:</p>
+<ul>
+<li><strong>Adapters:</strong> Adding small, trainable neural network modules (adapters) to the existing PLM architecture.  These modules are typically inserted after the attention or feedforward layers.</li>
+<li><strong>Prefix-tuning:</strong> Adding trainable task-specific prefix vectors to the input of each transformer layer.</li>
+<li><strong>Prompt tuning:</strong> Optimizing a soft prompt (continuous vectors) prepended to the input sequence. The PLM parameters remain frozen.</li>
+<li><strong>Low-Rank Adaptation (LoRA):</strong>  Decomposing the weight matrices of existing layers into low-rank matrices and only training these low-rank matrices.</li>
+<li><strong>BitFit:</strong> Only training the bias terms in the pre-trained model, freezing all other weights.</li>
+<li><strong>IA3 (Infused Adapter by Inhibiting and Amplifying Inner Activations):</strong>  Scaling the activations of internal layers using learned vectors.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you have a very large language model, like a version of GPT, trained on a massive dataset of text and code. You want to use this model for sentiment analysis of customer reviews for a specific product category (e.g., analyzing reviews of smartphones to determine if they are positive, negative, or neutral).</p>
+<p>Performing full fine-tuning on such a large model for this relatively specific task would be computationally expensive and require a lot of resources. Furthermore, if you later wanted to apply the model to sentiment analysis of <em>another</em> product category (e.g., analyzing reviews of laptops), you would need to fine-tune the entire model again.</p>
+<p>PEFT techniques, such as LoRA or adapter tuning, would be ideal in this scenario:</p>
+<ol>
+<li><strong>Efficiency:</strong> You can fine-tune the model for sentiment analysis of smartphone reviews by only updating a small fraction of the parameters.</li>
+<li><strong>Resource savings:</strong>  The reduced memory requirements and computational cost make it feasible to fine-tune the model even on machines with limited resources.</li>
+<li><strong>Task-Specific Adapters:</strong> You can create separate adapters for different product categories (smartphones, laptops, etc.). These adapters can be easily swapped or combined to tailor the model to specific needs.</li>
+<li><strong>Knowledge Retention:</strong> The pre-trained knowledge of the base language model remains largely intact, allowing it to still perform well on other tasks.</li>
+</ol>
+<p>This approach allows for efficient adaptation of the model to multiple specific tasks without retraining the entire model each time.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>transformers</code> library from Hugging Face, combined with libraries like <code>peft</code>, provides excellent support for implementing PEFT techniques.  Here's an example using LoRA:</p>
+<pre class="codehilite"><code class="language-python">from transformers import AutoModelForSequenceClassification, AutoTokenizer, TrainingArguments, Trainer
+from peft import LoraConfig, get_peft_model, TaskType
+import torch
+from datasets import load_dataset
+
+# 1. Load the dataset
+dataset = load_dataset(&quot;imdb&quot;, split=&quot;train[:1000]&quot;) # limit the size for demonstration
+dataset = dataset.map(lambda examples: {'label': examples['label'], 'text': examples['text']})
+
+
+# 2. Load the tokenizer and model
+model_name_or_path = &quot;bert-base-uncased&quot;
+tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+model = AutoModelForSequenceClassification.from_pretrained(model_name_or_path, num_labels=2)
+
+def tokenize_function(examples):
+    return tokenizer(examples[&quot;text&quot;], truncation=True, padding=&quot;max_length&quot;, max_length=128)
+
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+# 3. Configure LoRA
+lora_config = LoraConfig(
+    task_type=TaskType.SEQ_CLS,
+    r=8,  # Rank of the low-rank matrices
+    lora_alpha=32, # scaling factor.
+    lora_dropout=0.05,
+    bias=&quot;none&quot;,
+    target_modules=[&quot;query&quot;, &quot;value&quot;] #Specify which layers to apply LoRA to
+)
+
+# 4. Apply LoRA to the model
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+
+
+# 5. Define training arguments
+training_args = TrainingArguments(
+    output_dir=&quot;lora_sentiment_analysis&quot;,
+    learning_rate=1e-3,
+    per_device_train_batch_size=32,
+    num_train_epochs=2,
+    weight_decay=0.01,
+    evaluation_strategy=&quot;epoch&quot;,
+    save_strategy=&quot;epoch&quot;,
+    load_best_model_at_end=True
+)
+
+
+# 6. Train the model
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets,
+    eval_dataset=tokenized_datasets,
+    tokenizer=tokenizer,
+    compute_metrics=lambda p: {&quot;accuracy&quot;: (p.predictions.argmax(-1) == p.label_ids).mean()}
+)
+
+
+trainer.train()
+</code></pre>
+
+<p>Key elements of this code:</p>
+<ul>
+<li><strong>LoraConfig:</strong> Configures the LoRA parameters.  <code>r</code> controls the rank of the low-rank matrices, which determines the number of trainable parameters introduced. <code>target_modules</code> specifies the modules to apply LoRA.</li>
+<li><strong>get_peft_model:</strong>  Applies the LoRA configuration to the base model, wrapping it with the PEFT adapters.</li>
+<li><strong>TrainingArguments:</strong> Sets up the training process.  Important parameters include the learning rate and number of epochs.</li>
+<li><strong>Trainer:</strong> Facilitates the training process using the <code>transformers</code> library.  It handles the training loop, evaluation, and saving of the model.</li>
+</ul>
+<p>This is a simplified example.  More complex scenarios might involve custom data preprocessing, hyperparameter tuning, and more sophisticated evaluation metrics. Libraries like <code>bitsandbytes</code> can further optimize memory usage during training, especially when using 4-bit or 8-bit quantization.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of <code>target_modules</code> in LoRA configuration impact the performance and efficiency of the fine-tuning process, and what are some guidelines for selecting these modules for different types of tasks (e.g., text generation vs. text classification)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
