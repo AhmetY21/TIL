@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roberta, DistilBERT, and ALBERT</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-roberta-distilbert-and-albert">Topic: Roberta, DistilBERT, and ALBERT</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>RoBERTa, DistilBERT, and ALBERT are all transformer-based language models derived from BERT (Bidirectional Encoder Representations from Transformers). They represent advancements aimed at improving BERT's performance, efficiency, and parameter footprint. Here's a breakdown:</p>
+<ul>
+<li>
+<p><strong>BERT (Bidirectional Encoder Representations from Transformers):</strong> BERT is the foundational model. It's pre-trained on a large corpus of text data using two unsupervised tasks: Masked Language Modeling (MLM) and Next Sentence Prediction (NSP). MLM involves randomly masking some words in a sentence and having the model predict them, while NSP involves predicting whether two given sentences follow each other in the original text. BERT's architecture relies on Transformer encoders to learn contextualized word embeddings.</p>
+</li>
+<li>
+<p><strong>RoBERTa (Robustly Optimized BERT Approach):</strong> RoBERTa builds upon BERT by modifying the pre-training procedure. Key differences include:</p>
+<ul>
+<li><strong>Removing Next Sentence Prediction (NSP):</strong> NSP was found to be less effective in improving downstream task performance.</li>
+<li><strong>Training on more data:</strong> RoBERTa uses a significantly larger dataset compared to BERT.</li>
+<li><strong>Training for longer:</strong> RoBERTa is trained with more iterations.</li>
+<li><strong>Using larger batch sizes:</strong> Larger batch sizes lead to more stable training.</li>
+<li><strong>Using dynamic masking:</strong> BERT masks words randomly before training; RoBERTa dynamically changes the masking pattern during training.</li>
+</ul>
+<p>We use RoBERTa as a drop-in replacement for BERT in various NLP tasks such as text classification, question answering, sentiment analysis, and named entity recognition. The modifications result in generally improved performance.</p>
+</li>
+<li>
+<p><strong>DistilBERT (Distilled BERT):</strong> DistilBERT is a smaller, faster, and lighter version of BERT. It's created using a technique called <em>knowledge distillation</em>.  Knowledge distillation involves training a smaller "student" model to mimic the behavior of a larger, pre-trained "teacher" model (in this case, BERT). DistilBERT achieves this by minimizing a combination of loss functions that encourage it to match BERT's outputs, hidden states, and attention mechanisms.</p>
+<p>We use DistilBERT when resource constraints (e.g., memory, latency) are a concern.  While it's less accurate than BERT, it provides a good trade-off between performance and efficiency.  It's suitable for applications where speed and small size are paramount, such as mobile devices or real-time systems.</p>
+</li>
+<li>
+<p><strong>ALBERT (A Lite BERT):</strong> ALBERT addresses the memory limitations of BERT, especially for very large models. It achieves this through two primary techniques:</p>
+<ul>
+<li><strong>Factorized Embedding Parameterization:</strong> This technique decomposes the large embedding matrix into two smaller matrices, significantly reducing the number of parameters.</li>
+<li><strong>Cross-Layer Parameter Sharing:</strong> ALBERT shares parameters across all layers of the Transformer encoder. This further reduces the number of parameters without significantly impacting performance. It shares parameters between feed-forward networks and attention layers.</li>
+</ul>
+<p>ALBERT is used when extremely large BERT-style models are required but memory is limited.  It offers a way to scale up model size without the associated memory overhead. The reduced memory footprint also allows for faster training and inference on limited hardware.</p>
+</li>
+</ul>
+<p>In summary, all three models are refinements of BERT aimed at improving its performance, efficiency, and scalability. RoBERTa focuses on improving performance through better pre-training, DistilBERT prioritizes efficiency through knowledge distillation, and ALBERT optimizes for parameter reduction through factorization and parameter sharing.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Here are application scenarios for each model:</p>
+<ul>
+<li>
+<p><strong>RoBERTa:</strong> A company wants to improve the accuracy of its sentiment analysis model for customer reviews. They have ample computational resources and prioritize achieving the highest possible accuracy. RoBERTa would be an excellent choice to replace their existing BERT-based model, potentially leading to more accurate sentiment predictions and better understanding of customer feedback.</p>
+</li>
+<li>
+<p><strong>DistilBERT:</strong> A mobile app needs to classify customer support requests in real-time. The app runs on resource-constrained mobile devices, and low latency is critical for a positive user experience. DistilBERT is well-suited for this scenario, as its smaller size and faster inference speed make it ideal for deployment on mobile platforms without sacrificing too much accuracy.</p>
+</li>
+<li>
+<p><strong>ALBERT:</strong> A research team wants to train a very large language model to study the effects of scale on a complex natural language understanding task. However, they have limited GPU memory. ALBERT's parameter reduction techniques allow them to train a larger model than they could with standard BERT, enabling them to explore the benefits of scale without exceeding their memory constraints.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>transformers</code> library from Hugging Face to easily load and use these models.</p>
+<pre class="codehilite"><code class="language-python">from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline
+
+# RoBERTa for sentiment analysis
+model_name_roberta = &quot;roberta-large-mnli&quot;  # MNLI fine-tuned Roberta.  Other options exist.
+tokenizer_roberta = AutoTokenizer.from_pretrained(model_name_roberta)
+model_roberta = AutoModelForSequenceClassification.from_pretrained(model_name_roberta)
+
+# Using pipeline for ease of use
+classifier_roberta = pipeline(&quot;sentiment-analysis&quot;, model=model_roberta, tokenizer=tokenizer_roberta)
+result_roberta = classifier_roberta(&quot;This movie was fantastic!&quot;)
+print(f&quot;RoBERTa Sentiment: {result_roberta}&quot;)
+
+
+# DistilBERT for sequence classification (e.g., sentiment analysis)
+model_name_distilbert = &quot;distilbert-base-uncased-finetuned-sst-2-english&quot; # fine-tuned on SST-2 dataset
+tokenizer_distilbert = AutoTokenizer.from_pretrained(model_name_distilbert)
+model_distilbert = AutoModelForSequenceClassification.from_pretrained(model_name_distilbert)
+
+
+classifier_distilbert = pipeline(&quot;sentiment-analysis&quot;, model=model_distilbert, tokenizer=tokenizer_distilbert)
+result_distilbert = classifier_distilbert(&quot;This movie was terrible!&quot;)
+print(f&quot;DistilBERT Sentiment: {result_distilbert}&quot;)
+
+
+
+# ALBERT for sequence classification
+model_name_albert = &quot;albert-base-v2&quot;
+tokenizer_albert = AutoTokenizer.from_pretrained(model_name_albert)
+model_albert = AutoModelForSequenceClassification.from_pretrained(&quot;siebert/sentiment-roberta-large-english&quot;)  # Replace with pre-trained Albert sentiment model
+
+classifier_albert = pipeline(&quot;sentiment-analysis&quot;, model=model_albert, tokenizer=tokenizer_albert)
+result_albert = classifier_albert(&quot;I am so happy!&quot;)
+print(f&quot;ALBERT Sentiment: {result_albert}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Import necessary modules from the <code>transformers</code> library.</li>
+<li><strong>Load Tokenizer and Model:</strong> Use <code>AutoTokenizer</code> and <code>AutoModelForSequenceClassification</code> to load pre-trained tokenizers and models for RoBERTa, DistilBERT, and ALBERT.  The model names are strings referring to specific models in the Hugging Face Model Hub. In practice, for ALBERT you often need to specify a fine-tuned model for a specific task, as the base pre-trained ALBERT model might not be directly usable for tasks like sentiment analysis. The code above uses <code>siebert/sentiment-roberta-large-english</code> which is a RoBERTa sentiment analysis model, to demonstrate how to load a model fine-tuned for a specific task. Be sure to change this to a relevant and available ALBERT model.</li>
+<li><strong>Create Pipeline:</strong>  Use <code>pipeline</code> to create a simplified interface for running inference.  The <code>pipeline</code> automatically handles tokenization, model inference, and post-processing.</li>
+<li><strong>Run Inference:</strong>  Pass the input text to the <code>classifier</code> (which is a <code>pipeline</code> instance) to get the sentiment classification result.</li>
+<li><strong>Print Results:</strong> Print the predicted sentiment and confidence score.</li>
+</ol>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>Make sure you have the <code>transformers</code> library installed: <code>pip install transformers</code></li>
+<li>The code examples assume that you are using a model fine-tuned for sentiment analysis. You can replace the model names with other pre-trained models available on the Hugging Face Model Hub based on the NLP task you are addressing.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that these models are improvements over BERT, under what circumstances would using the original BERT model be preferred over RoBERTa, DistilBERT, or ALBERT?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
