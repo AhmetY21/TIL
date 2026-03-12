@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Low-Rank Adaptation (LoRA)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-low-rank-adaptation-lora">Topic: Low-Rank Adaptation (LoRA)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Low-Rank Adaptation (LoRA) is a parameter-efficient fine-tuning technique designed for large pre-trained language models (LLMs). Instead of fine-tuning <em>all</em> the parameters of a large model, LoRA freezes the pre-trained weights and introduces trainable <em>low-rank</em> matrices to specific layers of the model.</p>
+<p>Mathematically, consider a weight matrix <code>W</code> within the LLM, originally of shape <code>(d, k)</code>, where <code>d</code> and <code>k</code> are the dimensions of the matrix.  LoRA introduces two smaller matrices, <code>A</code> of shape <code>(d, r)</code> and <code>B</code> of shape <code>(r, k)</code>, where <code>r &lt;&lt; min(d, k)</code>. <code>r</code> is the <em>rank</em> of the adaptation. During training, the original weight matrix <code>W</code> is kept frozen, and the update is applied as:</p>
+<p><code>W' = W + BA</code></p>
+<p>where <code>W'</code> is the effective weight matrix used during the forward pass. Only <code>A</code> and <code>B</code> are trained. The original frozen weights, <code>W</code>, remain unchanged.</p>
+<p><strong>How can we use it?</strong></p>
+<p>LoRA allows us to efficiently adapt a pre-trained model to a specific task or dataset. By only training the low-rank matrices, the number of trainable parameters is significantly reduced compared to full fine-tuning. This leads to:</p>
+<ul>
+<li><strong>Reduced GPU memory requirements:</strong>  Smaller trainable parameter size allows fine-tuning on less powerful hardware.</li>
+<li><strong>Faster training:</strong> Fewer parameters to update results in faster training times.</li>
+<li><strong>Easy switching between tasks:</strong> Multiple LoRA modules, each trained for a specific task, can be easily plugged into and out of the same pre-trained model. You just load different <code>A</code> and <code>B</code> matrices.</li>
+<li><strong>Reduced storage requirements:</strong> LoRA weights are much smaller than the full model.</li>
+</ul>
+<p>LoRA can be applied to different layers of a Transformer architecture, typically the attention layers (Q, K, V) and the feed-forward network layers. The choice of which layers to adapt and the rank <code>r</code> are hyperparameters that can be tuned.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A common application scenario for LoRA is fine-tuning a large language model for a specific task, such as:</p>
+<ul>
+<li><strong>Text summarization:</strong> Adapting a general-purpose LLM to summarize research papers, news articles, or customer reviews.</li>
+<li><strong>Question answering:</strong> Fine-tuning an LLM on a dataset of question-answer pairs to improve its ability to answer specific types of questions.</li>
+<li><strong>Code generation:</strong> Adapting an LLM to generate code in a specific programming language or for a specific task.</li>
+<li><strong>Chatbot development:</strong> Fine-tuning an LLM on a dataset of conversational data to create a chatbot with a specific persona or expertise.</li>
+<li><strong>Style Transfer:</strong> Adapting an LLM to mimic the writing style of a particular author.</li>
+</ul>
+<p>In these scenarios, LoRA allows you to leverage the knowledge already encoded in the pre-trained LLM while adapting it to the specific requirements of the target task with significantly reduced computational resources. Imagine you have a massive LLM trained on general knowledge, and you want it to answer questions related to medical diagnosis. Training the <em>entire</em> model is expensive and time-consuming. With LoRA, you freeze the pre-trained weights and only train a small set of low-rank matrices on medical Q&amp;A data, drastically cutting down on the resource burden.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>peft</code> library (Parameter-Efficient Fine-Tuning) from Hugging Face provides an easy way to implement LoRA.</p>
+<pre class="codehilite"><code class="language-python">from peft import LoraConfig, get_peft_model, TaskType
+from transformers import AutoModelForCausalLM
+
+# Load the pre-trained model
+model_name_or_path = &quot;google/flan-t5-base&quot;  # Or any other LLM
+model = AutoModelForCausalLM.from_pretrained(model_name_or_path)
+
+
+# Configure LoRA
+lora_config = LoraConfig(
+    r=8,  # Rank of the adaptation matrices
+    lora_alpha=32, #Scaling factor.  Usually r*lora_alpha is roughly a constant.
+    lora_dropout=0.05, # Dropout probability for LoRA layers
+    bias=&quot;none&quot;, #Bias type for LoRA layers. Can be &quot;none&quot;, &quot;bais&quot; or &quot;all&quot;
+    task_type=TaskType.SEQ_2_SEQ_LM, #Sequence-to-Sequence Language Modeling
+    target_modules=['q', 'v'] #Specify which layers to apply LoRA to (e.g., attention layers).  You'll need to inspect your model.
+)
+
+# Wrap the model with LoRA
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+
+
+# Now you can train the model as usual, but only the LoRA parameters will be updated
+# Example using Hugging Face Trainer:
+# from transformers import Trainer, TrainingArguments
+
+# training_args = TrainingArguments(
+#     output_dir=&quot;./lora-trained-model&quot;,
+#     learning_rate=1e-3,
+#     per_device_train_batch_size=32,
+#     num_train_epochs=3,
+# )
+
+# trainer = Trainer(
+#     model=model,
+#     args=training_args,
+#     train_dataset=your_dataset, # Replace with your training dataset
+# )
+
+# trainer.train()
+
+# To save the LoRA adapters
+# model.save_pretrained(&quot;lora-adapter&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import necessary libraries:</strong> <code>peft</code> for LoRA and <code>transformers</code> for loading pre-trained models.</li>
+<li><strong>Load the pre-trained model:</strong>  Select a pre-trained model from the Hugging Face Model Hub (e.g., <code>google/flan-t5-base</code>) and load it using <code>AutoModelForCausalLM.from_pretrained()</code>.  Choose a model that is appropriate for your task.</li>
+<li><strong>Configure LoRA:</strong> Create a <code>LoraConfig</code> object to specify the LoRA hyperparameters:<ul>
+<li><code>r</code>: The rank of the low-rank matrices.  A lower rank implies fewer trainable parameters.</li>
+<li><code>lora_alpha</code>: A scaling factor for the LoRA weights. It effectively controls the magnitude of the low-rank updates.  Higher values of <code>lora_alpha</code> increase the influence of the LoRA adapters.</li>
+<li><code>lora_dropout</code>: The dropout probability applied to the LoRA layers. This helps prevent overfitting.</li>
+<li><code>bias</code>: Whether or not to train bias terms in the LoRA layers.  The options are <code>"none"</code>, <code>"bais"</code>, and <code>"all"</code>.</li>
+<li><code>task_type</code>: Specifies the type of task, which helps the library appropriately configure the model.</li>
+<li><code>target_modules</code>: A list of layer names (or modules) to which LoRA will be applied.  You'll need to inspect the model architecture to determine which layers are most suitable for adaptation.  Common choices are attention layers (Q, K, V) or feed-forward layers. You will want to target those layers within your LLM.</li>
+</ul>
+</li>
+<li><strong>Wrap the model with LoRA:</strong> Use the <code>get_peft_model()</code> function to wrap the pre-trained model with the LoRA configuration. This adds the LoRA layers to the specified target modules.</li>
+<li><strong>Train the model:</strong>  Train the wrapped model as you would normally, but only the LoRA parameters will be updated.  The example code shows how to integrate with the Hugging Face <code>Trainer</code>.</li>
+<li><strong>Save the LoRA adapters:</strong> Save the trained LoRA adapters using <code>model.save_pretrained()</code>.  This saves only the weights of the LoRA layers, resulting in a significantly smaller file size compared to saving the entire model.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does LoRA compare to other parameter-efficient fine-tuning techniques like Adapter layers or Prefix-Tuning in terms of performance, memory usage, and implementation complexity?  What are the trade-offs between these methods, and in what scenarios would one be preferred over the others?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
