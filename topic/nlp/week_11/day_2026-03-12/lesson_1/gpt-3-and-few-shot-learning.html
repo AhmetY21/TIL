@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPT-3 and Few-shot Learning</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-gpt-3-and-few-shot-learning">Topic: GPT-3 and Few-shot Learning</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>GPT-3</strong> (Generative Pre-trained Transformer 3) is a powerful autoregressive language model developed by OpenAI. It's designed to generate human-quality text, translate languages, write different kinds of creative content, and answer your questions in an informative way. It's a transformer model, meaning it relies on the attention mechanism to weigh the importance of different parts of the input sequence. Crucially, GPT-3 was pre-trained on a massive dataset of text from the internet, giving it a broad understanding of language and the world.</p>
+<p><strong>Few-shot learning</strong> is a machine learning approach where a model is trained to generalize to new tasks from only a small number of training examples. This contrasts with traditional supervised learning which often requires large datasets. Few-shot learning is particularly useful when:</p>
+<ul>
+<li>Data is scarce and expensive to obtain.</li>
+<li>The task is new or highly specialized, making it difficult to gather enough training data.</li>
+<li>Rapid adaptation to new tasks is required.</li>
+</ul>
+<p><strong>GPT-3 and Few-shot Learning Combined:</strong> GPT-3's strength lies in its ability to perform well in few-shot learning scenarios. Because of its massive pre-training, it has already learned a vast amount of knowledge about language and common tasks.  Therefore, it can be given just a few examples of a new task (the "few shots") and then, based on these examples, perform well on that task without any further explicit training. This is accomplished by including the examples in the prompt. The input prompt includes both examples of the desired input/output relationship AND the new input for which the model needs to generate the output. This is referred to as <em>in-context learning</em> because the training happens directly within the query itself.</p>
+<p>There are different settings of in-context learning:</p>
+<ul>
+<li><strong>Zero-shot learning:</strong> The model is given <em>no</em> examples, just a task description.</li>
+<li><strong>One-shot learning:</strong> The model is given <em>one</em> example.</li>
+<li><strong>Few-shot learning:</strong> The model is given a <em>small number</em> of examples (typically between 2 and 10).</li>
+</ul>
+<p>We can use GPT-3 and few-shot learning for various tasks such as text summarization, translation, question answering, code generation, and creative writing. The user provides a few examples of the desired input-output format, and GPT-3 attempts to generalize from these examples to produce relevant and accurate output.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a scenario where we want to use GPT-3 to translate English sentences into French. We have a limited number of English-French sentence pairs.</p>
+<p><strong>Traditional Approach (High Resource):</strong>  We would typically need hundreds or thousands of English-French sentence pairs to train a dedicated translation model. This would require significant data collection and training efforts.</p>
+<p><strong>Few-shot Approach with GPT-3:</strong>  Instead, we can leverage GPT-3's pre-existing knowledge and provide a few example sentence pairs directly in the input prompt:</p>
+<pre class="codehilite"><code>English: The cat sat on the mat. French: Le chat était assis sur le tapis.
+English: I like to eat apples. French: J'aime manger des pommes.
+English: The sun is shining brightly. French: Le soleil brille fort.
+English: I am going to the store. French:
+</code></pre>
+
+<p>In this example, the first three lines provide the "few shots" – the training examples. The last line presents the input we want translated.  GPT-3, by recognizing the pattern from the provided examples, should be able to generate a reasonable French translation for "I am going to the store."</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>To use GPT-3, you'll need an API key from OpenAI and the <code>openai</code> Python library.</p>
+<pre class="codehilite"><code class="language-python">import openai
+
+# Replace with your actual OpenAI API key
+openai.api_key = &quot;YOUR_OPENAI_API_KEY&quot;
+
+def translate_english_to_french(english_sentence, examples=None):
+    &quot;&quot;&quot;
+    Translates an English sentence to French using GPT-3 with few-shot learning.
+
+    Args:
+        english_sentence: The English sentence to translate.
+        examples: A list of example dictionaries, each with 'english' and 'french' keys.
+                 Example: [{'english': 'Hello', 'french': 'Bonjour'}, ...]
+
+    Returns:
+        The translated French sentence, or None if an error occurs.
+    &quot;&quot;&quot;
+
+    prompt = &quot;&quot;
+    if examples:
+        for example in examples:
+            prompt += f&quot;English: {example['english']} French: {example['french']}\n&quot;
+    prompt += f&quot;English: {english_sentence} French:&quot;
+
+    try:
+        response = openai.Completion.create(
+            engine=&quot;text-davinci-003&quot;,  # Or another suitable engine
+            prompt=prompt,
+            max_tokens=60,             # Adjust as needed
+            n=1,                       # Number of completions to generate
+            stop=[&quot;\nEnglish:&quot;],        # Stop generating when encountering &quot;English:&quot; to prevent repeating
+            temperature=0.3,              # Lower temperature for more deterministic output, higher for more creative
+        )
+        return response.choices[0].text.strip()
+    except Exception as e:
+        print(f&quot;An error occurred: {e}&quot;)
+        return None
+
+
+# Example Usage
+examples = [
+    {&quot;english&quot;: &quot;The dog is barking.&quot;, &quot;french&quot;: &quot;Le chien aboie.&quot;},
+    {&quot;english&quot;: &quot;She is reading a book.&quot;, &quot;french&quot;: &quot;Elle lit un livre.&quot;},
+]
+
+english_text = &quot;He is drinking coffee.&quot;
+french_translation = translate_english_to_french(english_text, examples=examples)
+
+if french_translation:
+    print(f&quot;English: {english_text}&quot;)
+    print(f&quot;French: {french_translation}&quot;)
+else:
+    print(&quot;Translation failed.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import <code>openai</code>:</strong> Imports the OpenAI library.</li>
+<li><strong>Set API Key:</strong>  Sets the <code>openai.api_key</code> using your secret API key obtained from OpenAI. <em>Do not share your API key!</em></li>
+<li><strong><code>translate_english_to_french()</code> function:</strong><ul>
+<li>Takes the English sentence to translate and a list of example dictionaries as input.</li>
+<li>Constructs the prompt by concatenating the examples and the sentence to be translated.</li>
+<li>Calls <code>openai.Completion.create()</code> to generate a completion using the "text-davinci-003" engine (you can experiment with other engines).<ul>
+<li><code>prompt</code>: The input prompt containing the examples and the sentence.</li>
+<li><code>max_tokens</code>: Limits the length of the generated French sentence.</li>
+<li><code>n</code>:  Specifies the number of completions to generate (set to 1 here).</li>
+<li><code>stop</code>: This parameter is crucial.  It tells the model to stop generating text when it encounters "\nEnglish:". This helps to prevent the model from continuing the example pattern beyond the translation and starting to generate new, unintended "English: French:" pairs.</li>
+<li><code>temperature</code>: Controls the randomness of the output. Lower values (e.g., 0.3) result in more predictable and consistent translations.  Higher values (closer to 1) can lead to more creative, but potentially less accurate, results.</li>
+</ul>
+</li>
+<li>Returns the generated French translation.</li>
+<li>Includes error handling to catch potential exceptions.</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong><ul>
+<li>Defines a list of example English-French sentence pairs.</li>
+<li>Calls <code>translate_english_to_french()</code> to translate a sample sentence.</li>
+<li>Prints the original English sentence and the generated French translation.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>API Key:</strong>  Replace <code>"YOUR_OPENAI_API_KEY"</code> with your actual OpenAI API key.</li>
+<li><strong>Engine Selection:</strong> Experiment with different OpenAI engines to see which one performs best for your task. <code>"text-davinci-003"</code> is a generally good choice, but newer engines might offer better performance.</li>
+<li><strong>Prompt Engineering:</strong> The quality of the prompt is crucial.  Experiment with different examples and phrasing to optimize the model's performance.</li>
+<li><strong>Token Limits:</strong>  Be mindful of token limits.  GPT-3 has a maximum context window size. If your prompt and desired output exceed this limit, you'll need to shorten the prompt or use a different approach.</li>
+<li><strong>Cost:</strong> Using the OpenAI API incurs costs based on the number of tokens processed. Be aware of pricing and monitor your usage.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we automatically determine the optimal number and quality of examples to include in the prompt for few-shot learning with GPT-3 to achieve the best performance for a given task, while minimizing API costs?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
