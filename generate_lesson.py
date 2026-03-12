@@ -363,6 +363,30 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     th {{ background: #f9fafb; }}
     hr {{ border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }}
 
+
+    .skip-link {{
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+    #main-content:focus {{
+      outline: none;
+    }}
+
     .page-header {{
       display: flex;
       justify-content: space-between;
@@ -379,6 +403,30 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       text-decoration: underline;
     }}
 
+
+    .skip-link {{
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--primary);
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
+    #main-content:focus {{
+      outline: none;
+    }}
+
     .theme-toggle {{
       background: none;
       border: none;
@@ -393,6 +441,15 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
+    }}
+
+
+    .dark .skip-link {{
+      background: #60a5fa;
+      color: #0f172a;
+    }}
+    .dark *:focus-visible {{
+      outline-color: #60a5fa;
     }}
 
     .dark body {{
@@ -440,8 +497,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 {header_html}
+  <main id="main-content" tabindex="-1">
 {html_body}
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
@@ -729,6 +789,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
       --text: #e2e8f0;
       --secondary: #94a3b8;
     }}
+
+    .dark .skip-link {{
+      color: #0f172a;
+    }}
     .dark .lesson-card {{
       background: #1e293b;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -742,8 +806,9 @@ def update_index_page(meta: CurriculumMeta) -> None:
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
-  <div class="container">
+  <main id="main-content" tabindex="-1" class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
     <header>
       <h1>{meta.subject} Learning Hub</h1>
@@ -751,7 +816,7 @@ def update_index_page(meta: CurriculumMeta) -> None:
     </header>
 
     {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
-  </div>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

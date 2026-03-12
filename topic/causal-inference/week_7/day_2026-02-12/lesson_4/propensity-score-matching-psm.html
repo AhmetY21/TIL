@@ -33,6 +33,30 @@
     th { background: #f9fafb; }
     hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     .theme-toggle {
       position: absolute;
       top: 20px;
@@ -50,6 +74,15 @@
     }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);
+    }
+
+
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+    .dark *:focus-visible {
+      outline-color: #60a5fa;
     }
 
     .dark body {
@@ -72,6 +105,7 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
 <h1 id="topic-propensity-score-matching-psm">Topic: Propensity Score Matching (PSM)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -223,6 +257,7 @@ print(f&quot;SMD (Age) After Matching: {after_match_smd_age}&quot;)
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do I assess the quality of the matching in PSM to determine if it effectively reduced bias?  What metrics and visualizations are most helpful, and what are the acceptable ranges for these metrics to ensure reliable causal inference?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

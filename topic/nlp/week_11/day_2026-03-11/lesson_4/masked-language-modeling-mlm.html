@@ -49,6 +49,30 @@
       text-decoration: underline;
     }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     .theme-toggle {
       background: none;
       border: none;
@@ -63,6 +87,15 @@
     }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);
+    }
+
+
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+    .dark *:focus-visible {
+      outline-color: #60a5fa;
     }
 
     .dark body {
@@ -110,11 +143,13 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content" tabindex="-1">
 
 <h1 id="topic-masked-language-modeling-mlm">Topic: Masked Language Modeling (MLM)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -187,6 +222,7 @@ print(f&quot;\nUsing pipeline: {result[0]['token_str']}&quot;)
 <p>This code first loads a pre-trained BERT model and tokenizer.  Then, the <code>mask_and_predict</code> function takes a text string and the index of the word to mask. It replaces the specified word with the "[MASK]" token, feeds the masked text to the BERT model, and predicts the most likely word to fill the mask. Finally, it returns the original word, predicted word, and masked text. The code also shows how to accomplish the same task using the <code>pipeline</code> function, which provides a higher-level, easier-to-use interface. The output shows both methods and makes it clear how they relate.  You will need to install the <code>transformers</code> library: <code>pip install transformers</code>.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the percentage of masked tokens during MLM pre-training (e.g., 15% in BERT) affect the model's performance and learning process? What are the trade-offs involved in choosing a different masking percentage? For example, how would the training change if the percentage were lowered to 5% or raised to 30%?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

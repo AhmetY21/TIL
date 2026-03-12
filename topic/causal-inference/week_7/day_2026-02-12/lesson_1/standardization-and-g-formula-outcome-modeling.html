@@ -33,6 +33,30 @@
     th { background: #f9fafb; }
     hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     .theme-toggle {
       position: absolute;
       top: 20px;
@@ -50,6 +74,15 @@
     }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);
+    }
+
+
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+    .dark *:focus-visible {
+      outline-color: #60a5fa;
     }
 
     .dark body {
@@ -86,6 +119,30 @@
       text-decoration: underline;
     }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     .theme-toggle {
       position: static;
       background: none;
@@ -107,11 +164,13 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content" tabindex="-1">
 
 
 <h1 id="topic-standardization-and-g-formula-outcome-modeling">Topic: Standardization and G-Formula (Outcome Modeling)</h1>
@@ -260,6 +319,7 @@ print(f&quot;ATE Bootstrap Confidence Interval: ({ci_lower}, {ci_upper})&quot;)
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does standardization/G-formula compare to Inverse Probability of Treatment Weighting (IPTW) in terms of assumptions and robustness?  What are some practical considerations for choosing between the two methods?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
