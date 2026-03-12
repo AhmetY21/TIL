@@ -49,6 +49,30 @@
       text-decoration: underline;
     }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     .theme-toggle {
       background: none;
       border: none;
@@ -63,6 +87,15 @@
     }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);
+    }
+
+
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+    .dark *:focus-visible {
+      outline-color: #60a5fa;
     }
 
     .dark body {
@@ -110,11 +143,13 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content" tabindex="-1">
 
 <h1 id="topic-the-vanishing-gradient-problem-in-rnns">Topic: The Vanishing Gradient Problem in RNNs</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -191,6 +226,7 @@ plt.show()
 <p>This example shows how to extract and visualize the gradients <em>for a single training step</em>. By inspecting the magnitude of the gradients for different layers, particularly the layers closer to the input, you can get an idea of whether the gradients are vanishing. Lower gradient values in earlier layers indicate the potential presence of the vanishing gradient problem. A more robust analysis would involve plotting the gradient magnitudes across multiple training epochs. This code snippet provides a method for observing the gradients and analyzing their behavior. Note that the use of <code>SimpleRNN</code> amplifies the problem to make it more visible. LSTMs and GRUs would show larger gradients in the earlier layers.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>Given that LSTMs and GRUs are designed to mitigate the vanishing gradient problem, are they entirely immune to it? If not, what are some situations where even LSTMs and GRUs might still struggle with long-range dependencies?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

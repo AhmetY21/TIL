@@ -49,6 +49,30 @@
       text-decoration: underline;
     }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     .theme-toggle {
       background: none;
       border: none;
@@ -63,6 +87,15 @@
     }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);
+    }
+
+
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+    .dark *:focus-visible {
+      outline-color: #60a5fa;
     }
 
     .dark body {
@@ -110,11 +143,13 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content" tabindex="-1">
 
 <h1 id="topic-measurement-error-missing-data-and-selection-bias-causal-view">Topic: Measurement Error, Missing Data, and Selection Bias (Causal View)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -247,6 +282,7 @@ print(&quot;Covariate Adjustment Estimate with IPW in the non-missing population
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>Given the Python code provided, how could sensitivity analysis be used to assess the potential impact of <em>unobserved</em> confounding (U) on the estimated causal effect of the job training program, especially when the missingness mechanism is suspected to be MNAR, given we have a model for IPW? Specifically, outline the steps required to conduct a sensitivity analysis to assess how different correlations between U and the missingness indicator R_Y, and U and the outcome Y_star, might affect the IPW adjusted estimate.</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
