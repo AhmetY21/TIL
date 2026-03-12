@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BART and Abstractive Summarization</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-bart-and-abstractive-summarization">Topic: BART and Abstractive Summarization</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Abstractive Summarization:</strong> Abstractive summarization aims to create a concise summary of a text document by understanding the meaning of the original content and then paraphrasing it into a shorter, more general version. This contrasts with extractive summarization, which simply selects and concatenates existing sentences from the original document. Abstractive summaries can use novel words and phrases not explicitly present in the source document.</p>
+<p><strong>BART (Bidirectional and Auto-Regressive Transformer):</strong> BART is a sequence-to-sequence (seq2seq) transformer model specifically designed for tasks involving text generation, like summarization. It is pre-trained by corrupting text with an arbitrary noising function (e.g., masking, sentence permutation, document rotation, etc.) and then learning to reconstruct the original text. This pre-training objective forces the model to learn a robust understanding of language and its structure.</p>
+<p><strong>BART for Abstractive Summarization:</strong> When used for abstractive summarization, BART is fine-tuned on a dataset of document-summary pairs. The document serves as the input sequence, and the desired abstractive summary is the target sequence.  The encoder part of BART processes the input document and creates a contextualized representation. The decoder part then generates the summary autoregressively, token by token, conditioned on the encoder's output. Because BART is pre-trained to reconstruct text, it's well-suited to generating coherent and grammatical summaries. It leverages the bidirectional encoder for a deep understanding of the input and the autoregressive decoder for fluent generation.</p>
+<p>We can use BART for abstractive summarization to automatically create short and informative summaries of long articles, news reports, research papers, or any other type of textual content. This can save time and effort for readers who need to quickly grasp the key points of a document.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are working for a news aggregator website. Your site pulls in hundreds of news articles from various sources every hour. To help users quickly find the most relevant articles, you want to provide a short, abstractive summary for each article. Using BART, you can automate this process.</p>
+<ol>
+<li><strong>Input:</strong> The full text of a news article (e.g., "The President announced a new initiative to combat climate change...").</li>
+<li><strong>BART Processing:</strong> The BART model, fine-tuned for summarization, takes the article text as input.</li>
+<li><strong>Output:</strong> A concise summary of the article (e.g., "President unveils climate change plan targeting carbon emissions.").</li>
+</ol>
+<p>This summary is then displayed alongside the article title in the news aggregator, allowing users to quickly decide whether they want to read the full article. Other application scenarios include:</p>
+<ul>
+<li>Summarizing customer reviews to identify key product strengths and weaknesses.</li>
+<li>Generating abstracts for scientific papers.</li>
+<li>Creating meeting minutes from transcripts.</li>
+<li>Summarizing legal documents.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load the BART summarization pipeline
+summarizer = pipeline(&quot;summarization&quot;, model=&quot;facebook/bart-large-cnn&quot;)
+
+# Example text to summarize
+text = &quot;&quot;&quot;
+The US dollar fell sharply against the euro on Monday, as investors reacted to disappointing economic data.
+The Commerce Department reported that retail sales fell by 0.8% in December, the biggest drop in nearly a year.
+The data raised concerns about the strength of the US economy and led investors to sell dollars.
+The euro rose to $1.14 against the dollar, its highest level in over three months.
+Analysts said that the euro was also supported by expectations that the European Central Bank will raise interest rates in the coming months.
+&quot;&quot;&quot;
+
+# Generate the summary
+summary = summarizer(text, max_length=130, min_length=30, do_sample=False) # Parameters can be adjusted
+
+# Print the summary
+print(summary[0]['summary_text'])
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>from transformers import pipeline</code></strong>: Imports the <code>pipeline</code> function from the <code>transformers</code> library, which simplifies using pre-trained models for various NLP tasks.</li>
+<li><strong><code>summarizer = pipeline("summarization", model="facebook/bart-large-cnn")</code></strong>: Creates a summarization pipeline using the <code>facebook/bart-large-cnn</code> model, which is a BART model specifically fine-tuned for summarization.  This line downloads the model if it's not already present on your system.</li>
+<li><strong><code>text = ...</code></strong>: Defines the input text that you want to summarize.</li>
+<li><strong><code>summary = summarizer(text, max_length=130, min_length=30, do_sample=False)</code></strong>:  Calls the <code>summarizer</code> pipeline to generate the summary.<ul>
+<li><code>max_length</code>:  The maximum length (in tokens) of the generated summary.</li>
+<li><code>min_length</code>: The minimum length (in tokens) of the generated summary.</li>
+<li><code>do_sample</code>: If set to <code>True</code>, sampling is used, meaning the model will introduce randomness into the summary generation, potentially resulting in more diverse but possibly less focused summaries. <code>False</code> (as used here) employs a more deterministic generation strategy like beam search for typically higher-quality results.</li>
+</ul>
+</li>
+<li><strong><code>print(summary[0]['summary_text'])</code></strong>: Prints the generated summary. The output from the <code>summarizer</code> is a list containing a dictionary, where the key <code>'summary_text'</code> holds the generated summary string.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Installation:</strong> You'll need to install the <code>transformers</code> library: <code>pip install transformers</code></li>
+<li><strong>Model Selection:</strong> <code>facebook/bart-large-cnn</code> is a commonly used and effective BART model for summarization.  Other models are available, such as <code>sshleifer/distilbart-cnn-12-6</code> which is faster, but may have lower quality.</li>
+<li><strong>Parameter Tuning:</strong> The <code>max_length</code>, <code>min_length</code>, and <code>do_sample</code> parameters significantly influence the quality and length of the generated summary.  Experiment with these parameters to achieve the desired results.  Beam search decoding parameters (<code>num_beams</code>) can also significantly affect summary quality.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we evaluate the quality of abstractive summaries generated by BART, and what metrics are commonly used?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
