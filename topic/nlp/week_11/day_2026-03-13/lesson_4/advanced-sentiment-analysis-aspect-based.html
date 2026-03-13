@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Sentiment Analysis (Aspect-based)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-advanced-sentiment-analysis-aspect-based">Topic: Advanced Sentiment Analysis (Aspect-based)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Aspect-Based Sentiment Analysis (ABSA), also known as Feature-Based Sentiment Analysis, goes beyond simply identifying the overall sentiment of a text (positive, negative, neutral). Instead, it identifies the sentiment expressed toward <em>specific aspects</em> or <em>features</em> of a product, service, or entity mentioned in the text.</p>
+<p><strong>What it is:</strong> ABSA aims to:</p>
+<ul>
+<li><strong>Identify aspects:</strong> Determine which aspects or features are mentioned in the text. For example, in a restaurant review, aspects could be "food," "service," "ambiance," or "price."</li>
+<li><strong>Determine sentiment polarity:</strong>  Classify the sentiment (positive, negative, neutral, or sometimes more fine-grained emotions) expressed towards <em>each identified aspect</em>. For instance, the review might express positive sentiment towards the "food" but negative sentiment towards the "service."</li>
+<li><strong>Resolve conflicts:</strong>  Handle cases where different aspects within the same review receive different sentiment polarities. A single review can have both positive and negative sentiment, but ABSA clarifies <em>which</em> aspect is associated with each sentiment.</li>
+</ul>
+<p><strong>How we can use it:</strong> ABSA provides much more granular and actionable insights than traditional sentiment analysis. We can use it to:</p>
+<ul>
+<li><strong>Identify areas for improvement:</strong> Businesses can use ABSA to understand which aspects of their products or services customers are happy with and which areas need improvement.</li>
+<li><strong>Improve product design:</strong>  Understanding specific feature preferences can guide product development decisions.</li>
+<li><strong>Monitor brand reputation:</strong>  Track sentiment towards specific brand attributes over time.</li>
+<li><strong>Personalize recommendations:</strong> Recommend products or services based on a user's expressed sentiment towards specific features.</li>
+<li><strong>Enhance customer service:</strong>  Quickly identify customer pain points related to specific aspects of a product or service.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are analyzing customer reviews for a new laptop model.</p>
+<p><strong>Review Example:</strong> "The screen is absolutely gorgeous and the battery life is amazing! However, the keyboard feels a bit cheap and the price is too high for what you get."</p>
+<ul>
+<li><strong>Traditional Sentiment Analysis:</strong> might classify the overall sentiment as "Neutral" or slightly "Positive" because it averages out the positive and negative comments. This misses crucial details.</li>
+<li><strong>Aspect-Based Sentiment Analysis:</strong> would identify the following:<ul>
+<li><strong>Aspect:</strong> "screen"<ul>
+<li><strong>Sentiment:</strong> "Positive"</li>
+</ul>
+</li>
+<li><strong>Aspect:</strong> "battery life"<ul>
+<li><strong>Sentiment:</strong> "Positive"</li>
+</ul>
+</li>
+<li><strong>Aspect:</strong> "keyboard"<ul>
+<li><strong>Sentiment:</strong> "Negative"</li>
+</ul>
+</li>
+<li><strong>Aspect:</strong> "price"<ul>
+<li><strong>Sentiment:</strong> "Negative"</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>By using ABSA, the laptop manufacturer can clearly see that while the screen and battery life are strong selling points, they need to improve the keyboard quality and potentially re-evaluate the pricing strategy. This actionable information is far more valuable than a simple overall sentiment score.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While implementing a full ABSA system from scratch is complex, several Python libraries and techniques can be used.  One common approach involves combining rule-based methods with machine learning. Here's a simplified example using NLTK and a pre-trained sentiment analyzer (VADER) to illustrate the basic idea. Note that this example is extremely basic and would require significant expansion for real-world applications.</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.tokenize import word_tokenize
+
+# Download necessary resources (run this once)
+# nltk.download('vader_lexicon')
+# nltk.download('punkt')
+
+def aspect_based_sentiment_analysis(text, aspects):
+    &quot;&quot;&quot;
+    Performs basic aspect-based sentiment analysis.
+
+    Args:
+        text: The text to analyze.
+        aspects: A list of aspects to search for.
+
+    Returns:
+        A dictionary mapping aspects to their sentiment scores.
+    &quot;&quot;&quot;
+    analyzer = SentimentIntensityAnalyzer()
+    sentences = nltk.sent_tokenize(text)
+    aspect_sentiments = {}
+
+    for aspect in aspects:
+        aspect_sentiments[aspect] = []
+
+    for sentence in sentences:
+        for aspect in aspects:
+            if aspect in sentence.lower(): # Simple keyword matching
+                vs = analyzer.polarity_scores(sentence)
+                aspect_sentiments[aspect].append(vs['compound']) # Use compound score as sentiment
+
+    # Aggregate sentiment scores for each aspect (e.g., average)
+    result = {}
+    for aspect, scores in aspect_sentiments.items():
+        if scores:
+            result[aspect] = sum(scores) / len(scores) #Average if aspect exists in sentence.
+        else:
+            result[aspect] = 0.0 #Aspect score is 0 if it is not in the sentence
+
+    return result
+
+# Example usage
+text = &quot;The screen is absolutely gorgeous and the battery life is amazing! However, the keyboard feels a bit cheap and the price is too high for what you get.&quot;
+aspects = [&quot;screen&quot;, &quot;battery life&quot;, &quot;keyboard&quot;, &quot;price&quot;]
+
+sentiment_results = aspect_based_sentiment_analysis(text, aspects)
+print(sentiment_results)
+
+# Interpretation:
+# Positive values indicate positive sentiment, negative values indicate negative sentiment, and 0 indicates neutral sentiment.  The closer the value is to 1 or -1, the stronger the sentiment.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>SentimentIntensityAnalyzer:</strong>  Uses NLTK's VADER (Valence Aware Dictionary and sEntiment Reasoner) for sentiment analysis. VADER is pre-trained to understand sentiments expressed in social media and general text.</li>
+<li><strong>Aspect Detection:</strong> The code iterates through sentences and checks if each aspect (from the <code>aspects</code> list) is present in the sentence (case-insensitive). This is a very simple keyword-based approach.</li>
+<li><strong>Sentiment Scoring:</strong> If an aspect is found, the sentiment score of the <em>entire sentence</em> is calculated using VADER.  A more sophisticated approach would focus on the specific phrases related to the aspect. The <code>compound</code> score is used as a general measure of sentiment.</li>
+<li><strong>Aggregation:</strong> The code averages the sentiment scores for each aspect across all sentences where the aspect is mentioned.  This provides an overall sentiment score for each aspect.</li>
+</ol>
+<p><strong>Limitations and Improvements:</strong></p>
+<ul>
+<li><strong>Simple Keyword Matching:</strong> This approach is naive and prone to errors. It doesn't understand context or handle synonyms. More sophisticated methods use dependency parsing, Named Entity Recognition (NER), and other NLP techniques to identify aspects more accurately.</li>
+<li><strong>Sentence-Level Sentiment:</strong>  Assigning the entire sentence's sentiment to an aspect can be inaccurate if the sentence discusses multiple aspects with different sentiments.  Aspect extraction and sentiment scoring should ideally be done at the phrase level.</li>
+<li><strong>No Contextual Understanding:</strong> The code doesn't understand contextual nuances or handle negation ("not good").</li>
+<li><strong>Requires Pre-defined Aspects:</strong> The code needs a predefined list of aspects. More advanced methods can automatically discover aspects.</li>
+<li><strong>VADER is General Purpose:</strong> VADER is a general-purpose sentiment analyzer. Fine-tuning or training a model on domain-specific data (e.g., laptop reviews) would significantly improve accuracy.</li>
+</ul>
+<p><strong>Further Exploration:</strong></p>
+<ul>
+<li><strong>Spacy:</strong> Good for entity recognition and dependency parsing.</li>
+<li><strong>Transformers (Hugging Face):</strong> Powerful for fine-tuning pre-trained models for ABSA tasks. Libraries like <code>transformers</code> and <code>sentence-transformers</code> allow you to utilize state-of-the-art language models like BERT, RoBERTa, and others, and fine-tune them for aspect extraction and sentiment classification.</li>
+<li><strong>CoreNLP:</strong> Stanford's CoreNLP provides a range of NLP tools, including dependency parsing, which can be helpful for aspect extraction.</li>
+<li><strong>SemEval ABSA Datasets:</strong> Datasets like those from the SemEval workshops provide labeled data for training and evaluating ABSA models.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can I automatically identify aspects (instead of pre-defining them), and what are some common techniques for improving the accuracy of aspect extraction in ABSA?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
