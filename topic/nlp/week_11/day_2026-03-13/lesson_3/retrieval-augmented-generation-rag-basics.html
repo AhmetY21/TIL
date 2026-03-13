@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retrieval-Augmented Generation (RAG) Basics</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-retrieval-augmented-generation-rag-basics">Topic: Retrieval-Augmented Generation (RAG) Basics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Retrieval-Augmented Generation (RAG) is a natural language processing (NLP) technique that enhances the capabilities of large language models (LLMs) by grounding them in external knowledge sources. Instead of solely relying on the information encoded within their pre-trained parameters, RAG models first <em>retrieve</em> relevant information from a knowledge base and then <em>generate</em> a response based on both the retrieved context and their internal knowledge.</p>
+<p><strong>What is it?</strong> RAG combines information retrieval and text generation. It consists of two main components:</p>
+<ul>
+<li><strong>Retriever:</strong>  This component identifies and retrieves relevant documents or passages from an external knowledge source (e.g., a database, a collection of documents, a website).  The retriever uses techniques like vector similarity search to find information that is semantically related to the user's query.</li>
+<li><strong>Generator:</strong> This component is typically an LLM that takes the user's query <em>and</em> the retrieved context as input. It then generates a more informed and accurate response, leveraging both its pre-trained knowledge and the retrieved information.</li>
+</ul>
+<p><strong>How can we use it?</strong> RAG can be used to:</p>
+<ul>
+<li><strong>Improve the accuracy of LLM responses:</strong> By grounding the model in external knowledge, RAG reduces the risk of hallucinations (generating false or misleading information).</li>
+<li><strong>Provide more up-to-date information:</strong>  LLMs are typically trained on data from a specific point in time. RAG allows them to access and utilize more recent information from external sources.</li>
+<li><strong>Customize responses to specific domains:</strong> RAG enables LLMs to be adapted to particular industries or areas of expertise by retrieving information from domain-specific knowledge bases.</li>
+<li><strong>Explain answers with source attribution:</strong> RAG can provide references to the retrieved documents, increasing transparency and allowing users to verify the information.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a scenario where you want to ask an LLM questions about a company's internal policies. The LLM has not been trained on this specific company's internal documentation. Without RAG, the LLM would likely provide generic answers or make up information.</p>
+<p>With RAG, the process would look like this:</p>
+<ol>
+<li><strong>User asks:</strong> "What is the company's policy on vacation time?"</li>
+<li><strong>Retriever:</strong> The retriever searches a knowledge base of the company's policy documents (e.g., using vector similarity search). It retrieves relevant sections of the employee handbook that discuss vacation policies.</li>
+<li><strong>Generator:</strong> The LLM receives the user's query <em>and</em> the retrieved text about vacation policies. It then generates a response that summarizes the policy, potentially including specific details like the number of vacation days allowed, the process for requesting time off, and any relevant restrictions.</li>
+<li><strong>Output:</strong> "According to the employee handbook, full-time employees are eligible for 15 vacation days per year. Requests should be submitted to your manager at least two weeks in advance using the online portal. Vacation time cannot be carried over to the following year." (Potentially with a citation to the source document).</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>This example uses Langchain, a popular framework for building applications with LLMs, and demonstrates a basic RAG implementation.  It utilizes <code>FAISS</code> for vector storage and <code>OpenAIEmbeddings</code> for creating document embeddings. Note that you will need an OpenAI API key and have Langchain and other necessary packages installed (<code>pip install langchain faiss-cpu tiktoken openai</code>).</p>
+<pre class="codehilite"><code class="language-python">import os
+from langchain.document_loaders import TextLoader
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import FAISS
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+
+# Set your OpenAI API key (or use environment variables)
+os.environ[&quot;OPENAI_API_KEY&quot;] = &quot;YOUR_OPENAI_API_KEY&quot;  # Replace with your API key
+
+# 1. Load your document(s)
+loader = TextLoader(&quot;data/my_company_policy.txt&quot;) # Replace with your document path
+documents = loader.load()
+
+# 2. Split the document into chunks
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+texts = text_splitter.split_documents(documents)
+
+# 3. Create embeddings and store them in a vector database
+embeddings = OpenAIEmbeddings()
+db = FAISS.from_documents(texts, embeddings)
+
+# 4. Create a retriever
+retriever = db.as_retriever()
+
+# 5. Create a RetrievalQA chain
+qa = RetrievalQA.from_chain_type(llm=OpenAI(), chain_type=&quot;stuff&quot;, retriever=retriever, return_source_documents=True)
+
+# 6. Ask a question
+query = &quot;What is the company's policy on sick leave?&quot;
+result = qa({&quot;query&quot;: query})
+
+# Print the answer and source documents
+print(&quot;Answer:&quot;, result[&quot;result&quot;])
+print(&quot;\nSource Documents:&quot;)
+for doc in result[&quot;source_documents&quot;]:
+    print(doc.metadata) # Print metadata, typically containing document source info.
+    print(doc.page_content) # Print relevant retrieved snippets.
+    print(&quot;---&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Document Loading:</strong> Loads the text from a file using <code>TextLoader</code>.  Replace <code>"data/my_company_policy.txt"</code> with the actual path to your policy document.</li>
+<li><strong>Text Splitting:</strong> Splits the document into smaller chunks using <code>CharacterTextSplitter</code>. This is crucial for efficient retrieval.</li>
+<li><strong>Embedding Creation:</strong> Creates embeddings of the text chunks using <code>OpenAIEmbeddings</code>. Embeddings are vector representations of the text, capturing semantic meaning.</li>
+<li><strong>Vector Storage:</strong> Stores the embeddings in a vector database (<code>FAISS</code>). This allows for fast similarity search.</li>
+<li><strong>Retriever:</strong> Creates a retriever from the vector database. The retriever is responsible for finding relevant text chunks based on a query.</li>
+<li><strong>RetrievalQA Chain:</strong> Creates a <code>RetrievalQA</code> chain, which combines the retriever and an LLM (<code>OpenAI</code>). The <code>stuff</code> chain type simply combines the retrieved documents into a single context string that's passed to the LLM along with the query.  <code>return_source_documents=True</code> is crucial to understand which portions of the knowledgebase led to the generated answer.</li>
+<li><strong>Query and Answer:</strong>  Asks a question and prints the answer, along with the source documents used to generate the answer.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we evaluate the performance of a RAG system, especially in terms of retrieval quality and generation quality?  What metrics can we use, and what are some common challenges in RAG evaluation?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
