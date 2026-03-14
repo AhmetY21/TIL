@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automatic Text Summarization (Extractive)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-automatic-text-summarization-extractive">Topic: Automatic Text Summarization (Extractive)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Extractive text summarization is a method of automatically creating a summary of a text by selecting and concatenating sentences or phrases directly from the original text.  It identifies the most important sentences or segments within the original document and combines them to form a shorter, representative summary.  Crucially, it <em>does not</em> paraphrase or rewrite content; it merely selects existing text.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Quick content overview:</strong> Quickly understand the main points of a large document without reading the entire thing.</li>
+<li><strong>News aggregation:</strong> Generate concise headlines or summaries for news articles.</li>
+<li><strong>Search result snippet generation:</strong> Provide relevant context for search results.</li>
+<li><strong>Document browsing:</strong> Preview document content before deciding to read in detail.</li>
+<li><strong>Content monitoring:</strong> Track key topics discussed in a large collection of documents.</li>
+<li><strong>Data analysis:</strong>  Reducing the size of text datasets for faster analysis.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're a researcher studying climate change. You come across a lengthy research paper detailing the impact of deforestation on global warming.  Instead of reading the entire paper, you can use extractive text summarization to quickly get the key findings. The summarizer would identify and extract the sentences that contain the most crucial information about deforestation's impact (e.g., sentences discussing specific emissions increases, temperature changes, or ecological consequences). The resulting summary provides a concise overview of the paper's core arguments, allowing you to determine if the paper warrants a more in-depth reading. This saves significant time and effort in your research process. Another application is summarising product reviews. Extracting salient sentences allows a potential customer to gauge the overall sentiment and key features without reading hundreds of individual reviews.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using the <code>nltk</code> library to perform a simple extractive summarization based on sentence scoring (term frequency-inverse document frequency - TF-IDF):</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem import PorterStemmer
+import heapq
+import re
+
+def extractive_summarization(text, num_sentences=3):
+    &quot;&quot;&quot;
+    Performs extractive summarization using TF-IDF and sentence scoring.
+
+    Args:
+        text (str): The text to summarize.
+        num_sentences (int): The desired number of sentences in the summary.
+
+    Returns:
+        str: The generated summary.
+    &quot;&quot;&quot;
+    try:
+        nltk.data.find(&quot;tokenizers/punkt&quot;)
+    except LookupError:
+        nltk.download(&quot;punkt&quot;)
+    try:
+        nltk.data.find(&quot;corpora/stopwords&quot;)
+    except LookupError:
+        nltk.download(&quot;stopwords&quot;)
+
+    # 1. Preprocessing
+    text = re.sub(r'\[[0-9]*\]', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+    formatted_text = re.sub('[^a-zA-Z]', ' ', text )
+    formatted_text = re.sub(r'\s+', ' ', formatted_text)
+
+    sentence_list = sent_tokenize(text)
+
+    stopwords_list = set(stopwords.words('english'))
+
+    word_frequencies = {}
+    for word in word_tokenize(formatted_text):
+        if word not in stopwords_list:
+            if word not in word_frequencies:
+                word_frequencies[word] = 1
+            else:
+                word_frequencies[word] += 1
+
+    maximum_frequency = max(word_frequencies.values())
+
+    for word in word_frequencies:
+        word_frequencies[word] = (word_frequencies[word]/maximum_frequency)
+
+    # 2. Sentence Scoring
+    sentence_scores = {}
+    for sent in sentence_list:
+        for word in word_tokenize(sent.lower()):
+            if word in word_frequencies:
+                if len(sent.split(' ')) &lt; 30: #Optional: Consider only shorter sentences. Adjust value as required.
+                    if sent not in sentence_scores:
+                        sentence_scores[sent] = word_frequencies[word]
+                    else:
+                        sentence_scores[sent] += word_frequencies[word]
+
+    # 3. Summary Generation
+    best_sentences = heapq.nlargest(num_sentences, sentence_scores, key=sentence_scores.get)
+    summary = ' '.join(best_sentences)
+    return summary
+
+# Example usage:
+sample_text = &quot;&quot;&quot;
+Automatic summarization is the process of reducing a text document with a computer program in order to create a summary that retains the most important points of the original document. Technologies that can make a coherent summary take into account variables such as length, writing style and syntax. Automatic data summarization is part of machine learning and data mining. The two main categories of summarization are extractive and abstractive. Extractive methods extract sentences from the text. Abstractive techniques rewrite the text.
+&quot;&quot;&quot;
+
+summary = extractive_summarization(sample_text, num_sentences=2)
+print(summary)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Preprocessing:</strong> Cleans the text by removing brackets, extra spaces, and non-alphabetic characters.  Tokenizes the text into sentences. Removes stop words (common words like "the," "a," "is").</li>
+<li><strong>TF-IDF (Term Frequency-Inverse Document Frequency):</strong> Calculates the frequency of each word in the document. Normalizes the frequencies by dividing by the maximum frequency to emphasize important terms.</li>
+<li><strong>Sentence Scoring:</strong> Scores each sentence based on the sum of the normalized frequencies of the words it contains.  Optionally, sentences that are too long may be excluded from consideration.</li>
+<li><strong>Summary Generation:</strong> Selects the <code>num_sentences</code> highest-scoring sentences and concatenates them to create the summary.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a <em>very</em> basic example.  More sophisticated extractive summarization techniques exist, using more advanced natural language processing techniques.</li>
+<li>The quality of the summary depends heavily on the input text and the scoring method used.</li>
+<li>This method only selects complete sentences.  More advanced techniques might select phrases or clauses.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can more advanced NLP techniques like word embeddings (e.g., Word2Vec, GloVe, or BERT embeddings) be incorporated into extractive summarization to improve the identification of important sentences and to achieve better summary coherence?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
