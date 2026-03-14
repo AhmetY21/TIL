@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Question Answering Systems (Extractive)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-question-answering-systems-extractive">Topic: Question Answering Systems (Extractive)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Extractive Question Answering (QA) systems are a type of question answering system that answers a question by extracting a segment (span) of text directly from a given context (a document or a set of documents). In other words, instead of generating a new answer or retrieving a pre-defined answer, the system identifies the portion of the context that best answers the posed question.</p>
+<p><strong>Formally:</strong></p>
+<p>Given a context document <em>D</em> and a question <em>Q</em>, an extractive QA system aims to find the start and end positions (<em>s</em>, <em>e</em>) within <em>D</em> such that the span <em>D[s:e]</em> (the substring of <em>D</em> from position <em>s</em> to position <em>e</em>) contains the answer to <em>Q</em>.</p>
+<p><strong>How can we use it?</strong></p>
+<p>Extractive QA systems can be used in various applications where large amounts of textual data need to be searched for specific information. They are particularly useful when a precise and concise answer is expected, and the answer is explicitly stated within the context. We can use them to:</p>
+<ul>
+<li>Quickly find specific facts within documents.</li>
+<li>Build chatbots that can answer questions based on a knowledge base.</li>
+<li>Create search engines that highlight the relevant answer within search results.</li>
+<li>Automate the process of answering common questions in customer support.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a medical researcher needs to find information about the side effects of a specific drug. They have access to a large database of medical research papers and clinical trial reports.</p>
+<p>Instead of manually reading through hundreds of pages of documents, they can use an extractive QA system. The researcher can ask the system: "What are the side effects of Drug X?"</p>
+<p>The system would then analyze the database, identify relevant passages related to Drug X, and extract the text span that explicitly lists the side effects. For instance, the system might extract: "Common side effects of Drug X include nausea, headache, and dizziness."</p>
+<p>This allows the researcher to quickly and efficiently find the specific information they need without having to spend hours reading through irrelevant material. The system provides the <em>exact text</em> from the document, providing a high degree of confidence in the accuracy of the answer.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>One popular library for implementing extractive QA systems in Python is Hugging Face's Transformers library. This library provides pre-trained models and tools for various NLP tasks, including question answering. We can use the <code>pipeline</code> function to easily load and use a pre-trained QA model.</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load a pre-trained question answering model
+qa_pipeline = pipeline(&quot;question-answering&quot;)
+
+# Define the question and context
+question = &quot;What is the capital of France?&quot;
+context = &quot;France is a country located in Western Europe. Its capital is Paris.&quot;
+
+# Get the answer
+answer = qa_pipeline(question=question, context=context)
+
+# Print the answer
+print(f&quot;Answer: {answer['answer']}&quot;)
+print(f&quot;Score: {answer['score']}&quot;)
+print(f&quot;Start: {answer['start']}&quot;)
+print(f&quot;End: {answer['end']}&quot;)
+</code></pre>
+
+<p>This code snippet demonstrates how to use a pre-trained model to extract the answer to a question from a given context.  The <code>answer</code> dictionary contains the extracted answer text (<code>answer['answer']</code>), a confidence score (<code>answer['score']</code>), and the start and end indices of the answer within the context (<code>answer['start']</code> and <code>answer['end']</code>).  You can experiment with different questions, contexts, and pre-trained models to explore the capabilities of extractive QA systems.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some limitations of extractive question answering systems, and how do researchers attempt to overcome them?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
