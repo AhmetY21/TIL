@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open-Domain Question Answering</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-open-domain-question-answering">Topic: Open-Domain Question Answering</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Open-Domain Question Answering (Open-Domain QA) is a natural language processing (NLP) task that aims to answer questions posed in natural language about a wide range of topics using a vast collection of unstructured text as the knowledge source.  Unlike <em>closed-domain</em> QA which is restricted to a specific domain (e.g., medical records, legal documents), open-domain QA deals with answering questions about virtually any topic.</p>
+<p><strong>Key characteristics:</strong></p>
+<ul>
+<li><strong>Open-domain:</strong> The system is not restricted to a specific domain and needs to access and process information from a broad range of sources.</li>
+<li><strong>Natural Language Questions:</strong> Questions are posed in human-readable natural language, requiring the system to understand the question's intent and information needs.</li>
+<li><strong>Unstructured Knowledge Source:</strong> The knowledge source is usually a large collection of unstructured text data, such as the entire internet (e.g., Wikipedia, web pages), necessitating efficient methods for information retrieval and reasoning.</li>
+<li><strong>Direct Answer Generation:</strong> The system aims to provide a direct answer to the question, instead of just providing relevant documents.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Open-Domain QA systems can be used in a variety of applications, including:</p>
+<ul>
+<li><strong>Virtual Assistants:</strong> Powering intelligent virtual assistants (like Siri, Alexa, Google Assistant) by providing accurate answers to user queries.</li>
+<li><strong>Search Engines:</strong> Improving search engine results by providing direct answers extracted from web pages, rather than just a list of links.</li>
+<li><strong>Customer Service:</strong> Automating customer service by answering frequently asked questions about products or services.</li>
+<li><strong>Education:</strong> Providing students with a means to access information and learn about different topics.</li>
+<li><strong>Fact Verification:</strong> Cross-referencing and verifying information by comparing it with multiple sources.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a user asking the following question to a virtual assistant:</p>
+<p>"Who directed the movie 'Pulp Fiction'?"</p>
+<p>An Open-Domain QA system should be able to:</p>
+<ol>
+<li><strong>Understand the question:</strong> Analyze the question to identify the entity being asked about ("Pulp Fiction") and the type of information being requested (director).</li>
+<li><strong>Retrieve relevant information:</strong> Search a vast knowledge source (e.g., Wikipedia, a large collection of articles) to find documents that contain information about "Pulp Fiction."</li>
+<li><strong>Extract the answer:</strong> Identify the sentence or phrase within the retrieved documents that answers the question, which in this case is "Quentin Tarantino".</li>
+<li><strong>Present the answer:</strong> Present the user with the extracted answer, "Quentin Tarantino."</li>
+</ol>
+<p>A simple search engine might only return a list of web pages about "Pulp Fiction". An Open-Domain QA system goes further by analyzing the content of those pages and extracting the specific answer to the question. This saves the user time and effort by directly providing the information they are looking for.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Using the <code>transformers</code> library and the <code>pipeline</code> function for QA. This is a basic example and relies on a pre-trained model. More complex systems would involve a retrieval component and a separate reader model.</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Load the question-answering pipeline
+qa_pipeline = pipeline(&quot;question-answering&quot;)
+
+# Define the question and context
+question = &quot;Who directed the movie 'Pulp Fiction'?&quot;
+context = &quot;Pulp Fiction is a 1994 American neo-noir crime film written and directed by Quentin Tarantino, who conceived it with Roger Avary.&quot;
+
+# Get the answer
+answer = qa_pipeline(question=question, context=context)
+
+# Print the answer
+print(f&quot;Question: {question}&quot;)
+print(f&quot;Answer: {answer['answer']}&quot;)
+print(f&quot;Score: {answer['score']}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import <code>pipeline</code>:</strong> Imports the <code>pipeline</code> function from the <code>transformers</code> library.</li>
+<li><strong>Load the QA pipeline:</strong> Creates a <code>question-answering</code> pipeline, which automatically downloads and loads a pre-trained model suitable for QA (usually a RoBERTa or BERT-based model).  Note this downloads a substantial model the first time it is run.</li>
+<li><strong>Define question and context:</strong> Defines the question to be answered and the context (the text where the answer might be found). In a real Open-Domain QA system, the context would be retrieved from a large knowledge base. This example uses a simple, manually provided context.</li>
+<li><strong>Get the answer:</strong> Calls the <code>qa_pipeline</code> with the question and context. The pipeline processes the text and returns a dictionary containing the predicted answer, the confidence score, and the start/end positions of the answer within the context.</li>
+<li><strong>Print the answer:</strong> Prints the question, the extracted answer, and the confidence score.</li>
+</ol>
+<p>This example demonstrates a simple QA system using a provided context. A real-world Open-Domain QA system needs a retrieval component to find the relevant context from a massive dataset before the <code>qa_pipeline</code> can extract the answer. This retrieval step is usually based on techniques like BM25, TF-IDF, or more sophisticated neural methods like dense retrieval.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we efficiently retrieve the most relevant context from a large knowledge base (e.g., Wikipedia) for a given question in an Open-Domain QA system, such that we don't need to process the entire knowledge base for every question? What are the common approaches to this information retrieval problem?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
