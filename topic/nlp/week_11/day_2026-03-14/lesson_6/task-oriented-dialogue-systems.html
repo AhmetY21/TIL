@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task-Oriented Dialogue Systems</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-task-oriented-dialogue-systems">Topic: Task-Oriented Dialogue Systems</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A task-oriented dialogue system (also known as a goal-oriented dialogue system) is a type of artificial intelligence system designed to assist users in achieving specific goals or tasks through natural language conversations. Unlike chatbots designed for general conversation or entertainment, task-oriented dialogue systems focus on understanding the user's <em>intent</em> and <em>fulfilling their request</em> by interacting with external services and databases.</p>
+<p><strong>Formal Definition Components:</strong></p>
+<ul>
+<li><strong>Goal:</strong> The specific task the user wants to accomplish (e.g., booking a flight, ordering a pizza, finding a restaurant).</li>
+<li><strong>Intent:</strong> The underlying purpose or desire expressed in the user's utterance (e.g., "find a restaurant," "book a hotel").</li>
+<li><strong>Slots:</strong> Specific pieces of information required to fulfill the user's goal (e.g., destination city, date, number of guests). These are often referred to as "slot values".</li>
+<li><strong>Dialogue State:</strong> The system's internal representation of the conversation's progress, including the user's goal, identified intents, and filled slots. It evolves with each turn of the conversation.</li>
+<li><strong>Dialogue Policy:</strong> The system's strategy for determining the next action to take based on the current dialogue state (e.g., asking for missing slot values, confirming information, performing an action, providing results).</li>
+<li><strong>Natural Language Understanding (NLU):</strong> The component responsible for understanding the user's input, including intent classification and slot filling.</li>
+<li><strong>Dialogue Management (DM):</strong> The component responsible for maintaining the dialogue state and determining the next system action (based on the dialogue policy).</li>
+<li><strong>Natural Language Generation (NLG):</strong> The component responsible for generating the system's response in natural language.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>We use task-oriented dialogue systems to automate tasks that would typically require human interaction, providing users with a convenient and efficient way to access information and services. Examples include:</p>
+<ul>
+<li><strong>Virtual Assistants:</strong> Integrating with smart home devices to control lights, appliances, and entertainment systems.</li>
+<li><strong>Customer Service:</strong> Handling routine inquiries, providing product information, and resolving simple issues.</li>
+<li><strong>Travel Booking:</strong> Assisting users in finding and booking flights, hotels, and rental cars.</li>
+<li><strong>Food Ordering:</strong> Taking orders, providing menu options, and processing payments.</li>
+<li><strong>Information Retrieval:</strong> Answering specific questions and providing relevant information from databases or APIs.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a user wants to book a table at a restaurant. A task-oriented dialogue system can handle this scenario as follows:</p>
+<ol>
+<li><strong>User:</strong> "I want to book a table for two at a restaurant in San Francisco on Friday."</li>
+<li><strong>NLU:</strong> Identifies the <em>intent</em> as "book_restaurant" and extracts the <em>slots</em> "number_of_people" (2), "city" (San Francisco), and "date" (Friday).</li>
+<li><strong>Dialogue State:</strong> Updates the dialogue state to reflect the identified intent and slot values.</li>
+<li><strong>Dialogue Policy:</strong> Determines that the time is missing.</li>
+<li><strong>NLG:</strong> Generates the response: "What time would you like to book the table for?"</li>
+<li><strong>User:</strong> "At 7 PM."</li>
+<li><strong>NLU:</strong> Extracts the <em>slot</em> "time" (7 PM).</li>
+<li><strong>Dialogue State:</strong> Updates the dialogue state to include the time.</li>
+<li><strong>Dialogue Policy:</strong> Determines that all necessary information is available.</li>
+<li><strong>Backend Service:</strong> Queries a restaurant database or API to find available tables matching the user's criteria.</li>
+<li><strong>NLG:</strong> Generates the response: "I found a table for two at a restaurant called 'The Italian Place' in San Francisco for Friday at 7 PM. Would you like me to book it?"</li>
+<li><strong>User:</strong> "Yes, please."</li>
+<li><strong>Backend Service:</strong> Books the table and confirms the booking.</li>
+<li><strong>NLG:</strong> Generates the response: "Your table has been booked at 'The Italian Place' for Friday at 7 PM. Enjoy your meal!"</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While building a complete task-oriented dialogue system requires extensive libraries and frameworks, we can demonstrate a simplified example of slot filling using Python:</p>
+<pre class="codehilite"><code class="language-python">class DialogueState:
+    def __init__(self):
+        self.intent = None
+        self.slots = {}
+
+    def update_slot(self, slot_name, slot_value):
+        self.slots[slot_name] = slot_value
+
+def extract_intent_and_slots(user_utterance):
+    # This is a VERY simplified example. In reality, you'd use NLP libraries.
+    # Example, using keywords:
+    if &quot;book&quot; in user_utterance and &quot;restaurant&quot; in user_utterance:
+        intent = &quot;book_restaurant&quot;
+        slots = {}
+        if &quot;San Francisco&quot; in user_utterance:
+            slots[&quot;city&quot;] = &quot;San Francisco&quot;
+        if &quot;two&quot; in user_utterance:
+            slots[&quot;number_of_people&quot;] = 2
+        return intent, slots
+    else:
+        return None, {}  # Could not determine intent
+
+
+def main():
+    dialogue_state = DialogueState()
+
+    user_utterance = &quot;I want to book a restaurant for two in San Francisco.&quot;
+    intent, slots = extract_intent_and_slots(user_utterance)
+
+    if intent:
+        dialogue_state.intent = intent
+        for slot_name, slot_value in slots.items():
+            dialogue_state.update_slot(slot_name, slot_value)
+
+        print(&quot;Intent:&quot;, dialogue_state.intent)
+        print(&quot;Slots:&quot;, dialogue_state.slots)
+    else:
+        print(&quot;Could not understand the user's request.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>DialogueState</code> Class:</strong> Represents the current state of the conversation, storing the intent and slot values.</li>
+<li><strong><code>extract_intent_and_slots</code> Function:</strong> This is a placeholder for a more sophisticated NLU component. In reality, this would involve using NLP techniques like named entity recognition and intent classification (using libraries such as spaCy, NLTK, or more complex deep learning models).  This simplified version uses keyword matching.</li>
+<li><strong><code>main</code> Function:</strong> Simulates a single turn of the dialogue. It takes a user utterance, extracts the intent and slots, updates the <code>DialogueState</code>, and then prints the extracted information.</li>
+</ol>
+<p><strong>Note:</strong>  This is a basic illustration. Building a real task-oriented dialogue system requires using advanced NLP techniques and dialogue management frameworks (e.g., Rasa, Dialogflow, Microsoft Bot Framework).</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we improve the accuracy and robustness of the NLU component in a task-oriented dialogue system, especially when dealing with noisy or ambiguous user input?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
