@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automatic Text Summarization (Abstractive)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-automatic-text-summarization-abstractive">Topic: Automatic Text Summarization (Abstractive)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Abstractive text summarization is a technique in Natural Language Processing (NLP) that aims to generate a concise and fluent summary of a longer text document or set of documents by paraphrasing and reformulating the original content.  Unlike extractive summarization, which selects existing sentences verbatim from the original text, abstractive summarization involves understanding the input text, identifying the key concepts, and then generating new sentences that convey the same meaning in a more compact form. Think of it like a human reader summarizing a text – they don't just copy parts; they understand and rewrite.</p>
+<p>How can we use it?</p>
+<ul>
+<li><strong>Information Overload Reduction:</strong> Quickly grasp the essence of long articles, research papers, or news reports.</li>
+<li><strong>Question Answering Systems:</strong> Generate summaries as answers to specific questions.</li>
+<li><strong>News Aggregation:</strong> Create short headlines and summaries for news articles to provide readers with a quick overview of current events.</li>
+<li><strong>Chatbots and Virtual Assistants:</strong>  Provide concise answers to user queries based on large knowledge bases.</li>
+<li><strong>Meeting Summarization:</strong> Automatically generate summaries of meeting transcripts to highlight key decisions and action items.</li>
+<li><strong>Document Understanding:</strong> Aid in understanding the main topics of a document without reading the entire thing.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are a busy research scientist needing to stay up-to-date with the latest publications in your field. You are bombarded daily with dozens of new research papers, many of which are quite lengthy.  Manually reading each paper thoroughly would be incredibly time-consuming.</p>
+<p>Using abstractive text summarization, you can automatically generate short, insightful summaries of these papers.  Instead of reading the entire 10-page paper, you can quickly read a concise abstractive summary of a few paragraphs. This allows you to quickly determine which papers are most relevant to your research and warrant a more in-depth read. The summaries wouldn't simply select sentences from the abstract but would instead synthesize the key findings, methodology, and conclusions into a new, coherent summary, saving significant time and effort.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While building a <em>robust</em> abstractive summarization system from scratch is complex and often involves advanced deep learning techniques, we can leverage pre-trained models available through libraries like Transformers from Hugging Face.  Here's a basic example using the <code>transformers</code> library and a pre-trained abstractive summarization model like <code>facebook/bart-large-cnn</code>:</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Initialize the summarization pipeline using a pre-trained BART model
+summarizer = pipeline(&quot;summarization&quot;, model=&quot;facebook/bart-large-cnn&quot;)
+
+# Input text (replace with your actual text)
+text = &quot;&quot;&quot;
+The US Department of Justice has charged two former Twitter employees with spying for Saudi Arabia.
+The two men, Ali Alzabarah and Ahmad Abouammo, are accused of accessing private information about Twitter users who were critical of the Saudi government.
+A third man, Ahmed Almutairi, a Saudi national, is also charged in the case.
+According to the Justice Department, Alzabarah and Abouammo were paid thousands of dollars by Saudi officials to provide them with information about Twitter users.
+The information included email addresses, phone numbers, and IP addresses.
+The Saudi government has not commented on the charges.
+Twitter said in a statement that it is cooperating with the Justice Department in the investigation.
+&quot;&quot;&quot;
+
+# Generate the summary
+summary = summarizer(text, max_length=130, min_length=30, do_sample=False)
+
+# Print the summary
+print(summary[0]['summary_text'])
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>from transformers import pipeline</code></strong>: Imports the <code>pipeline</code> function from the <code>transformers</code> library, which provides a simple interface for using pre-trained NLP models.</li>
+<li><strong><code>summarizer = pipeline("summarization", model="facebook/bart-large-cnn")</code></strong>:  Creates a summarization pipeline using the pre-trained BART (Bidirectional and Auto-Regressive Transformer) model. <code>facebook/bart-large-cnn</code> is a popular model specifically trained for abstractive summarization and performs well on news articles. Other models like T5 can also be used.</li>
+<li><strong><code>text = ...</code></strong>:  This is the input text you want to summarize. Replace the placeholder text with your document.</li>
+<li><strong><code>summary = summarizer(text, max_length=130, min_length=30, do_sample=False)</code></strong>:  This line performs the summarization.<ul>
+<li><code>text</code>:  The input text.</li>
+<li><code>max_length</code>:  The maximum length of the generated summary (in tokens).</li>
+<li><code>min_length</code>: The minimum length of the generated summary (in tokens).</li>
+<li><code>do_sample=False</code>: Setting to <code>False</code> disables sampling, making the results more deterministic. If set to <code>True</code> the summarizer will use probabilistic sampling for token selection, leading to more diverse summaries. It's a hyperparameter that can be tuned.</li>
+</ul>
+</li>
+<li><strong><code>print(summary[0]['summary_text'])</code></strong>:  Prints the generated summary.  The pipeline returns a list containing a dictionary with the key 'summary_text'.</li>
+</ul>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Hardware:</strong>  Running these models, especially the larger ones, can be computationally intensive. Consider using a GPU for faster processing.</li>
+<li><strong>Model Choice:</strong>  Different pre-trained models are suitable for different types of text. Experiment with various models (e.g., T5, PEGASUS) to find the best fit for your use case.</li>
+<li><strong>Text Length:</strong>  Many models have limits on the input text length. You might need to split long documents into chunks and summarize each chunk individually before combining the summaries.</li>
+<li><strong>Fine-tuning:</strong> For optimal results on a specific domain, consider fine-tuning a pre-trained model on a dataset of text and corresponding summaries from that domain.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we evaluate the quality of an abstractive summary, especially when there's no single "correct" answer, and what metrics are commonly used for this purpose?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
