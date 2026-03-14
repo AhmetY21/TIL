@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbots and Dialogue Systems</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-chatbots-and-dialogue-systems">Topic: Chatbots and Dialogue Systems</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Chatbots and dialogue systems are computer programs designed to simulate conversation with human users, primarily through textual or auditory means. They aim to understand user input, generate relevant responses, and maintain context throughout the interaction. Essentially, they automate conversations, offering assistance, entertainment, or information retrieval.</p>
+<p><strong>Formal Definition:</strong> A dialogue system can be viewed as a state machine or a Partially Observable Markov Decision Process (POMDP). In a simpler model, it consists of the following core components:</p>
+<ul>
+<li><strong>Natural Language Understanding (NLU):</strong> This component parses the user's input (text or speech) to extract its meaning. This involves tasks like intent recognition (what does the user want to achieve?), entity extraction (identifying key pieces of information like dates, locations, product names), and sentiment analysis (understanding the user's emotional state).</li>
+<li><strong>Dialogue Management (DM):</strong> This component maintains the conversation state. It keeps track of the dialogue history, user goals, and available information. The DM uses this information to decide what action to take next, such as requesting more information, providing a response, or performing a task. It also handles conversation flow, deciding when to change topics or end the conversation.</li>
+<li><strong>Natural Language Generation (NLG):</strong> This component takes the action chosen by the DM and generates a natural language response to the user. This involves tasks like sentence planning, lexical selection, and surface realization (generating grammatically correct and fluent text).</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Customer service:</strong> Answering frequently asked questions, resolving basic issues, and routing complex inquiries to human agents.</li>
+<li><strong>Information retrieval:</strong> Providing quick access to information from databases, websites, or knowledge graphs.</li>
+<li><strong>Task completion:</strong> Assisting users in completing tasks, such as booking flights, ordering food, or setting reminders.</li>
+<li><strong>Education and training:</strong> Providing interactive learning experiences and personalized feedback.</li>
+<li><strong>Entertainment:</strong> Engaging users in conversations, telling jokes, or playing games.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Application Scenario: E-commerce Product Recommendation Chatbot</strong></p>
+<p>Imagine an online store wants to improve its product discovery process. They implement a chatbot that helps users find suitable products by engaging in a conversation.</p>
+<ol>
+<li><strong>User:</strong> "Hi, I'm looking for a gift for my dad who enjoys outdoor activities." (NLU: Intent: "find_gift", Entity: "recipient=dad", Entity: "interest=outdoor activities")</li>
+<li><strong>Chatbot:</strong> "Great! Does your dad prefer activities like hiking, camping, fishing, or something else?" (DM: Determines that more specific information is needed about the types of outdoor activities. NLG: Generates a clarification question.)</li>
+<li><strong>User:</strong> "He likes hiking and camping mostly." (NLU: Entity: "activity=hiking", Entity: "activity=camping")</li>
+<li><strong>Chatbot:</strong> "Perfect. What's your budget for the gift?" (DM: Gathers more constraints for filtering products. NLG: Generates a question about budget.)</li>
+<li><strong>User:</strong> "Around $50." (NLU: Entity: "budget=50")</li>
+<li><strong>Chatbot:</strong> "Okay, based on your preferences, here are a few suggestions: [Displays a list of hiking and camping gear priced around $50 with images and descriptions]." (DM: Uses the extracted entities to query a product database. NLG: Formats the results into a user-friendly response.)</li>
+<li><strong>User:</strong> "That's great, thanks!"</li>
+</ol>
+<p>In this scenario, the chatbot effectively guides the user through a series of questions to understand their needs and provide personalized product recommendations, improving the shopping experience.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While building a full chatbot from scratch requires significant effort, we can use the <code>nltk</code> (Natural Language Toolkit) library to create a basic, rule-based chatbot. This example focuses on recognizing keywords and providing pre-defined responses.</p>
+<pre class="codehilite"><code class="language-python">import nltk
+import re
+
+# Define keywords and corresponding responses
+responses = {
+    &quot;greeting&quot;: [&quot;Hello!&quot;, &quot;Hi there!&quot;, &quot;Greetings!&quot;],
+    &quot;goodbye&quot;: [&quot;Goodbye!&quot;, &quot;Bye!&quot;, &quot;See you later!&quot;],
+    &quot;weather&quot;: [&quot;I'm not equipped to answer that.&quot;, &quot;I do not have weather information.&quot;],
+    &quot;default&quot;: [&quot;I'm sorry, I don't understand.&quot;, &quot;Could you please rephrase that?&quot;, &quot;I'm still learning.&quot;]
+}
+
+def chatbot_response(user_input):
+    user_input = user_input.lower()
+
+    if re.search(r&quot;\b(hello|hi|hey)\b&quot;, user_input):
+        return responses[&quot;greeting&quot;][0] # Always return the first greeting
+
+    if re.search(r&quot;\b(goodbye|bye|see you)\b&quot;, user_input):
+        return responses[&quot;goodbye&quot;][0]
+
+    if re.search(r&quot;\b(weather)\b&quot;, user_input):
+        return responses[&quot;weather&quot;][0]
+
+    return responses[&quot;default&quot;][0]
+
+# Main loop
+print(&quot;Chatbot: Hi! How can I help you?&quot;)
+while True:
+    user_input = input(&quot;You: &quot;)
+    response = chatbot_response(user_input)
+    print(&quot;Chatbot:&quot;, response)
+
+    if re.search(r&quot;\b(goodbye|bye|see you)\b&quot;, user_input):
+        break
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>responses</code> Dictionary:</strong>  Stores keywords and their corresponding responses.</li>
+<li><strong><code>chatbot_response(user_input)</code> Function:</strong><ul>
+<li>Converts the user input to lowercase for case-insensitive matching.</li>
+<li>Uses regular expressions (<code>re.search</code>) to check if any of the predefined keywords are present in the input.  The <code>\b</code> ensures that we match whole words (e.g., "hi" but not "history").</li>
+<li>Returns the corresponding response if a keyword is found.</li>
+<li>Returns a default response if no keywords are matched.</li>
+</ul>
+</li>
+<li><strong>Main Loop:</strong><ul>
+<li>Prompts the user for input.</li>
+<li>Calls the <code>chatbot_response()</code> function to get the chatbot's response.</li>
+<li>Prints the chatbot's response.</li>
+<li>Exits the loop when the user says goodbye.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Limitations:</strong> This is a very basic chatbot. It doesn't have any real NLU, DM, or NLG capabilities. It relies solely on keyword matching, which can be inaccurate and inflexible.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we improve the NLU component of a chatbot to handle more complex and nuanced user inputs beyond simple keyword matching, and what are the trade-offs associated with different NLU techniques (e.g., rule-based vs. machine learning based approaches)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
