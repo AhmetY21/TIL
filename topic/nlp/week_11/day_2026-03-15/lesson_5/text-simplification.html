@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Simplification</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-text-simplification">Topic: Text Simplification</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text Simplification is the process of transforming a text into a more readable and understandable version, while preserving its original meaning. The goal is to reduce the linguistic complexity of the text without losing essential information. This is typically achieved by reducing sentence length, simplifying vocabulary, and modifying grammatical structures.</p>
+<p>Formally, we can define Text Simplification as a function <code>f</code> that takes a complex text <code>T_complex</code> as input and produces a simplified text <code>T_simple</code>:</p>
+<p><code>f(T_complex) -&gt; T_simple</code></p>
+<p>where <code>T_simple</code> is intended to be more accessible to a specific target audience (e.g., children, non-native speakers, individuals with cognitive disabilities).</p>
+<p>We can use Text Simplification for:</p>
+<ul>
+<li><strong>Improving readability for specific audiences:</strong>  Making content accessible to individuals with lower literacy levels, learning disabilities, or cognitive impairments.</li>
+<li><strong>Aiding language learners:</strong> Providing simpler texts for language learners to improve comprehension.</li>
+<li><strong>Facilitating text summarization:</strong>  Simplifying text as a preprocessing step for generating concise summaries.  Sometimes simplified text is easier to summarize.</li>
+<li><strong>Supporting machine translation:</strong> Simplifying text can improve the accuracy and fluency of machine translation, especially for low-resource languages.</li>
+<li><strong>Enhancing information retrieval:</strong> Simplifying queries can lead to more relevant search results, especially for users who are unsure of the correct terminology.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a news website wanting to make its articles accessible to a wider audience, including children and individuals with limited English proficiency. They could use Text Simplification to automatically generate a simplified version of each article alongside the original.  A button or toggle could allow users to switch between the complex and simple versions.</p>
+<p>For example, the original sentence:</p>
+<p>"The proliferation of autonomous vehicles necessitates the implementation of stringent safety regulations to mitigate potential hazards."</p>
+<p>Could be simplified to:</p>
+<p>"More self-driving cars mean we need strong safety rules to avoid accidents."</p>
+<p>This simplified version is easier to understand due to shorter sentences, simpler vocabulary (e.g., "proliferation" replaced with "more", "necessitates" replaced with "mean", "stringent" replaced with "strong", "mitigate potential hazards" replaced with "avoid accidents"), and a more direct grammatical structure.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a perfect, fully automatic, and universally effective text simplification method doesn't exist in a single Python library, you can use a combination of NLP techniques and libraries.  Here's an example demonstrating a basic simplification using spaCy for sentence splitting and then simple substitutions and shortening.  This is a very basic example; more sophisticated methods involve things like paraphrasing using sequence-to-sequence models (which are harder to fit into a simple code snippet).</p>
+<pre class="codehilite"><code class="language-python">import spacy
+
+# Load a spaCy model (you might need to download one: `python -m spacy download en_core_web_sm`)
+nlp = spacy.load(&quot;en_core_web_sm&quot;)
+
+def simplify_text(text):
+    &quot;&quot;&quot;Simplifies a text by splitting into shorter sentences
+    and replacing some complex words with simpler ones.&quot;&quot;&quot;
+    doc = nlp(text)
+    sentences = [sent.text for sent in doc.sents]  # Split into sentences
+    simplified_sentences = []
+    for sentence in sentences:
+        # Basic simplification rules (can be extended)
+        simplified_sentence = sentence.replace(&quot;proliferation&quot;, &quot;more&quot;)
+        simplified_sentence = simplified_sentence.replace(&quot;necessitates&quot;, &quot;means we need&quot;)
+        simplified_sentence = simplified_sentence.replace(&quot;stringent&quot;, &quot;strong&quot;)
+        simplified_sentence = simplified_sentence.replace(&quot;mitigate potential hazards&quot;, &quot;avoid accidents&quot;)
+        # Attempt to shorten sentences further (very basic approach)
+        if len(simplified_sentence.split()) &gt; 20:
+            simplified_sentence = &quot; &quot;.join(simplified_sentence.split()[:20]) + &quot;...&quot;  # Truncate if too long
+
+        simplified_sentences.append(simplified_sentence)
+
+    return &quot; &quot;.join(simplified_sentences)
+
+# Example usage
+complex_text = &quot;The proliferation of autonomous vehicles necessitates the implementation of stringent safety regulations to mitigate potential hazards. Furthermore, comprehensive data analysis is paramount to identifying and rectifying systemic flaws in the vehicle's software architecture.&quot;
+simplified_text = simplify_text(complex_text)
+print(f&quot;Original Text: {complex_text}&quot;)
+print(f&quot;Simplified Text: {simplified_text}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Sentence Splitting:</strong> The code first uses spaCy to split the input text into individual sentences.</li>
+<li><strong>Word Replacement:</strong>  It then applies a series of simple string replacements to substitute complex words with simpler alternatives.</li>
+<li><strong>Sentence Shortening:</strong>  A basic check is implemented to shorten overly long sentences by truncating them. This is a very rudimentary method; a better approach would involve dependency parsing to identify essential phrases.</li>
+<li><strong>Joining Sentences:</strong> Finally, the simplified sentences are joined back together to form the simplified text.</li>
+</ol>
+<p><strong>Limitations:</strong></p>
+<ul>
+<li>This is a very basic example and relies on hardcoded replacement rules.  It won't handle complex grammatical transformations or paraphrasing.</li>
+<li>It doesn't address all aspects of text complexity, such as syntactic complexity.</li>
+<li>The sentence shortening is rudimentary and can lead to incomplete or grammatically incorrect sentences.</li>
+</ul>
+<p>For more advanced text simplification, you would typically use machine learning models, such as sequence-to-sequence models trained on parallel corpora of complex and simplified texts. Libraries like Transformers from Hugging Face are often used for this purpose, but setting up and training such models is much more complex.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the main evaluation metrics used to assess the performance of a text simplification system, and what are their limitations?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
