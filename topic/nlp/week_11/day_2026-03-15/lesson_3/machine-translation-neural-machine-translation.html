@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Machine Translation (Neural Machine Translation)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-machine-translation-neural-machine-translation">Topic: Machine Translation (Neural Machine Translation)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Neural Machine Translation (NMT) is a type of machine translation that utilizes neural networks to directly learn the mapping from a source language to a target language. Unlike traditional statistical machine translation (SMT) approaches which rely on separately engineered components like translation models, language models, and reordering models, NMT learns these components jointly in an end-to-end fashion.</p>
+<p>Formally, given a sentence in the source language, <code>x = (x_1, x_2, ..., x_m)</code>, the goal of NMT is to find the sentence in the target language, <code>y = (y_1, y_2, ..., y_n)</code>, that maximizes the conditional probability <code>P(y | x)</code>. This probability is modeled by a neural network, typically using an encoder-decoder architecture.</p>
+<p>The encoder maps the source sentence <code>x</code> into a fixed-length vector representation (a context vector or embeddings). The decoder then uses this context vector to generate the target sentence <code>y</code>, one word at a time.  Modern NMT systems often incorporate attention mechanisms, which allow the decoder to focus on different parts of the source sentence when predicting each word in the target sentence.  This dramatically improves translation quality by allowing the model to capture long-range dependencies and alignment between words in the source and target languages.</p>
+<p>We can use NMT to:</p>
+<ul>
+<li><strong>Translate text from one language to another.</strong> This is the primary use case.</li>
+<li><strong>Build multilingual models.</strong> Train a single model to translate between multiple language pairs.</li>
+<li><strong>Improve translation quality.</strong> NMT typically outperforms SMT in terms of fluency and accuracy.</li>
+<li><strong>Automate localization workflows.</strong> Streamline the process of translating content for different regions.</li>
+<li><strong>Facilitate cross-lingual communication.</strong> Enable people who speak different languages to communicate more easily.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> A global e-commerce company wants to expand its operations into Japan.  Their website, product descriptions, customer service materials, and marketing campaigns are all currently in English.</p>
+<p><strong>NMT Application:</strong>  The company can use NMT to automatically translate all of their English content into Japanese. This allows them to quickly and efficiently launch their business in Japan without the need for extensive manual translation. They can integrate the NMT system into their content management system (CMS) to automatically translate new content as it is created. A human translator can then review and edit the NMT output to ensure accuracy and cultural appropriateness, saving significant time and resources compared to translating everything from scratch. The NMT system can also be used for real-time translation of customer service chats, enabling English-speaking customer service representatives to communicate with Japanese-speaking customers. This application improves accessibility and customer satisfaction in the new market.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>One common way to implement NMT in Python is using the <code>transformers</code> library, which provides pre-trained models and tools for fine-tuning them on specific translation tasks. This library is based on PyTorch or TensorFlow. Here's a basic example using the <code>transformers</code> library with a pre-trained translation model (e.g., Helsinki-NLP/opus-mt-en-es):</p>
+<pre class="codehilite"><code class="language-python">from transformers import pipeline
+
+# Initialize the translation pipeline (English to Spanish)
+translator = pipeline(&quot;translation&quot;, model=&quot;Helsinki-NLP/opus-mt-en-es&quot;)
+
+# Text to translate
+text = &quot;This is a simple example of machine translation.&quot;
+
+# Perform the translation
+translation = translator(text)
+
+# Print the translation
+print(translation)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>from transformers import pipeline</code></strong>: Imports the <code>pipeline</code> function from the <code>transformers</code> library. This is a high-level API for performing NLP tasks.</li>
+<li><strong><code>translator = pipeline("translation", model="Helsinki-NLP/opus-mt-en-es")</code></strong>: Creates a translation pipeline.  The first argument <code>"translation"</code> specifies that we want to perform machine translation. The <code>model</code> argument specifies the pre-trained model to use.  <code>Helsinki-NLP/opus-mt-en-es</code> is a model trained to translate from English to Spanish. You can find other models on the Hugging Face Model Hub (<a href="https://huggingface.co/models">https://huggingface.co/models</a>).</li>
+<li><strong><code>text = "This is a simple example of machine translation."</code></strong>:  Defines the English text to be translated.</li>
+<li><strong><code>translation = translator(text)</code></strong>:  Passes the text to the translator pipeline, which returns a dictionary containing the translated text.</li>
+<li><strong><code>print(translation)</code></strong>: Prints the translated text. The output will be a list of dictionaries; typically you'll want to extract the 'translation_text' field.</li>
+</ul>
+<p>Note: The first time you run this, it will download the pre-trained model, which can take some time.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some of the limitations of Neural Machine Translation, and what research areas are currently being explored to address these limitations?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
