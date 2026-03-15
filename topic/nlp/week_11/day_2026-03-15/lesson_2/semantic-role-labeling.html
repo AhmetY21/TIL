@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semantic Role Labeling</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-semantic-role-labeling">Topic: Semantic Role Labeling</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Semantic Role Labeling (SRL) is a natural language processing (NLP) task that aims to identify the semantic roles of constituents in a sentence. In simpler terms, SRL seeks to answer the question of "who did what to whom, when, where, and why?" in a given sentence. It identifies predicates (usually verbs) and assigns semantic roles to the other constituents in the sentence, indicating their function in relation to the predicate.</p>
+<p><strong>Formal definition:</strong></p>
+<p>Given a sentence and a predicate (usually a verb), SRL identifies the semantic arguments of that predicate and classifies them into pre-defined semantic roles.  These roles describe the part each constituent plays in the event or state described by the predicate.</p>
+<p>Common semantic roles include:</p>
+<ul>
+<li><strong>ARG0 (Agent/Causer):</strong> The entity performing the action.</li>
+<li><strong>ARG1 (Patient/Theme):</strong> The entity affected by the action.</li>
+<li><strong>ARG2 (Instrument/Beneficiary):</strong> An instrument used in the action or the recipient of the action.</li>
+<li><strong>ARG3 (Beneficiary/Attribute):</strong> Another beneficiary or an attribute of the ARG1.</li>
+<li><strong>ARG4 (End State/Attribute):</strong> The final state of the ARG1 or another attribute of the ARG1.</li>
+<li><strong>ARG5 (Attribute):</strong> Yet another attribute of the ARG1.</li>
+<li><strong>ARGM-LOC (Location):</strong> Where the action takes place.</li>
+<li><strong>ARGM-TMP (Temporal):</strong> When the action takes place.</li>
+<li><strong>ARGM-MNR (Manner):</strong> How the action is performed.</li>
+<li><strong>ARGM-PRP (Purpose):</strong> Why the action is performed.</li>
+<li><strong>ARGM-ADV (Adverbial):</strong> General adverbial modifier.</li>
+<li><strong>ARGM-CAU (Cause):</strong> The cause of the action.</li>
+<li><strong>ARGM-DIR (Direction):</strong> The direction of movement.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>SRL is useful for a variety of downstream NLP tasks, including:</p>
+<ul>
+<li><strong>Information Extraction:</strong> SRL helps in extracting structured information from unstructured text, making it easier to populate knowledge bases and databases.</li>
+<li><strong>Question Answering:</strong> By understanding the roles of entities in a sentence, question answering systems can better understand the query and retrieve relevant information.</li>
+<li><strong>Text Summarization:</strong> SRL can help identify the most important events and entities in a document, which can be used to create more informative summaries.</li>
+<li><strong>Machine Translation:</strong> SRL can help ensure that the semantic roles of entities are preserved during translation, leading to more accurate translations.</li>
+<li><strong>Textual Entailment:</strong> SRL can help determine whether one sentence entails another by comparing the semantic roles of entities in both sentences.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the sentence: "John gave Mary the book yesterday in the library because she needed it for her research."</p>
+<p>An SRL system would analyze this sentence and identify the predicate (the verb "gave") and its arguments. The SRL output might look something like this:</p>
+<ul>
+<li><strong>Predicate:</strong> gave</li>
+<li><strong>ARG0 (Agent):</strong> John</li>
+<li><strong>ARG1 (Theme):</strong> the book</li>
+<li><strong>ARG2 (Beneficiary):</strong> Mary</li>
+<li><strong>ARGM-TMP (Temporal):</strong> yesterday</li>
+<li><strong>ARGM-LOC (Location):</strong> in the library</li>
+<li><strong>ARGM-PRP (Purpose):</strong> because she needed it for her research</li>
+</ul>
+<p>This structured representation of the sentence's meaning allows us to easily answer questions like:</p>
+<ul>
+<li>Who gave something? (John)</li>
+<li>What did John give? (the book)</li>
+<li>To whom did John give the book? (Mary)</li>
+<li>When did John give the book? (yesterday)</li>
+<li>Where did John give the book? (in the library)</li>
+<li>Why did John give the book? (because she needed it for her research)</li>
+</ul>
+<p>This demonstrates how SRL can be used to extract meaningful information and answer complex questions about a sentence. This is useful in applications such as chatbot development (understanding user intents and extracting relevant information), document understanding, and knowledge base construction.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While a complete SRL implementation from scratch is complex, you can use existing NLP libraries that provide SRL capabilities. One popular library is spaCy with the <code>llm-coref</code> extension which utilizes large language models (LLMs) to perform coreference resolution and semantic role labeling.  Other libraries, like AllenNLP, offer more fine-grained control but require more setup.</p>
+<p>Here's a basic example using spaCy with the <code>llm-coref</code> extension:</p>
+<pre class="codehilite"><code class="language-python">import spacy
+from llm_coref.coreference import CoreferenceResolver
+from llm_coref.semantic_role_labeling import SemanticRoleLabeler
+
+# Load a spaCy model (you might need to download a larger model for better accuracy)
+nlp = spacy.load(&quot;en_core_web_sm&quot;)  # or a larger model like &quot;en_core_web_lg&quot;
+
+# Add Coreference Resolution pipe
+coref = CoreferenceResolver(nlp)
+nlp.add_pipe(&quot;coref&quot;, config={'model_name': 'google/flan-t5-base'}) # using google/flan-t5-base
+
+# Add Semantic Role Labeling pipe
+srl = SemanticRoleLabeler(nlp)
+nlp.add_pipe(&quot;srl&quot;, config={'model_name': 'google/flan-t5-base'})
+
+# Process the text
+text = &quot;John gave Mary the book yesterday in the library because she needed it for her research.&quot;
+doc = nlp(text)
+
+# Iterate through the sentences and their predicates/roles
+for sentence in doc.sents:
+    print(f&quot;Sentence: {sentence.text}&quot;)
+    for token in sentence:
+        if token.pos_ == &quot;VERB&quot;: # Only process verbs
+            print(f&quot;  Predicate: {token.text}&quot;)
+            try:
+                roles = token._.semantic_roles
+                for role in roles:
+                    print(f&quot;    {role['role']}: {role['argument']}&quot;)
+            except AttributeError:
+                print(&quot;    No SRL roles found for this predicate.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports <code>spacy</code>, <code>CoreferenceResolver</code>, and <code>SemanticRoleLabeler</code></li>
+<li><strong>Load spaCy Model:</strong> Loads a pre-trained spaCy model.  <code>en_core_web_sm</code> is a small model; you'll likely want a larger model (e.g., <code>en_core_web_lg</code>) for better accuracy.</li>
+<li><strong>Add Coreference Resolution Pipe:</strong> Configures and adds the coreference resolution pipeline to the spaCy processing pipeline. The <code>model_name</code> parameter specifies the LLM to use for coreference resolution.</li>
+<li><strong>Add Semantic Role Labeling Pipe:</strong> Configures and adds the semantic role labeling pipeline to the spaCy processing pipeline.  The <code>model_name</code> parameter specifies the LLM to use for SRL.</li>
+<li><strong>Process Text:</strong>  Processes the input text using the spaCy pipeline.</li>
+<li><strong>Iterate and Print Results:</strong> Iterates through the tokens in each sentence, identifies the verb, and extracts the semantic roles associated with that verb using <code>token._.semantic_roles</code>. The role name and the corresponding argument are printed. Error handling is included to gracefully handle cases where no SRL roles are found for a specific predicate.</li>
+</ol>
+<p><strong>Note:</strong></p>
+<ul>
+<li>You may need to install the necessary libraries: <code>pip install spacy llm-coref</code></li>
+<li>Download a suitable spaCy model: <code>python -m spacy download en_core_web_sm</code> (or <code>en_core_web_lg</code> or similar).</li>
+<li>The performance and accuracy will vary depending on the spaCy model and the complexity of the sentence. Larger models tend to perform better, but require more computational resources.</li>
+<li>The <code>llm-coref</code> library relies on LLMs so may have some setup with API keys.</li>
+<li>Remember to handle potential errors (e.g., if the SRL component fails to identify roles).</li>
+<li>Consider other libraries, like AllenNLP, for more advanced SRL tasks. AllenNLP offers pre-trained models specifically for SRL. However, it has a steeper learning curve.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does SRL deal with sentences that have multiple predicates or embedded clauses?  Does it handle them independently, or does it consider the relationships between the predicates and their arguments across different parts of the sentence? What are some of the challenges in handling complex sentence structures for SRL?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
