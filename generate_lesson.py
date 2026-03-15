@@ -342,6 +342,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
   </script>
   <style>
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
@@ -413,6 +418,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th, .dark td {{ border-color: #334155; }}
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
+    .dark *:focus-visible {{
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
+    }}
 
     /* Copy Button */
     pre {{ position: relative; }}
@@ -646,6 +655,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
       --bg: #f8fafc;
       --text: #1e293b;
     }}
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
@@ -738,6 +751,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark .week-title {{
       border-bottom-color: #334155;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
   </style>
 </head>
