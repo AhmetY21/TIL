@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detecting Fake News and Misinformation</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-detecting-fake-news-and-misinformation">Topic: Detecting Fake News and Misinformation</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Detecting fake news and misinformation is a task in Natural Language Processing (NLP) that aims to identify and classify articles, posts, or other content as deliberately misleading, inaccurate, or fabricated. This goes beyond simply identifying errors; it focuses on content designed to deceive readers, often for political, economic, or social gain.</p>
+<p>Formally, it can be viewed as a binary classification problem (fake vs. real), or a multi-class classification problem (fake, misleading, biased, satire, real). We can use a range of features from the text itself (e.g., writing style, sentiment, factual claims, presence of emotionally charged language) alongside metadata (e.g., source credibility, user engagement, propagation patterns) to train machine learning models.</p>
+<p>How can we use it?</p>
+<ul>
+<li><strong>Fact-checking:</strong> Automate the process of fact-checking by flagging potentially misleading content for human verification.</li>
+<li><strong>Social media moderation:</strong> Identify and remove or flag fake news spread on social media platforms.</li>
+<li><strong>Combating propaganda:</strong> Analyze propaganda campaigns and identify the sources of disinformation.</li>
+<li><strong>Improving information literacy:</strong> Help users develop critical thinking skills by providing tools that analyze the credibility of online information.</li>
+<li><strong>Preserving democratic processes:</strong> By mitigating the impact of disinformation on elections and public discourse.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a scenario where a new social media post claims that a popular brand of cough medicine contains a dangerous, untested chemical. This post quickly goes viral, causing panic among consumers. A fake news detection system could be applied to this situation as follows:</p>
+<ol>
+<li><strong>Input:</strong> The system receives the text of the social media post, along with metadata such as the source of the post, its propagation rate, and user comments.</li>
+<li><strong>Feature extraction:</strong> The system extracts features from the text, such as the presence of emotionally charged words ("dangerous"), claims without evidence, and the overall sentiment. It also examines the source's credibility score (e.g., based on its history of spreading misinformation) and the network of users sharing the post.</li>
+<li><strong>Classification:</strong> A trained machine learning model classifies the post as either "fake" or "real" (or potentially "misleading," "unverified," etc.).</li>
+<li><strong>Action:</strong> If the post is classified as fake, the system can take various actions, such as flagging the post with a warning label, reducing its visibility in the social media feed, or providing users with links to credible fact-checking websites. This prevents the spread of misinformation and reduces public panic.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a basic example using scikit-learn and a simple text classification approach. This uses a CountVectorizer to convert text into numerical features and then trains a Multinomial Naive Bayes classifier. This is a simplified example and would require significantly more advanced techniques for real-world fake news detection.</p>
+<pre class="codehilite"><code class="language-python">from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
+
+# Sample data (replace with a real dataset)
+data = [
+    (&quot;This is a genuine news article about the economy.&quot;, &quot;real&quot;),
+    (&quot;Breaking: Scientists discover cure for common cold!&quot;, &quot;fake&quot;),
+    (&quot;The stock market is soaring to new heights.&quot;, &quot;real&quot;),
+    (&quot;ALERT! Government secret revealed! Aliens exist!&quot;, &quot;fake&quot;),
+    (&quot;Local school board approves new budget.&quot;, &quot;real&quot;),
+    (&quot;This just in: Giant lizard attacks downtown!&quot;, &quot;fake&quot;)
+]
+
+texts = [item[0] for item in data]
+labels = [item[1] for item in data]
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=42)
+
+# Convert text to numerical features using CountVectorizer
+vectorizer = CountVectorizer()
+X_train_vectors = vectorizer.fit_transform(X_train)
+X_test_vectors = vectorizer.transform(X_test)
+
+# Train a Multinomial Naive Bayes classifier
+classifier = MultinomialNB()
+classifier.fit(X_train_vectors, y_train)
+
+# Make predictions on the test set
+y_pred = classifier.predict(X_test_vectors)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred)
+
+print(f&quot;Accuracy: {accuracy}&quot;)
+print(f&quot;Classification Report:\n{report}&quot;)
+
+# Example prediction
+new_text = &quot;Report: President to announce new policy tomorrow.&quot;
+new_text_vector = vectorizer.transform([new_text])
+prediction = classifier.predict(new_text_vector)[0]
+print(f&quot;Prediction for '{new_text}': {prediction}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong> The code starts with sample data consisting of news articles and their corresponding labels (real or fake). A real-world application would require a much larger and more diverse dataset.</li>
+<li><strong>Data Splitting:</strong> The data is split into training and testing sets to evaluate the model's performance on unseen data.</li>
+<li><strong>Feature Extraction:</strong> The <code>CountVectorizer</code> converts the text into numerical features by counting the occurrences of each word.  More sophisticated techniques like TF-IDF, word embeddings (Word2Vec, GloVe, FastText), or contextual embeddings (BERT, RoBERTa) can be used for better performance.</li>
+<li><strong>Model Training:</strong> A <code>MultinomialNB</code> classifier is trained on the training data. Naive Bayes is a simple and often effective algorithm for text classification.</li>
+<li><strong>Prediction and Evaluation:</strong> The model makes predictions on the test set, and the accuracy and classification report are printed to evaluate its performance.</li>
+<li><strong>Example Prediction:</strong> The code also demonstrates how to use the trained model to predict the label of a new, unseen text.</li>
+</ol>
+<p>This is a very basic example.  For practical applications, you'd need:</p>
+<ul>
+<li>A large, well-labeled dataset.</li>
+<li>More sophisticated feature engineering.</li>
+<li>More advanced machine learning models (e.g., BERT, RoBERTa, or other transformer-based models).</li>
+<li>Techniques for handling imbalanced datasets (fake news datasets often have far more real news than fake news).</li>
+<li>Methods for assessing source credibility.</li>
+<li>Techniques for identifying manipulated media (images, videos).</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we address the problem of <em>continually evolving</em> fake news and misinformation techniques (e.g., the emergence of deepfakes or increasingly sophisticated writing styles)? In other words, how can we make our detection models more robust to new and unseen forms of deception?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
