@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hate Speech Detection</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-hate-speech-detection">Topic: Hate Speech Detection</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Hate speech detection is a natural language processing (NLP) task focused on identifying and classifying text or speech containing expressions of prejudice, animosity, or hostility directed at individuals or groups based on characteristics such as race, ethnicity, religion, gender, sexual orientation, disability, or other protected attributes. It involves analyzing linguistic features, semantic content, and contextual information to determine whether a given piece of text promotes violence, incites hatred, or disparages a target group.</p>
+<p>Formally, it can be seen as a classification problem. Given a text input <em>x</em>, the goal is to predict a label <em>y</em> that indicates whether <em>x</em> contains hate speech or not.  <em>y</em> can be a binary label (hate speech/not hate speech) or a multi-class label that distinguishes between different types or intensities of hate speech (e.g., offensive language, hate speech, targeted harassment). The "boundary" of what exactly constitutes hate speech can be blurry and vary by context and community guidelines.</p>
+<p>We can use hate speech detection to:</p>
+<ul>
+<li><strong>Moderate online content:</strong>  Automatically flag and remove hateful content from social media platforms, forums, and comment sections, creating safer online environments.</li>
+<li><strong>Analyze public discourse:</strong>  Study the prevalence and trends of hate speech in public debates and online communities to understand societal biases and tensions.</li>
+<li><strong>Develop counter-speech strategies:</strong> Identify patterns in hate speech to inform the creation of effective counter-narratives and interventions.</li>
+<li><strong>Improve algorithmic fairness:</strong>  Mitigate biases in AI models that might perpetuate or amplify hateful stereotypes.</li>
+<li><strong>Monitor and enforce policies:</strong>  Support law enforcement and regulatory agencies in identifying and addressing instances of hate speech that violate laws or regulations.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a social media platform like Twitter (now X). Every day, millions of tweets are posted. It is impossible for human moderators to review every single tweet for potentially hateful content.  A hate speech detection system can be deployed to automatically analyze these tweets in real-time.</p>
+<p>The system would:</p>
+<ol>
+<li><strong>Pre-process the text:</strong>  Clean the tweets by removing usernames, URLs, and special characters.</li>
+<li><strong>Feature Extraction:</strong> Convert the text into numerical features that can be fed into a machine learning model. This might include things like word embeddings (e.g., Word2Vec, GloVe, BERT), TF-IDF scores, or presence of specific hateful keywords.</li>
+<li><strong>Classification:</strong> The machine learning model, trained on a large dataset of labeled tweets (hate speech vs. non-hate speech), would predict whether each tweet contains hate speech.</li>
+<li><strong>Moderation:</strong>  Tweets flagged as potential hate speech would be reviewed by human moderators or automatically removed/hidden, depending on the platform's policy and the confidence level of the model's prediction.</li>
+<li><strong>Feedback Loop:</strong> Human moderators' decisions are fed back into the model to continuously improve its accuracy.</li>
+</ol>
+<p>This allows the platform to quickly identify and address hateful content, minimizing its impact on users and fostering a more positive online community. Furthermore, the system can be used to identify accounts consistently spreading hate speech, potentially leading to suspension or permanent bans.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simplified example using Python with the <code>scikit-learn</code> and <code>transformers</code> libraries.  This example uses a pre-trained transformer model for classification.  Note that training such a model to an appropriate level of performance for production requires significant data and computational resources.</p>
+<pre class="codehilite"><code class="language-python">from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
+import torch
+import pandas as pd
+
+# Sample dataset (replace with your own)
+data = {'text': [&quot;This is a good tweet.&quot;, &quot;You are a terrible person.&quot;, &quot;I hate that group of people.&quot;],
+        'label': [0, 1, 1]} # 0: non-hate, 1: hate
+
+df = pd.DataFrame(data)
+
+# Pre-trained model and tokenizer
+model_name = &quot;bert-base-uncased&quot;  # Or any other suitable model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2) # Binary classification
+
+
+# Tokenize the text
+def tokenize_function(examples):
+    return tokenizer(examples[&quot;text&quot;], padding=&quot;max_length&quot;, truncation=True)
+
+dataset = df.rename(columns={'text': 'text', 'label': 'labels'}) #Rename for transformers Trainer
+
+from datasets import Dataset
+dataset = Dataset.from_pandas(dataset)
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+# Split the dataset
+train_dataset, test_dataset = train_test_split(tokenized_datasets, test_size=0.2, random_state=42)
+
+# Define training arguments
+training_args = TrainingArguments(
+    output_dir=&quot;./results&quot;,
+    evaluation_strategy=&quot;epoch&quot;,
+    num_train_epochs=3,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
+)
+
+# Define the Trainer
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=test_dataset,
+    tokenizer=tokenizer,
+)
+
+# Train the model
+trainer.train()
+
+# Evaluate the model
+predictions = trainer.predict(test_dataset)
+import numpy as np
+preds = np.argmax(predictions.predictions, axis=-1)
+labels = test_dataset['labels']
+
+print(classification_report(labels, preds))
+print(f&quot;Accuracy: {accuracy_score(labels, preds)}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports necessary libraries from <code>scikit-learn</code> (for training and evaluation), and <code>transformers</code> (for using pre-trained models).</li>
+<li><strong>Sample Dataset:</strong>  Creates a small, illustrative dataset.  <strong>Crucially, this should be replaced with a large and representative dataset.</strong></li>
+<li><strong>Load Pre-trained Model and Tokenizer:</strong> Loads a pre-trained BERT model (or a similar transformer-based model) and its corresponding tokenizer.  The tokenizer converts the text into a numerical representation that the model can understand.</li>
+<li><strong>Tokenize the Text:</strong> The <code>tokenize_function</code> uses the tokenizer to convert the text into input IDs, attention masks, etc., that are required by the model.</li>
+<li><strong>Split Dataset:</strong> Splits the dataset into training and testing sets.</li>
+<li><strong>Define Training Arguments:</strong> Sets up the training configuration, like the output directory, evaluation strategy, number of epochs, and batch sizes.</li>
+<li><strong>Define the Trainer:</strong> Creates a <code>Trainer</code> object, which handles the training loop.</li>
+<li><strong>Train the Model:</strong> Starts the training process.</li>
+<li><strong>Evaluate the Model:</strong>  Uses the trained model to make predictions on the test set and evaluates its performance using metrics like accuracy and a classification report.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Data is Key:</strong> The performance of any hate speech detection system heavily relies on the quality and size of the training data.  You need a diverse and well-labeled dataset that represents the types of hate speech you want to detect.  Be aware of biases in your data.</li>
+<li><strong>Model Selection:</strong> BERT is a good starting point, but consider other models like RoBERTa, DistilBERT, or specialized hate speech detection models.</li>
+<li><strong>Fine-tuning:</strong>  Fine-tuning the pre-trained model on your specific dataset is crucial for achieving good results.</li>
+<li><strong>Ethical Considerations:</strong> Be mindful of the potential for false positives (incorrectly flagging non-hate speech) and false negatives (failing to detect actual hate speech).  Strive for fairness and transparency in your system.</li>
+<li><strong>Context Matters:</strong> Hate speech is often context-dependent.  Consider incorporating contextual information into your model.</li>
+<li><strong>Adversarial Attacks:</strong> Be aware that attackers may try to circumvent your system by using obfuscation techniques (e.g., misspellings, code words).</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given that hate speech is often expressed subtly or using coded language, how can we improve hate speech detection models to better identify these more nuanced forms of hate speech, and what evaluation metrics are most appropriate for assessing performance in such cases?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
