@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knowledge Graphs in NLP</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-knowledge-graphs-in-nlp">Topic: Knowledge Graphs in NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>A Knowledge Graph (KG) is a graph-structured representation of knowledge. It consists of entities (nodes) and relationships (edges) between those entities. Formally, it can be defined as a set of triples: (subject, predicate, object).</p>
+<ul>
+<li><strong>Subject:</strong>  The entity that the statement is about.  e.g., "Paris"</li>
+<li><strong>Predicate:</strong> The relationship or type of connection between the subject and object. e.g., "isCapitalOf"</li>
+<li><strong>Object:</strong>  The entity that the subject is related to. e.g., "France"</li>
+</ul>
+<p>Therefore, the triple "(Paris, isCapitalOf, France)" represents the knowledge that Paris is the capital of France.</p>
+<p><strong>How can we use KGs in NLP?</strong></p>
+<p>Knowledge Graphs enhance NLP tasks by:</p>
+<ul>
+<li><strong>Enriching Semantic Understanding:</strong> KGs provide contextual information and background knowledge, improving the understanding of text.  For example, understanding the relationship between "apple" (the fruit) and "Apple" (the company) requires knowledge beyond the surface-level text.</li>
+<li><strong>Improving Reasoning and Inference:</strong>  By traversing the graph, NLP systems can infer new facts and relationships. For example, if we know "John worksFor Apple" and "Apple isHeadquarteredIn Cupertino," we can infer "John is located in Cupertino."</li>
+<li><strong>Enhancing Entity Recognition and Disambiguation:</strong>  KGs help to identify and disambiguate entities mentioned in text. If a text mentions "Michael Jordan," the KG can help determine whether it refers to the basketball player or another person with the same name.</li>
+<li><strong>Supporting Question Answering:</strong> KGs allow answering complex questions by retrieving relevant information and relationships from the graph. Instead of simply retrieving documents, the KG allows for structured retrieval of facts.</li>
+<li><strong>Facilitating Text Generation:</strong> KGs can guide text generation by providing a structured knowledge source to ensure coherence and factual correctness. For example, generating a biography can be guided by a KG containing information about the person.</li>
+<li><strong>Improving Recommendation Systems:</strong> KGs can represent user preferences and item characteristics, enabling more personalized recommendations.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Application Scenario: Question Answering</strong></p>
+<p>Consider a question: "Which actors starred in movies directed by Christopher Nolan?"</p>
+<p>Without a KG, answering this question accurately requires complex semantic parsing and understanding of the relationships between actors, movies, and directors, followed by potentially lengthy document retrieval and reasoning.</p>
+<p>Using a KG, we can:</p>
+<ol>
+<li><strong>Entity Recognition:</strong> Identify "Christopher Nolan" as an entity in the KG.</li>
+<li><strong>Relationship Traversal:</strong> Traverse the "directed" relationship from Christopher Nolan to his movies (e.g., Inception, The Dark Knight).</li>
+<li><strong>Relationship Traversal:</strong> Traverse the "starredIn" relationship from each of these movies to the actors who starred in them (e.g., Leonardo DiCaprio, Christian Bale).</li>
+<li><strong>Answer Aggregation:</strong>  Aggregate the list of actors obtained in step 3 to provide the final answer.</li>
+</ol>
+<p>This approach provides a structured and efficient way to answer complex questions by leveraging pre-existing knowledge.  Large knowledge graphs like Wikidata or DBpedia are often used for such applications.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>rdflib</code> library in Python to work with Knowledge Graphs, specifically RDF graphs, which are often used to represent KGs. This example demonstrates how to create a simple KG and query it.</p>
+<pre class="codehilite"><code class="language-python">import rdflib
+from rdflib import URIRef, Literal, Namespace
+
+# Create a Graph
+g = rdflib.Graph()
+
+# Define Namespaces (optional, but good practice)
+ex = Namespace(&quot;http://example.org/&quot;)
+g.bind(&quot;ex&quot;, ex)  # Bind the namespace to a prefix
+
+# Create Nodes (Entities)
+alice = URIRef(ex.Alice)
+bob = URIRef(ex.Bob)
+movie1 = URIRef(ex.Movie1)
+
+# Create Properties (Relationships)
+knows = URIRef(ex.knows)
+starredIn = URIRef(ex.starredIn)
+title = URIRef(&quot;http://purl.org/dc/elements/1.1/title&quot;) # Using an existing standard namespace
+
+# Add Triples (Statements) to the Graph
+g.add((alice, knows, bob))
+g.add((alice, starredIn, movie1))
+g.add((bob, starredIn, movie1))
+g.add((movie1, title, Literal(&quot;Awesome Movie&quot;)))
+
+# Query the Graph
+# Find everyone who knows Bob
+for s, p, o in g.triples((None, knows, bob)):
+    print(f&quot;{s} knows {o}&quot;)
+
+# Find the title of Movie1
+for s, p, o in g.triples((movie1, title, None)):
+    print(f&quot;The title of {s} is {o}&quot;)
+
+# Serialize the graph (optional)
+# print(g.serialize(format=&quot;turtle&quot;))
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>rdflib.Graph()</code>:</strong> Creates an RDF graph object.</li>
+<li><strong><code>rdflib.URIRef()</code>:</strong> Creates a Uniform Resource Identifier (URI) for entities and relationships.</li>
+<li><strong><code>rdflib.Literal()</code>:</strong>  Creates a literal value (e.g., a string).</li>
+<li><strong><code>g.add()</code>:</strong> Adds a triple (subject, predicate, object) to the graph.</li>
+<li><strong><code>g.triples()</code>:</strong>  Queries the graph for triples that match a given pattern.  <code>None</code> is used as a wildcard.</li>
+<li><strong><code>g.serialize()</code>:</strong>  Serializes the graph into a specific format (e.g., Turtle).</li>
+</ol>
+<p>This example shows the basics of creating, populating, and querying a KG using <code>rdflib</code>.  More advanced operations include reasoning, inference, and integration with other NLP tools.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can Knowledge Graph Embeddings (KGEs) be used to improve the performance of NLP tasks, and what are some popular KGE techniques?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
