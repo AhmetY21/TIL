@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grammar Error Correction</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-grammar-error-correction">Topic: Grammar Error Correction</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Grammar Error Correction (GEC) is the task of automatically identifying and correcting grammatical errors in text. It involves detecting various types of errors, such as:</p>
+<ul>
+<li><strong>Morphological Errors:</strong> Incorrect word forms (e.g., <em>goed</em> instead of <em>good</em>).</li>
+<li><strong>Syntactic Errors:</strong> Incorrect sentence structure (e.g., <em>I not go to store</em> instead of <em>I did not go to the store</em>).</li>
+<li><strong>Orthographic Errors:</strong> Misspellings and incorrect punctuation (e.g., <em>their</em> instead of <em>there</em>, missing commas).</li>
+<li><strong>Semantic Errors:</strong> Errors in word choice that lead to illogical or unclear meaning (while some consider semantic errors as outside the scope of GEC, the line is often blurred and depends on the complexity of the task).</li>
+<li><strong>Agreement Errors:</strong> Subject-verb agreement, pronoun-antecedent agreement (e.g., <em>They is going</em> instead of <em>They are going</em>).</li>
+<li><strong>Article Errors:</strong> Missing or incorrect articles (e.g., <em>I went to store</em> instead of <em>I went to the store</em>).</li>
+<li><strong>Preposition Errors:</strong> Incorrect preposition usage (e.g., <em>I'm interested on that</em> instead of <em>I'm interested in that</em>).</li>
+<li><strong>Redundancy Errors:</strong> Unnecessary words or phrases.</li>
+</ul>
+<p>GEC systems aim to transform an ungrammatical input sentence into a grammatical and fluent sentence with the same intended meaning.</p>
+<p>We can use GEC in a multitude of ways:</p>
+<ul>
+<li><strong>Automated proofreading:</strong> Correcting errors in documents, emails, and other written communication.</li>
+<li><strong>Assisted writing:</strong> Providing real-time feedback to writers to improve their grammar.</li>
+<li><strong>Language learning:</strong> Helping language learners identify and correct their errors.</li>
+<li><strong>Text simplification:</strong> Simplifying complex sentences to improve readability, sometimes as a byproduct of grammar correction.</li>
+<li><strong>Machine translation post-editing:</strong> Improving the quality of machine-translated text by correcting grammatical errors introduced during the translation process.</li>
+<li><strong>Chatbots and virtual assistants:</strong> Ensuring that chatbots and virtual assistants respond with grammatically correct sentences.</li>
+<li><strong>Search engine optimization (SEO):</strong> Improving the quality of website content to attract more visitors.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a non-native English speaker, Maria, is writing an email to her professor requesting an extension on an assignment. Maria's first draft might look like this:</p>
+<p>"Dear Professor Smith,</p>
+<p>I hope you is doing well. I am writing to ask if I can had more time on the assignment. I was sick for a week, and I not finish it. I would be very appreciate if you could giving me an extension.</p>
+<p>Thank you,
+Maria"</p>
+<p>A GEC system can automatically correct this to:</p>
+<p>"Dear Professor Smith,</p>
+<p>I hope you are doing well. I am writing to ask if I can have more time on the assignment. I was sick for a week, and I did not finish it. I would be very appreciative if you could give me an extension.</p>
+<p>Thank you,
+Maria"</p>
+<p>In this scenario, GEC helps Maria communicate her request clearly and professionally, even though her initial grammar was imperfect. This improves communication and can have a positive impact on her academic standing.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While creating a production-ready GEC system from scratch requires significant expertise and resources, several Python libraries and APIs provide grammar correction capabilities. One widely used option is the <code>grammarbot</code> package, which leverages the LanguageTool API.</p>
+<pre class="codehilite"><code class="language-python">import grammarbot
+
+# Initialize the GrammarBot
+bot = grammarbot.GrammarBotClient()
+
+# Text to be corrected
+text = &quot;I is go to the store tomorow.&quot;
+
+# Get the corrections
+matches = bot.check(text)
+
+# Print the matches - this shows where the errors are detected
+print(matches)
+
+# Function to apply corrections (very basic example)
+def apply_corrections(text, matches):
+    corrected_text = text
+    offset = 0
+    for match in matches.matches:
+        if match.replacements:
+            start = match.offset + offset
+            end = match.offset + match.length + offset
+            corrected_text = corrected_text[:start] + match.replacements[0] + corrected_text[end:]
+            offset += len(match.replacements[0]) - match.length
+    return corrected_text
+
+corrected_text = apply_corrections(text, matches)
+
+# Print the corrected text
+print(&quot;Original text:&quot;, text)
+print(&quot;Corrected text:&quot;, corrected_text)
+
+# Example of more complex text with multiple errors
+text2 = &quot;Their is a tree and a dog their too.&quot;
+matches2 = bot.check(text2)
+corrected_text2 = apply_corrections(text2, matches2)
+print(&quot;Original text:&quot;, text2)
+print(&quot;Corrected text:&quot;, corrected_text2)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>import grammarbot</code></strong>: Imports the necessary library.</li>
+<li><strong><code>bot = grammarbot.GrammarBotClient()</code></strong>: Initializes a GrammarBot client.</li>
+<li><strong><code>text = "I is go to the store tomorow."</code></strong>: Defines the input text with grammatical errors.</li>
+<li><strong><code>matches = bot.check(text)</code></strong>:  Calls the <code>check</code> method to get a list of potential grammar errors (called <code>matches</code>) in the text.  This uses the LanguageTool API under the hood.</li>
+<li><strong><code>apply_corrections(text, matches)</code></strong>: A function that iterates through the <code>matches</code> and applies the first suggested replacement for each error. This is a <em>very</em> simplified version of how a proper correction engine works. It addresses simple replacements, but doesn't handle deletions or insertions well. The offset calculation ensures that the character indices remain valid after replacements.</li>
+<li><strong><code>print("Corrected text:", corrected_text)</code></strong>: Prints the corrected text.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>API Key/Usage Limits:</strong> The <code>grammarbot</code> package uses the LanguageTool API, which may have usage limits or require an API key for higher usage.  Refer to the LanguageTool API documentation for details.</li>
+<li><strong>Sophistication:</strong> This is a basic example. Real-world GEC systems are much more sophisticated, using deep learning models (e.g., sequence-to-sequence models with attention) trained on large datasets of parallel (ungrammatical, grammatical) sentences.</li>
+<li><strong>Context:</strong> The <code>grammarbot</code> library and LanguageTool, while helpful, sometimes make mistakes. Always review the suggested corrections to ensure they are appropriate for the context.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Beyond the basic API-based approach, how are state-of-the-art GEC systems built, and what are the most common evaluation metrics used to measure their performance?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
