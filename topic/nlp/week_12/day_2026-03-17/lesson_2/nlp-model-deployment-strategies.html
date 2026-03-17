@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLP Model Deployment Strategies</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-nlp-model-deployment-strategies">Topic: NLP Model Deployment Strategies</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>NLP Model Deployment Strategies encompass the different approaches and techniques used to make a trained NLP model available for real-world use, typically in an application, service, or system. It involves the process of integrating the model into a production environment so that it can receive input data, process it, and generate predictions or outputs. The key elements of a successful deployment strategy include:</p>
+<ul>
+<li><strong>Infrastructure:</strong> The hardware and software resources required to host and serve the model. This can range from cloud-based services (AWS, GCP, Azure) to on-premises servers.</li>
+<li><strong>Model Serving Frameworks:</strong> Tools like TensorFlow Serving, TorchServe, Triton Inference Server, and FastAPI (with NLP libraries like Transformers) that efficiently manage model loading, scaling, and request handling.</li>
+<li><strong>API Design:</strong> How the model interacts with other systems. Typically, this involves creating a REST API that accepts input data and returns predictions.</li>
+<li><strong>Monitoring and Logging:</strong> Tracking model performance, identifying errors, and detecting concept drift to maintain accuracy and reliability.</li>
+<li><strong>Version Control and Management:</strong> Tracking different versions of the model and managing deployments to ensure consistent and reproducible results.</li>
+<li><strong>Scalability:</strong> Ensuring the model can handle increasing workloads and user traffic without performance degradation.</li>
+<li><strong>Security:</strong> Protecting the model from unauthorized access or manipulation.</li>
+</ul>
+<p>We use NLP Model Deployment Strategies to bridge the gap between model development and real-world application.  Without a well-defined deployment strategy, even the most accurate NLP model is useless. A good strategy allows us to make the model accessible to users and systems, integrate it into business workflows, and ultimately extract value from the insights it provides.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> A company wants to automatically classify customer support tickets based on their textual content to route them to the appropriate support team (e.g., billing, technical support, sales).</p>
+<p><strong>Deployment Strategy:</strong></p>
+<ol>
+<li><strong>Model Training:</strong> A pre-trained transformer model (e.g., BERT, RoBERTa) is fine-tuned on a dataset of labeled customer support tickets.</li>
+<li><strong>Model Packaging:</strong> The trained model is saved in a suitable format (e.g., TensorFlow SavedModel, PyTorch JIT script).</li>
+<li><strong>API Creation:</strong> A REST API is built using a framework like FastAPI to receive ticket text as input and return the predicted category as output.</li>
+<li><strong>Model Serving:</strong> The model is served using a framework like TensorFlow Serving or TorchServe, which optimizes for inference speed and scalability.  Docker can be used to containerize the model and dependencies.</li>
+<li><strong>Load Balancing:</strong> A load balancer is used to distribute incoming requests across multiple instances of the model server to handle high traffic.</li>
+<li><strong>Monitoring:</strong> Model performance (accuracy, latency) is monitored using tools like Prometheus and Grafana to detect and address any issues.</li>
+<li><strong>Integration:</strong> The API is integrated into the company's customer support system, so that when a new ticket is created, the API is called to classify the ticket and route it to the appropriate team.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>This example shows how to deploy a pre-trained Hugging Face Transformers model using FastAPI.  It's a simplified example, but illustrates the core concepts.</p>
+<pre class="codehilite"><code class="language-python">from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from transformers import pipeline
+
+app = FastAPI()
+
+# Load the sentiment analysis pipeline
+try:
+    classifier = pipeline(&quot;sentiment-analysis&quot;)  # Default sentiment analysis model
+except Exception as e:
+    print(f&quot;Error loading model: {e}&quot;)
+    classifier = None  # Set to None if model loading fails
+
+class TextRequest(BaseModel):
+    text: str
+
+class PredictionResponse(BaseModel):
+    label: str
+    score: float
+
+@app.post(&quot;/predict&quot;, response_model=PredictionResponse)
+async def predict(request: TextRequest):
+    &quot;&quot;&quot;
+    Predicts the sentiment of the input text.
+    &quot;&quot;&quot;
+    if classifier is None:
+        raise HTTPException(status_code=500, detail=&quot;Model not loaded.  Check server logs.&quot;)
+
+    try:
+        result = classifier(request.text)[0]
+        return PredictionResponse(label=result[&quot;label&quot;], score=result[&quot;score&quot;])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+if __name__ == &quot;__main__&quot;:
+    import uvicorn
+    uvicorn.run(app, host=&quot;0.0.0.0&quot;, port=8000)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> Imports necessary libraries from FastAPI, Pydantic, and Transformers.</li>
+<li><strong>FastAPI App:</strong> Creates a FastAPI application instance.</li>
+<li><strong>Model Loading:</strong> Loads a pre-trained sentiment analysis pipeline from Hugging Face Transformers. The <code>try...except</code> block handles potential errors during model loading.</li>
+<li><strong>Data Models:</strong> Defines Pydantic data models for the request (<code>TextRequest</code>) and response (<code>PredictionResponse</code>).  These ensure type safety and data validation.</li>
+<li><strong>Prediction Endpoint:</strong> Creates a <code>/predict</code> endpoint that accepts a POST request with text input.</li>
+<li><strong>Prediction Logic:</strong> Calls the sentiment analysis pipeline to predict the sentiment of the input text.</li>
+<li><strong>Error Handling:</strong> Handles potential errors during prediction and returns appropriate HTTP error responses.</li>
+<li><strong>Running the App:</strong> Starts the FastAPI application using <code>uvicorn</code>.</li>
+</ol>
+<p><strong>To run this code:</strong></p>
+<ol>
+<li>Install the necessary libraries: <code>pip install fastapi uvicorn transformers pydantic</code></li>
+<li>Save the code to a file (e.g., <code>main.py</code>).</li>
+<li>Run the application: <code>python main.py</code></li>
+</ol>
+<p>You can then send POST requests to <code>http://localhost:8000/predict</code> with a JSON body like <code>{"text": "This is a great movie!"}</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some strategies for handling model drift in deployed NLP models, and how frequently should models typically be retrained in production environments?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
