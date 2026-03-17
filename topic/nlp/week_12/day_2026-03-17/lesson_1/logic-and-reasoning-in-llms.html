@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logic and Reasoning in LLMs</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-logic-and-reasoning-in-llms">Topic: Logic and Reasoning in LLMs</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Logic and reasoning in LLMs refers to the capability of large language models to draw inferences, make deductions, and apply logical rules to understand and manipulate information beyond simply recalling facts or patterns. It goes beyond simple pattern matching and involves understanding the relationships between different pieces of information and using that understanding to answer questions, solve problems, or generate new knowledge.</p>
+<p><strong>What is it?</strong></p>
+<ul>
+<li><strong>Logic:</strong> The ability to apply rules of inference, such as modus ponens (If P then Q; P is true; therefore, Q is true) or syllogisms (All A are B; All B are C; therefore, All A are C), to derive conclusions from premises.</li>
+<li><strong>Reasoning:</strong> A broader concept that encompasses logic but also includes other cognitive processes like common-sense reasoning, causal reasoning, temporal reasoning, and spatial reasoning. It involves understanding the context and relationships between different pieces of information to make informed decisions or predictions.</li>
+<li><strong>Symbolic Reasoning:</strong> Manipulating symbolic representations of information according to predefined rules (e.g., performing mathematical operations).</li>
+<li><strong>Common Sense Reasoning:</strong>  Using world knowledge and intuitive understanding of situations to make inferences and predictions, particularly in everyday scenarios.</li>
+<li><strong>Causal Reasoning:</strong> Understanding cause-and-effect relationships between events and using this knowledge to explain phenomena or predict outcomes.</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Question Answering:</strong> Answering complex questions that require more than just direct retrieval of information, but inferential reasoning.</li>
+<li><strong>Problem Solving:</strong> Solving puzzles, logical problems, or real-world scenarios that require the application of reasoning skills.</li>
+<li><strong>Decision Making:</strong> Assisting in decision-making processes by evaluating different options and predicting their consequences.</li>
+<li><strong>Code Generation and Debugging:</strong> LLMs can use logic and reasoning to generate correct code and identify errors in existing code.</li>
+<li><strong>Knowledge Graph Completion:</strong> Inferring missing relationships in knowledge graphs by applying logical rules and patterns.</li>
+<li><strong>Fact Verification:</strong> Determining the truthfulness of a statement by comparing it to known facts and using reasoning to identify inconsistencies.</li>
+<li><strong>Text Summarization:</strong>  Producing concise summaries that capture the core arguments and logical flow of a longer text.</li>
+<li><strong>Dialogue Systems:</strong> Creating more natural and engaging dialogue systems that can understand and respond to complex user requests.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a scenario where we want an LLM to answer a question that requires common-sense reasoning about locations and travel.</p>
+<p><strong>Scenario:</strong></p>
+<p>A person is standing in front of the Eiffel Tower in Paris. They want to go to the Louvre Museum. Should they take a taxi, or walk?  Explain your reasoning.</p>
+<p><strong>Expected LLM Behavior:</strong></p>
+<p>An LLM with logic and reasoning capabilities should be able to provide the following:</p>
+<ul>
+<li><strong>Knowledge:</strong> The LLM should implicitly know that the Eiffel Tower is in Paris and the Louvre Museum is also in Paris.</li>
+<li><strong>Reasoning:</strong> The LLM should reason that the Eiffel Tower and the Louvre Museum are both popular tourist attractions in Paris, so they are likely to be located relatively close to each other.  It should also know that walking is a viable option for short distances within a city.</li>
+<li><strong>Answer:</strong>  "Walking is likely a good option. The Eiffel Tower and the Louvre Museum are both in Paris and are likely relatively close to each other. Walking is a good way to see the city. A taxi might be faster, but walking allows you to experience the city more directly."</li>
+</ul>
+<p>A less capable LLM might simply state the directions from the Eiffel Tower to the Louvre, without explaining <em>why</em> walking is a good option. The reasoning component provides context and justification for the answer. This is a simplified example but illustrates the value of embedding logic and reasoning.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Directly implementing "logic and reasoning" within a Python script involving LLMs typically involves prompting strategies and the use of a suitable LLM API (like OpenAI's or a local LLM). We can't perfectly encode "reasoning" in pure Python, but we can use prompt engineering to encourage it.</p>
+<pre class="codehilite"><code class="language-python">import openai
+
+openai.api_key = &quot;YOUR_OPENAI_API_KEY&quot;  # Replace with your actual API key
+
+def reason_and_answer(question):
+    prompt = f&quot;&quot;&quot;You are an expert in geography and common sense reasoning.
+
+    Question: {question}
+
+    First, think step by step about how to solve the problem. Explain your reasoning.
+    Then, at the end, state your final answer in the format:
+
+    Final Answer: [your answer]&quot;&quot;&quot;
+
+    response = openai.Completion.create(
+        engine=&quot;text-davinci-003&quot;, # Or a more recent and powerful model
+        prompt=prompt,
+        max_tokens=200,
+        n=1,
+        stop=None,
+        temperature=0.7, # Adjust temperature for more or less creativity
+    )
+
+    answer = response.choices[0].text.strip()
+    return answer
+
+
+question = &quot;A person is standing in front of the Eiffel Tower in Paris. They want to go to the Louvre Museum. Should they take a taxi, or walk?&quot;
+answer = reason_and_answer(question)
+print(answer)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>API Key:</strong>  Replace <code>"YOUR_OPENAI_API_KEY"</code> with your actual OpenAI API key.</li>
+<li><strong><code>reason_and_answer(question)</code> function:</strong><ul>
+<li>Takes a question as input.</li>
+<li><strong>Prompt Engineering:</strong>  The key is the carefully crafted <code>prompt</code>.  It explicitly instructs the LLM to:<ul>
+<li>Act as an expert in relevant domains (geography, common sense).</li>
+<li>"Think step by step" to encourage reasoning.</li>
+<li>Explicitly state its reasoning.</li>
+<li>Follow a specific format for the final answer. This helps extract the final answer cleanly.</li>
+</ul>
+</li>
+<li><strong>OpenAI API Call:</strong>  Uses <code>openai.Completion.create</code> to send the prompt to the OpenAI API.<ul>
+<li><code>engine</code>: Specifies the language model to use.  <code>"text-davinci-003"</code> is a generally powerful model, but newer models like <code>gpt-3.5-turbo-instruct</code> or <code>gpt-4</code> are recommended for more complex reasoning.  Experiment to find the best one for your task.  Note that the <code>Completion</code> endpoint is being deprecated; consider using the <code>ChatCompletion</code> endpoint instead for future applications.</li>
+<li><code>max_tokens</code>: Limits the length of the response.</li>
+<li><code>temperature</code>: Controls the randomness of the generated text. Lower values (e.g., 0.2) make the responses more deterministic and focused; higher values (e.g., 0.7) make them more creative and exploratory.</li>
+</ul>
+</li>
+<li><strong>Response Parsing:</strong> Extracts the generated text from the API response.</li>
+<li><strong>Returns:</strong> Returns the generated answer.</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong>  Demonstrates how to use the function with the example question.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Prompt Engineering is Crucial:</strong> The prompt is the most important part. Experiment with different prompts to improve the quality of the reasoning and the accuracy of the answers.</li>
+<li><strong>Model Choice Matters:</strong> The reasoning capabilities of different LLMs vary significantly. Newer, larger models generally perform better on complex reasoning tasks.  GPT-4 is substantially better than GPT-3.5 in these areas.</li>
+<li><strong>Limitations:</strong> Even with careful prompting and powerful models, LLMs can still make logical errors or exhibit biases. It's essential to critically evaluate the results.</li>
+<li><strong>Chain-of-Thought Prompting:</strong>  This example uses a simple form of "chain-of-thought" prompting, where the LLM is encouraged to explain its reasoning process. More advanced techniques, like few-shot chain-of-thought prompting (providing examples of reasoning chains), can further improve performance.</li>
+<li><strong>Retrieval Augmented Generation (RAG):</strong> Combining reasoning with retrieval augmentation (fetching relevant information from a knowledge base) can significantly enhance the accuracy and reliability of LLM responses.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we evaluate the "correctness" or "effectiveness" of logic and reasoning in LLMs, especially when dealing with complex, open-ended problems where there isn't a single "right" answer? What metrics or methodologies can be used?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
