@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explainability in NLP (LIME, SHAP)</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-explainability-in-nlp-lime-shap">Topic: Explainability in NLP (LIME, SHAP)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Explainability in NLP refers to the ability to understand <em>why</em> a natural language processing model makes a specific prediction. It aims to shed light on the model's internal decision-making process, identifying the features (e.g., words, phrases, or input features) that are most influential in determining the model's output. This is crucial because:</p>
+<ul>
+<li><strong>Debugging:</strong> It helps identify biases, errors, and unexpected behaviors in the model.</li>
+<li><strong>Trust:</strong> It increases user trust in the model by providing a rationale for its predictions. If a user understands why a model made a certain prediction, they are more likely to accept and rely on it.</li>
+<li><strong>Improvement:</strong> It can provide insights for model improvement by revealing which features are truly important and which are noise.</li>
+<li><strong>Compliance:</strong> In regulated industries (e.g., finance, healthcare), explainability is often required to ensure fairness and transparency.</li>
+</ul>
+<p><strong>LIME (Local Interpretable Model-agnostic Explanations)</strong> is a technique that approximates the behavior of a complex model locally with a simpler, interpretable model. For NLP, it highlights the words in a text that contribute most positively or negatively to a model's prediction for that specific instance. LIME works by:</p>
+<ol>
+<li>Perturbing the input data (e.g., by removing or adding words in a text).</li>
+<li>Obtaining predictions from the black-box model on these perturbed data points.</li>
+<li>Weighting the perturbed data points based on their proximity to the original instance.</li>
+<li>Training a simpler, interpretable model (e.g., a linear model) on the perturbed data and their corresponding predictions.</li>
+<li>Using the coefficients of the simpler model to explain the importance of each feature for the original instance.</li>
+</ol>
+<p><strong>SHAP (SHapley Additive exPlanations)</strong> is a technique based on game theory to explain the output of any machine learning model. It assigns each feature an importance value for a particular prediction. SHAP values represent the average marginal contribution of a feature across all possible coalitions of features. In the context of NLP, SHAP can highlight the importance of different words or phrases in a text for a specific prediction. Key aspects of SHAP include:</p>
+<ul>
+<li><strong>Consistency:</strong> If a feature has a larger marginal contribution to the prediction, it will have a larger SHAP value.</li>
+<li><strong>Local Accuracy:</strong> The sum of the SHAP values for all features equals the difference between the model's prediction and the average prediction over the entire dataset.</li>
+<li><strong>Missingness:</strong> Features that are absent have a SHAP value of 0.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Sentiment analysis of customer reviews.</p>
+<p>Let's say we have a model that predicts whether a customer review is positive or negative. We want to understand why the model classified a specific review as negative.</p>
+<p><strong>LIME:</strong> We can use LIME to highlight the words that contributed most to the negative sentiment score. For example, LIME might highlight words like "terrible", "disappointed", and "slow" in a review.  This helps us understand if the model is correctly identifying negative sentiment or if it's being influenced by irrelevant words. If the model incorrectly identified a review as negative because of a neutral word used in a negative context, LIME would help expose this.</p>
+<p><strong>SHAP:</strong> We can use SHAP to understand the contribution of each word in the review to the final sentiment score.  SHAP would provide a numerical value for each word, indicating how much that word pushed the prediction towards positive or negative sentiment. This provides a more granular and comprehensive understanding of the model's decision-making process compared to LIME.  We can see which words are contributing the most, and whether the model is relying on specific keywords or a broader understanding of the text.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's an example using the <code>lime</code> and <code>shap</code> Python libraries.  Note that this is a simplified example and assumes you have a trained sentiment analysis model (<code>model</code>) that takes text as input and returns a probability of positive sentiment.</p>
+<pre class="codehilite"><code class="language-python">import lime
+import lime.lime_text
+import shap
+import transformers
+import numpy as np
+
+# Assume you have a trained model (e.g., using Transformers)
+model_name = 'distilbert-base-uncased-finetuned-sst-2-english'
+tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+model = transformers.AutoModelForSequenceClassification.from_pretrained(model_name)
+
+def predict_proba(texts):
+    &quot;&quot;&quot;
+    A wrapper to feed the input to the model correctly and return probabilities.
+    &quot;&quot;&quot;
+    inputs = tokenizer(texts, padding=True, truncation=True, return_tensors=&quot;pt&quot;)
+    outputs = model(**inputs)
+    probas = transformers.nn.functional.softmax(outputs.logits, dim=-1).detach().numpy()
+    return probas
+
+# Example review
+review = &quot;This movie was terrible. The acting was awful and the plot was boring.&quot;
+
+# LIME Example
+explainer = lime.lime_text.LimeTextExplainer(class_names=['negative', 'positive'])
+explanation = explainer.explain_instance(review, predict_proba, num_features=6)
+print(&quot;LIME Explanation:&quot;)
+print(explanation.as_list())
+
+
+# SHAP Example
+# Create a SHAP explainer using KernelExplainer (model agnostic but slow).  Faster options
+# exist for specific model types (e.g., TransformersExplainer)
+explainer = shap.KernelExplainer(predict_proba, shap.sample(np.array([review]),100))
+shap_values = explainer.shap_values(review)
+
+print(&quot;\nSHAP Explanation:&quot;)
+# Sum shap values for each word, averaging across classes if necessary
+if isinstance(shap_values, list): #multiple output classes
+  class_0_shap_values = shap_values[0]
+  class_1_shap_values = shap_values[1]
+  word_importances = np.mean([class_0_shap_values, class_1_shap_values], axis=0)
+else: #single output class
+  word_importances = shap_values
+
+words = review.split()
+for i, word in enumerate(words):
+  print(f&quot;Word: {word}, SHAP value: {word_importances[i]}&quot;)
+</code></pre>
+
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>Model-Agnostic:</strong> LIME and SHAP (especially KernelSHAP) are model-agnostic, meaning they can be used with any machine learning model. However, some SHAP explainers are specifically designed for certain model types (e.g., <code>TreeExplainer</code> for tree-based models, <code>DeepExplainer</code> for deep neural networks, <code>TransformersExplainer</code> for transformers) and provide faster and more accurate explanations for those models.</li>
+<li><strong>Computational Cost:</strong> SHAP can be computationally expensive, especially for large datasets or complex models.</li>
+<li><strong>Approximation:</strong> Both LIME and SHAP provide approximations of feature importance. The accuracy of the explanations depends on the parameters used and the complexity of the model.</li>
+<li><strong>TransformersExplainer:</strong> For transformer-based models, using <code>shap.Explainer(model, tokenizer)</code> or <code>shap.TransformersExplainer(model, tokenizer)</code> can offer significantly faster and often more accurate results compared to KernelSHAP. They leverage the internal workings of the Transformer architecture.</li>
+<li><strong>SHAP for Transformers:</strong>  With Transformers, it's important to account for the tokenizer. The tokenizer may split words into subwords (e.g., "terrible" might be split into "ter" "##rible"). The SHAP values will be assigned to these subwords. You'll typically need to aggregate these subword SHAP values to get word-level importances.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do the explanations from LIME and SHAP differ in terms of the scope of explanation (local vs. global) and the type of information they provide? Are there situations where one method is preferred over the other? Why?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
