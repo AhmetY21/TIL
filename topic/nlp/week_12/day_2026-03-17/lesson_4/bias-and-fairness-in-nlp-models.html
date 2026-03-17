@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bias and Fairness in NLP Models</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-bias-and-fairness-in-nlp-models">Topic: Bias and Fairness in NLP Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Bias and Fairness in NLP models refers to the phenomenon where these models exhibit systematic and unfair discrimination towards certain groups of people based on sensitive attributes such as gender, race, religion, sexual orientation, or disability. This bias arises because NLP models learn from vast amounts of text data, which often reflects existing societal biases.</p>
+<p><strong>What is it?</strong></p>
+<ul>
+<li><strong>Bias:</strong> A systematic and consistent skewing of a model's output towards a particular outcome, disproportionately affecting certain groups. This skewing is not due to actual differences in the underlying data but rather reflects prejudices learned from the training data or inherent limitations of the model architecture.</li>
+<li>
+<p><strong>Fairness:</strong>  A state where the model's performance (e.g., accuracy, error rates) is equitable across different demographic groups.  There isn't a single "correct" definition of fairness; different fairness metrics exist, and the appropriate one depends on the specific application and its ethical considerations.  Common fairness definitions include:</p>
+<ul>
+<li><strong>Statistical Parity:</strong>  Ensuring that the probability of a positive outcome is the same across all groups.  (e.g., same acceptance rate for loan applications across all races).</li>
+<li><strong>Equal Opportunity:</strong>  Ensuring that the true positive rate (TPR) is the same across all groups.  (e.g., same rate of correctly identifying qualified candidates across all genders).</li>
+<li><strong>Predictive Parity:</strong> Ensuring that the positive predictive value (PPV) is the same across all groups. (e.g., same probability that a positive prediction from the model is actually true, across all age groups).</li>
+</ul>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>Understanding bias and fairness in NLP allows us to:</p>
+<ul>
+<li><strong>Identify and Mitigate Harmful Outcomes:</strong> By detecting bias, we can proactively adjust models to avoid perpetuating stereotypes or discriminatory practices in applications like hiring, loan approvals, criminal justice, and healthcare.</li>
+<li><strong>Develop More Ethical AI Systems:</strong> Incorporating fairness considerations into the model development lifecycle promotes responsible AI practices and builds trust in these systems.</li>
+<li><strong>Improve Model Performance for All Groups:</strong> Debiasing can sometimes lead to more robust and generalizable models that perform better across diverse populations.</li>
+<li><strong>Inform Policy and Regulations:</strong> Research into bias and fairness in NLP can provide valuable insights for policymakers seeking to regulate AI systems and ensure they are used responsibly.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Resume Screening</p>
+<p>Imagine an NLP model is used to automatically screen resumes for job applications. The model is trained on historical resume data, including successful candidates from the past. If the historical data disproportionately represents one gender or race in certain roles, the model may learn to favor resumes from that group, even if other candidates are equally qualified.</p>
+<p><strong>Consequences of Bias:</strong></p>
+<ul>
+<li><strong>Discrimination:</strong> The model could systematically downrank or reject resumes from underrepresented groups, perpetuating existing inequalities in the workforce.</li>
+<li><strong>Missed Opportunities:</strong>  The company could miss out on qualified candidates from diverse backgrounds, hindering innovation and reducing the talent pool.</li>
+<li><strong>Legal and Reputational Risks:</strong>  Using a biased resume screening tool could expose the company to legal challenges and damage its reputation.</li>
+</ul>
+<p><strong>Fairness Metric to Consider:</strong></p>
+<ul>
+<li><strong>Equal Opportunity:</strong> We might want to ensure that the <em>true positive rate</em> (the proportion of truly qualified candidates who are correctly identified) is the same for all demographic groups. This means that the model should be equally effective at identifying qualified candidates, regardless of their gender, race, etc.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python"># Example using Fairlearn library (requires installation: pip install fairlearn)
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from fairlearn.metrics import MetricFrame, selection_rate, count
+from fairlearn.reductions import DemographicParity, ExponentiatedGradient
+from fairlearn.datasets import fetch_adult
+
+# Load the Adult dataset (contains demographic information)
+data = fetch_adult(as_frame=True)
+X = data.data
+y = data.target
+A = data.data[&quot;sex&quot;]  # 'sex' column as our sensitive attribute (e.g., gender)
+
+# Preprocess: Handle missing values and encode categorical features (simplified)
+X = X.fillna(X.mean(numeric_only=True))
+X = pd.get_dummies(X, columns=['workclass', 'education', 'marital-status', 'occupation', 'relationship', 'race', 'native-country'])
+
+# Split data into training and testing sets
+X_train, X_test, y_train, A_train, A_test = train_test_split(X, y, A, test_size=0.3, random_state=42)
+
+
+# 1. Train a Baseline Model (potentially biased)
+baseline_model = LogisticRegression(solver='liblinear', random_state=42)
+baseline_model.fit(X_train, y_train)
+y_pred_baseline = baseline_model.predict(X_test)
+
+
+# 2. Evaluate Baseline Model and Check for Disparities
+
+def evaluate_fairness(y_true, y_pred, sensitive_attribute):
+    &quot;&quot;&quot;Evaluates fairness metrics using Fairlearn.&quot;&quot;&quot;
+    metric_fns = {
+        &quot;overall_accuracy&quot;: accuracy_score,
+        &quot;selection_rate&quot;: selection_rate,
+        &quot;count&quot;: count
+    }
+    metric_frame = MetricFrame(metrics=metric_fns,
+                               y_true=y_true,
+                               y_pred=y_pred,
+                               sensitive_features=sensitive_attribute)
+    print(metric_frame.overall)
+    print(&quot;-&quot; * 20)
+    print(metric_frame.by_group)
+
+
+print(&quot;Baseline Model Evaluation:&quot;)
+evaluate_fairness(y_test, y_pred_baseline, A_test)
+
+
+# 3. Train a Fair Model using Fairlearn's Reductions approach
+#    (DemographicParity ensures similar selection rates across groups)
+constraint = DemographicParity()
+#  ExponentiatedGradient trains multiple models to satisfy the constraint
+mitigator = ExponentiatedGradient(estimator=LogisticRegression(solver='liblinear', random_state=42),
+                                  constraints=constraint)
+
+mitigator.fit(X_train, y_train, sensitive_features=A_train)
+y_pred_fair = mitigator.predict(X_test)
+
+
+# 4. Evaluate the Fair Model
+print(&quot;\nFair Model Evaluation:&quot;)
+evaluate_fairness(y_test, y_pred_fair, A_test)
+
+
+# Note:  This is a simplified example.  More sophisticated preprocessing,
+# hyperparameter tuning, and fairness constraint selection are crucial in real-world applications.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Loading and Preprocessing:</strong> The code loads the Adult dataset, which includes sensitive attributes like gender ("sex").  It preprocesses the data by handling missing values and converting categorical variables into numerical ones using one-hot encoding.</li>
+<li><strong>Baseline Model:</strong> A standard Logistic Regression model is trained on the data <em>without</em> any fairness considerations.</li>
+<li><strong>Fairness Evaluation:</strong>  The <code>evaluate_fairness</code> function calculates accuracy, selection rate (proportion of positive predictions), and group counts using the <code>MetricFrame</code> from Fairlearn. This helps identify disparities in the baseline model's performance across different demographic groups.</li>
+<li><strong>Fair Model Training:</strong>  Fairlearn's <code>ExponentiatedGradient</code> algorithm is used to train a model that satisfies a <code>DemographicParity</code> constraint. Demographic Parity aims to ensure that the selection rate (positive prediction rate) is similar across different groups defined by the sensitive attribute.  The <code>ExponentiatedGradient</code> algorithm iteratively trains and combines multiple models to achieve this fairness goal.</li>
+<li><strong>Evaluation of Fair Model:</strong>  The <code>evaluate_fairness</code> function is called again to assess the performance of the fair model.  You should observe a reduction in disparities in the selection rate compared to the baseline model, potentially at the cost of a small decrease in overall accuracy.</li>
+</ol>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Fairness Metrics:</strong> The choice of fairness metric (e.g., Statistical Parity, Equal Opportunity, Predictive Parity) depends on the specific application and its ethical implications.</li>
+<li><strong>Trade-offs:</strong>  Debiasing can sometimes involve trade-offs between accuracy and fairness. It's essential to carefully consider these trade-offs and choose the approach that best aligns with the application's goals.</li>
+<li><strong>Data Quality:</strong>  The quality of the training data is crucial.  Even with debiasing techniques, biased data can still lead to unfair outcomes.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of a specific fairness metric (e.g., Demographic Parity, Equal Opportunity, Predictive Parity) affect the mitigation strategy and the resulting model's performance in a real-world application, and what factors should be considered when selecting the most appropriate metric?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
