@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Engineering Best Practices</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-prompt-engineering-best-practices">Topic: Prompt Engineering Best Practices</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Prompt engineering is the art and science of designing effective prompts for large language models (LLMs) like GPT-3, LaMDA, and others, to elicit desired and high-quality responses. A prompt is the input given to the LLM that guides its generation of text. Instead of simply asking a question, prompt engineering involves carefully crafting the prompt's phrasing, format, and context to steer the model toward the specific outcome you want.</p>
+<p>We can use prompt engineering to:</p>
+<ul>
+<li><strong>Improve accuracy:</strong> By providing context and clear instructions, we can reduce the likelihood of the LLM generating incorrect or nonsensical answers.</li>
+<li><strong>Control output style:</strong> We can influence the tone, format, and length of the response (e.g., "Write a short poem...", "Explain this concept like I'm five...", "Summarize this article in three bullet points...").</li>
+<li><strong>Extract specific information:</strong> We can design prompts that guide the model to extract relevant data from a body of text or answer precise questions.</li>
+<li><strong>Generate creative content:</strong> We can use prompts to spark the LLM's creativity and generate stories, poems, code, or other forms of content.</li>
+<li><strong>Mitigate biases:</strong> While not a perfect solution, careful prompt design can help minimize the impact of biases present in the model's training data.</li>
+</ul>
+<p>Ultimately, good prompt engineering results in more predictable, useful, and desirable outputs from LLMs.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's say you're building a customer service chatbot that uses an LLM to answer frequently asked questions. A naive approach might be to simply feed the user's question directly to the model. However, this might lead to inconsistent or inaccurate responses.</p>
+<p>Instead, using prompt engineering, you can create a more structured prompt like this:</p>
+<p>"You are a customer service chatbot for [Company Name]. Your goal is to answer customer questions accurately and helpfully. Please use the following knowledge base to answer the question below. If the knowledge base does not contain an answer, respond with 'I'm sorry, I don't have the information to answer that question.'</p>
+<p><strong>Knowledge Base:</strong>
+[...Insert company FAQs and information here...]</p>
+<p><strong>Question:</strong> [User's question]"</p>
+<p>This prompt provides the LLM with:</p>
+<ul>
+<li><strong>Context:</strong> Telling it its role (customer service chatbot) and goals.</li>
+<li><strong>Instructions:</strong> How to behave (accurately and helpfully).</li>
+<li><strong>Information Source:</strong> Providing a knowledge base for grounding its responses.</li>
+<li><strong>Fallback Strategy:</strong> Defining how to respond when information is unavailable.</li>
+</ul>
+<p>By using this engineered prompt, the chatbot is much more likely to provide relevant, accurate, and helpful responses compared to simply feeding the raw user question to the model. This approach significantly improves the user experience.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import openai
+
+def generate_response(prompt):
+  &quot;&quot;&quot;
+  Generates a response from the OpenAI API given a prompt.
+
+  Args:
+    prompt: The prompt to send to the API.
+
+  Returns:
+    The response from the API as a string, or None if there's an error.
+  &quot;&quot;&quot;
+  try:
+    response = openai.Completion.create(
+        engine=&quot;text-davinci-003&quot;,  # Choose an appropriate engine
+        prompt=prompt,
+        max_tokens=150,          # Adjust as needed
+        n=1,                     # Number of responses to generate
+        stop=None,               # Specify stop sequences, if any
+        temperature=0.7,          # Adjust for creativity (0-1)
+    )
+    return response.choices[0].text.strip()
+  except Exception as e:
+    print(f&quot;Error generating response: {e}&quot;)
+    return None
+
+# Example usage with prompt engineering:
+company_name = &quot;Acme Corp&quot;
+knowledge_base = &quot;&quot;&quot;
+Q: What are your hours?
+A: We are open Monday-Friday, 9am-5pm.
+Q: Do you offer refunds?
+A: Yes, we offer full refunds within 30 days of purchase.
+&quot;&quot;&quot;
+
+user_question = &quot;What are your hours?&quot;
+
+prompt = f&quot;&quot;&quot;
+You are a customer service chatbot for {company_name}. Your goal is to answer customer questions accurately and helpfully. Please use the following knowledge base to answer the question below. If the knowledge base does not contain an answer, respond with 'I'm sorry, I don't have the information to answer that question.'
+
+Knowledge Base:
+{knowledge_base}
+
+Question: {user_question}
+&quot;&quot;&quot;
+
+openai.api_key = &quot;YOUR_OPENAI_API_KEY&quot; # Replace with your actual API key
+
+response = generate_response(prompt)
+
+if response:
+  print(response)
+else:
+  print(&quot;Failed to get a response.&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>generate_response(prompt)</code> function:</strong>  This function takes a prompt string as input and uses the <code>openai</code> library to send it to the OpenAI API.  It handles potential errors and returns the generated text.</li>
+<li><strong><code>engine</code>:</strong>  Specifies the OpenAI model to use. Replace <code>"text-davinci-003"</code> with a more suitable model if needed, considering cost and performance trade-offs.</li>
+<li><strong><code>max_tokens</code>:</strong> Limits the length of the generated response.  Adjust based on the expected complexity of the answer.</li>
+<li><strong><code>temperature</code>:</strong>  Controls the randomness of the output. A lower value (e.g., 0.2) makes the response more deterministic, while a higher value (e.g., 0.9) introduces more creativity.</li>
+<li><strong>Prompt construction:</strong>  The code demonstrates how to build the prompt string dynamically, inserting relevant information like the company name, knowledge base, and user question.  This allows for customization and flexibility.</li>
+<li><strong>API key:</strong> Remember to replace <code>"YOUR_OPENAI_API_KEY"</code> with your actual OpenAI API key. You can obtain this from the OpenAI website.</li>
+<li><strong>Error Handling:</strong> Includes a <code>try-except</code> block to gracefully handle potential errors during the API call.</li>
+</ol>
+<p><strong>Important:</strong> You will need to install the OpenAI Python library: <code>pip install openai</code></p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can I systematically evaluate and compare the effectiveness of different prompt engineering techniques for a given task (e.g., using metrics)?  What metrics are most relevant for different types of LLM outputs (e.g., factual accuracy, fluency, coherence)?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
