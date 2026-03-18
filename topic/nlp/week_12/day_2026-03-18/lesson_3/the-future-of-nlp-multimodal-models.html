@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Future of NLP: Multimodal Models</title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .back-link {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .dark .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .dark body {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3 { color: #f1f5f9; }
+    .dark a { color: #60a5fa; }
+    .dark .page-header { border-bottom-color: #334155; }
+    .dark code { background-color: #1e293b; color: #e2e8f0; }
+    .dark pre {
+      border: 1px solid #334155;
+    }
+    .dark blockquote {
+      border-left-color: #334155;
+      color: #94a3b8;
+    }
+    .dark th, .dark td { border-color: #334155; }
+    .dark th { background: #1e293b; }
+    .dark hr { border-top-color: #334155; }
+
+    /* Copy Button */
+    pre { position: relative; }
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    pre:hover .copy-button, .copy-button:focus {
+      opacity: 1;
+    }
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  </div>
+
+<h1 id="topic-the-future-of-nlp-multimodal-models">Topic: The Future of NLP: Multimodal Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Multimodal NLP refers to the area of natural language processing that goes beyond text-only inputs and incorporates other modalities like images, audio, video, and sensor data. Instead of relying solely on textual information, multimodal models aim to understand and generate content that integrates and reasons across multiple modalities.</p>
+<ul>
+<li>
+<p><strong>What it is:</strong> It's an extension of traditional NLP that allows AI models to process and understand data from various sources (e.g., text and images). Think of it as teaching a machine to "see," "hear," and "read" simultaneously to gain a more comprehensive understanding of the world. These models often involve sophisticated architectures that can learn joint representations of different modalities. Common architectures include attention mechanisms, transformers, and graph neural networks, adapted to handle the unique characteristics of each modality.</p>
+</li>
+<li>
+<p><strong>How can we use it:</strong></p>
+<ul>
+<li><strong>Improved Understanding:</strong> Multimodal models can understand nuances and context that are difficult or impossible to grasp from text alone. For example, sarcasm might be detected through facial expressions in a video, even if the text itself doesn't explicitly indicate it.</li>
+<li><strong>Content Generation:</strong> Generating richer and more relevant content. Imagine a model that can write a caption for an image, generate a script based on a video, or answer questions about a scene presented visually and verbally.</li>
+<li><strong>Cross-Modal Retrieval:</strong> Searching for information across different modalities. For example, finding a video clip that matches a textual description or identifying an image that corresponds to a specific audio excerpt.</li>
+<li><strong>Contextual Analysis:</strong> Provides the ability to analyze and interpret situations within their broader context. Combining data points from varied modalities ensures a more holistic perception, facilitating greater accuracy in tasks like sentiment analysis.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Imagine a customer support chatbot that assists users with smart home appliances.</p>
+<ul>
+<li>
+<p><strong>Traditional (Text-Only) Chatbot:</strong> A user types: "My smart bulb is not turning on." The chatbot might offer standard troubleshooting steps like checking the power supply, the Wi-Fi connection, or resetting the bulb.</p>
+</li>
+<li>
+<p><strong>Multimodal Chatbot:</strong> The user uploads a picture of the smart bulb showing a blinking red light. The chatbot, using image recognition, identifies the blinking red light pattern. By associating that specific light pattern with a database of error codes and user manuals, the chatbot immediately provides a more precise solution: "The blinking red light indicates a firmware update failure. Please follow these steps to manually update the firmware via the mobile app."</p>
+</li>
+</ul>
+<p>In this scenario, the multimodal chatbot offers a significantly better customer experience because it can <em>see</em> the problem, interpret it accurately, and offer a tailored solution based on the visual information, which would be impossible with text alone. Another modality could be audio - the user describes the problem verbally, and the chatbot analyzes the tone and prosody to gauge frustration levels, potentially prioritizing the issue or offering a more empathetic response.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While building a full multimodal model from scratch requires significant effort and specialized libraries (like PyTorch, TensorFlow, or Hugging Face Transformers), we can illustrate a simplified version using existing pre-trained models. This example shows how you might combine the outputs of a text encoder and an image encoder.</p>
+<pre class="codehilite"><code class="language-python">from transformers import AutoTokenizer, AutoModel
+from PIL import Image
+import requests
+import torch
+
+# Load pre-trained text model (e.g., BERT)
+text_model_name = &quot;bert-base-uncased&quot;
+text_tokenizer = AutoTokenizer.from_pretrained(text_model_name)
+text_model = AutoModel.from_pretrained(text_model_name)
+
+# Load pre-trained image model (e.g., ViT - Vision Transformer)
+image_model_name = &quot;google/vit-base-patch16-224&quot;
+image_model = AutoModel.from_pretrained(image_model_name)
+
+# Function to process text
+def process_text(text):
+  inputs = text_tokenizer(text, return_tensors=&quot;pt&quot;)
+  with torch.no_grad():
+    outputs = text_model(**inputs)
+  return outputs.last_hidden_state.mean(dim=1)  # Average pooling
+
+# Function to process image
+def process_image(image_url):
+  try:
+    image = Image.open(requests.get(image_url, stream=True).raw)
+    image = image.resize((224, 224)) #ViT requires this size
+    # Using ViT Feature Extractor (not provided out of box, needs to be installed, but conceptually like tokenizer)
+    from transformers import ViTFeatureExtractor
+    feature_extractor = ViTFeatureExtractor.from_pretrained(image_model_name)
+    inputs = feature_extractor(images=image, return_tensors=&quot;pt&quot;)
+
+
+    with torch.no_grad():
+      outputs = image_model(**inputs)
+    return outputs.last_hidden_state.mean(dim=1) # Average pooling
+  except Exception as e:
+    print(f&quot;Error processing image: {e}&quot;)
+    return None
+
+# Example usage
+text = &quot;A cute cat sitting on a mat.&quot;
+image_url = &quot;https://example.com/cat.jpg&quot; # Replace with an actual image URL
+# This URL will likely not work, but demonstrates the URL loading for images
+
+
+text_embedding = process_text(text)
+image_embedding = process_image(image_url)
+
+# Combine embeddings (e.g., concatenation or element-wise addition)
+if text_embedding is not None and image_embedding is not None:
+  combined_embedding = torch.cat((text_embedding, image_embedding), dim=1) # Simple concatenation
+
+  print(&quot;Shape of combined embedding:&quot;, combined_embedding.shape) #Should be [1, 768 + 768] if both models produce 768 sized embeddings
+else:
+  print(&quot;Failed to generate embedding(s).&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Load Pre-trained Models:</strong>  The code uses the Hugging Face <code>transformers</code> library to load pre-trained BERT (text) and ViT (image) models. These models have already been trained on large datasets and can extract meaningful features from text and images.</li>
+<li><strong>Process Text:</strong> The <code>process_text</code> function tokenizes the input text using the BERT tokenizer and feeds it to the BERT model. The function then takes the mean of the hidden states as the text embedding.</li>
+<li><strong>Process Image:</strong> The <code>process_image</code> function loads an image from a URL using the <code>PIL</code> library.  The image is resized to 224x224 for ViT compatibility. ViTFeatureExtractor prepares the image for the ViT model.  The function returns the mean of the hidden states as the image embedding.</li>
+<li><strong>Combine Embeddings:</strong> The code concatenates the text and image embeddings to create a combined multimodal representation.  More sophisticated methods like attention mechanisms could be used to weight the modalities differently.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>You need to install the <code>transformers</code> and <code>PIL</code> libraries: <code>pip install transformers pillow requests</code></li>
+<li>Replace <code>"https://example.com/cat.jpg"</code> with a working URL of an image.</li>
+<li>This is a simplified example.  Real-world multimodal models are significantly more complex, involving careful training and fine-tuning on multimodal datasets.</li>
+<li>Consider using GPU acceleration if you're working with large images or models.</li>
+<li>The ViTFeatureExtractor needs to be installed using <code>pip install timm</code>. This wasn't directly stated in many ViT tutorials.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we evaluate the performance of multimodal models, given that the evaluation metrics for individual modalities (e.g., BLEU for text, accuracy for image classification) might not directly translate to the combined performance?  What novel evaluation metrics are being developed specifically for multimodal tasks?</p>
+  <script>
+    const btn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    function updateIcon() {
+      btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    
+    // Set initial icon
+    updateIcon();
+
+    btn.addEventListener('click', () => {
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateIcon();
+    });
+
+    // Copy Code Functionality
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      pre.appendChild(button);
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = 'Copied!';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Error';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
