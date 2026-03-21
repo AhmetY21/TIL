@@ -112,9 +112,37 @@
     .dark .week-title {
       border-bottom-color: #334155;
     }
+
+    *:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    .dark *:focus-visible {
+      outline-color: var(--primary);
+    }
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--primary);
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    #main-content:focus {
+      outline: none;
+    }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   <div class="container">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
@@ -123,7 +151,8 @@
       <p class="subtitle">A curriculum-based journey into Natural Language Processing</p>
     </header>
 
-    <h2 class='week-title'>Week 12</h2><div class='week-container'>
+    <main id="main-content" tabindex="-1">
+      <h2 class='week-title'>Week 12</h2><div class='week-container'>
         <div class="lesson-card">
             <div class="lesson-date">2026-03-18 · Lesson 5</div>
             <div class="lesson-name">Review And Final Project Ideas</div>
@@ -1590,20 +1619,21 @@
         </div><h2 class='week-title'>Week 6</h2><div class='week-container'>
         <div class="lesson-card">
             <div class="lesson-date">2026-02-08 · Lesson 6</div>
-            <div class="lesson-name">The Standard Nlp Pipeline Overview</div>
-            <div class="lesson-links">
-                <a href="../topic/nlp/week_6/day_2026-02-08/lesson_6/the-standard-nlp-pipeline-overview.html" class="btn btn-primary">View Lesson (HTML)</a>
-            </div>
-        </div>
-        
-        <div class="lesson-card">
-            <div class="lesson-date">2026-02-08 · Lesson 6</div>
             <div class="lesson-name">Introduction To Natural Language Processing Nlp</div>
             <div class="lesson-links">
                 <a href="../topic/nlp/week_6/day_2026-02-08/lesson_6/introduction-to-natural-language-processing-nlp.html" class="btn btn-primary">View Lesson (HTML)</a>
             </div>
         </div>
+        
+        <div class="lesson-card">
+            <div class="lesson-date">2026-02-08 · Lesson 6</div>
+            <div class="lesson-name">The Standard Nlp Pipeline Overview</div>
+            <div class="lesson-links">
+                <a href="../topic/nlp/week_6/day_2026-02-08/lesson_6/the-standard-nlp-pipeline-overview.html" class="btn btn-primary">View Lesson (HTML)</a>
+            </div>
         </div>
+        </div>
+    </main>
   </div>
   <script>
     const btn = document.getElementById('theme-toggle');
