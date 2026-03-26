@@ -414,6 +414,15 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
 
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
+    }}
+
     /* Copy Button */
     pre {{ position: relative; }}
     .copy-button {{
@@ -729,6 +738,16 @@ def update_index_page(meta: CurriculumMeta) -> None:
       --text: #e2e8f0;
       --secondary: #94a3b8;
     }}
+
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
+
     .dark .lesson-card {{
       background: #1e293b;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
