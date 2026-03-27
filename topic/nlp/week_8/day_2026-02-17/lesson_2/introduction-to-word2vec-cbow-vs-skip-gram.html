@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-introduction-to-word2vec-cbow-vs-skip-gram">Topic: Introduction to Word2Vec (CBOW vs Skip-gram)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Word2Vec is a group of related models used to produce word embeddings. Word embeddings are vector representations of words that capture semantic meaning. Unlike traditional one-hot encoding, word embeddings represent words in a continuous, high-dimensional space where semantically similar words are located closer to each other.  This allows algorithms to understand relationships between words, such as synonymy and analogy.</p>
@@ -195,6 +211,7 @@ print(&quot;Skip-gram Similar words to 'language':&quot;, similar_words_skipgram
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are some of the limitations of Word2Vec, and what are some alternative word embedding techniques that address these limitations? For example, how does GloVe compare to Word2Vec, and what are the pros and cons of each?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

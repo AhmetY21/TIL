@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-bidirectional-rnns">Topic: Bidirectional RNNs</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>A Bidirectional Recurrent Neural Network (BRNN) is a type of recurrent neural network that processes input sequences in both directions – forward and backward – before making predictions.  Unlike a standard RNN, which processes information sequentially from the beginning to the end, a BRNN uses two separate RNNs: one processing the input sequence in its original order (forward RNN) and the other processing the input sequence in reverse order (backward RNN).</p>
@@ -176,6 +192,7 @@ model.fit(X_train, y_train, epochs=2, batch_size=32)
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are the limitations of Bidirectional RNNs, and what are some techniques to address those limitations? For example, are there cases where non-recurrent methods like transformers would be preferable and why?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

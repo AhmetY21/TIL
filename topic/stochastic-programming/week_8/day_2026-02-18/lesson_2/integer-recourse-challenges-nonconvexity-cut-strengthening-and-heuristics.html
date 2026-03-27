@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-integer-recourse-challenges-nonconvexity-cut-strengthening-and-heuristics">Topic: Integer Recourse Challenges: nonconvexity, cut strengthening, and heuristics</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Integer recourse challenges arise in stochastic programming problems where some decision variables in the <em>recourse</em> or <em>second-stage</em> problem are required to be integers.  Let's break down the components:</p>
@@ -262,6 +278,7 @@ else:
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the choice of scenario generation technique (e.g., Monte Carlo sampling, scenario trees, moment-based approaches) affect the computational complexity and solution quality when dealing with integer recourse problems in stochastic programming? Furthermore, how can we adapt cut generation and heuristic techniques to leverage specific properties of the chosen scenario generation method?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-application-pattern-stochastic-unit-commitment-energy-planning-high-level">Topic: Application Pattern: Stochastic Unit Commitment / Energy Planning (high level)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Stochastic Unit Commitment (SUC) and Stochastic Energy Planning are extensions of traditional unit commitment and energy planning problems that explicitly incorporate uncertainty.</p>
@@ -251,6 +267,7 @@ for u in model.Units:
 <p>This simplified example provides a basic understanding of how stochastic unit commitment can be formulated and solved using Pyomo.  For real-world applications, you would need to expand the model to include more detailed constraints and use more sophisticated scenario generation and solution techniques.  Stochastic Energy Planning extends this framework to consider investment decisions over longer time horizons.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do different methods for scenario generation (e.g., Monte Carlo simulation, scenario reduction techniques) impact the computational complexity and accuracy of a stochastic unit commitment model? Which method is generally preferred in practice, and why?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-the-attention-mechanism-bahdanau-attention">Topic: The Attention Mechanism (Bahdanau Attention)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Bahdanau Attention, also known as Additive Attention, is an attention mechanism introduced by Bahdanau et al. in their 2014 paper "Neural Machine Translation by Jointly Learning to Align and Translate." It addresses a key limitation of traditional sequence-to-sequence models (like those using LSTMs or GRUs) with a fixed-length context vector: the inability to effectively handle long sequences.</p>
@@ -239,6 +255,7 @@ print(&quot;Attention Weights Shape:&quot;, attention_weights.shape)
 <p>This is a simplified version. A complete NMT system would involve an encoder, a decoder, and the integration of this attention mechanism into the decoding process.  You'd typically incorporate the <code>context_vector</code> into the decoder's hidden state update or output generation.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does Bahdanau Attention compare to other attention mechanisms, such as Dot-Product Attention or Self-Attention (Transformer attention), in terms of computational complexity, performance on different types of tasks, and interpretability? In what scenarios might one be preferred over the others?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

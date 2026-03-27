@@ -83,15 +83,31 @@
     .dark th, .dark td { border-color: #334155; }
     .dark th { background: #1e293b; }
     .dark hr { border-top-color: #334155; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-common-failure-modes-positivity-violations-and-extrapolation">Topic: Common Failure Modes: Positivity Violations and Extrapolation</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p><strong>Positivity Violation (or Lack of Overlap):</strong> Positivity, also called overlap or common support, refers to the condition that for every value of the confounders, there is a non-zero probability of receiving each treatment level. Formally, for a treatment <em>A</em> and covariates <em>X</em>, positivity requires that 0 &lt; P(A = a | X = x) &lt; 1 for all values <em>a</em> that <em>A</em> can take and for all values <em>x</em> in the support of <em>X</em>.  A positivity violation occurs when this condition is not met. This often manifests as regions of the covariate space where some treatment groups are completely absent. In these regions, we cannot reliably estimate the causal effect of the treatment, as we have no observed data to inform the counterfactual.</p>
@@ -233,6 +249,7 @@ else:
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How can propensity score methods (e.g., inverse probability of treatment weighting) be affected by positivity violations and extrapolation, and what strategies can be used to mitigate these effects when using propensity scores for causal inference?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

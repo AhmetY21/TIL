@@ -83,15 +83,31 @@
     .dark th, .dark td { border-color: #334155; }
     .dark th { background: #1e293b; }
     .dark hr { border-top-color: #334155; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-refutation-tests-placebo-subset-random-common-cause">Topic: Refutation Tests (Placebo, Subset, Random Common Cause)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Refutation tests are methods used in causal inference to assess the robustness of an estimated causal effect. They don't "prove" causality, but they provide evidence that the estimated effect is <em>likely</em> causal and not simply due to some other confounding factor or artifact of the data or methodology. The core idea is to create a <em>counterfactual</em> scenario where we'd expect the estimated causal effect to disappear if our original estimate is genuinely causal.  If the estimated effect <em>doesn't</em> disappear under these refutation scenarios, it raises serious questions about the validity of our initial causal inference.</p>
@@ -184,6 +200,7 @@ print(&quot;\nRandom Common Cause Refuter:&quot;, res_random)
 </ul>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How should I interpret the results of a refutation test that fails (i.e., the refutation test finds a significant effect where it shouldn't or significantly changes the original estimate)? What steps should I take next?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

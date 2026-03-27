@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-distributional-semantics-and-word-vectors">Topic: Distributional Semantics and Word Vectors</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p><strong>Distributional Semantics</strong> is a theory of meaning that proposes that words which occur in similar contexts tend to have similar meanings. In other words, "you shall know a word by the company it keeps" (J.R. Firth). This contrasts with other approaches that might focus on defining words through logical relationships or using ontologies. The <em>distribution</em> refers to the observed occurrences of a word in relation to other words within a corpus.</p>
@@ -168,6 +184,7 @@ else:
 <p>This code snippet demonstrates loading a pre-trained model, calculating word similarity, finding similar words, solving analogies, and accessing a word vector. Remember to install <code>gensim</code> first: <code>pip install gensim</code>.  The <code>word2vec-google-news-300</code> model is large (around 1.6GB), so downloading it may take some time.  Alternatively, you can use smaller models like <code>glove-wiki-gigaword-100</code>.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the choice of corpus used to train word vectors affect their performance on downstream NLP tasks? Specifically, what are the potential benefits and drawbacks of using a very general corpus (e.g., Wikipedia) versus a more specialized corpus (e.g., biomedical literature) for tasks in a specific domain (e.g., clinical text analysis)?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-document-embeddings-doc2vec">Topic: Document Embeddings (Doc2Vec)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Document embeddings (also known as Doc2Vec or Paragraph Vector) are vector representations of entire documents. Unlike word embeddings which represent individual words, doc embeddings capture the semantic meaning of a document as a whole. Doc2Vec is an unsupervised learning technique that learns fixed-length feature representations from variable-length pieces of texts, such as sentences, paragraphs, or entire documents.</p>
@@ -213,6 +229,7 @@ loaded_model_dbow = Doc2Vec.load(&quot;doc2vec_model_dbow.model&quot;)
 </ol>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do you choose the best value for the <code>vector_size</code> hyperparameter in Doc2Vec?  Are there any rules of thumb or specific strategies for optimization?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

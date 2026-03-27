@@ -414,6 +414,19 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
 
+    .skip-link {{
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
+
     /* Copy Button */
     pre {{ position: relative; }}
     .copy-button {{
@@ -440,8 +453,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 {header_html}
+  <main id="main-content" tabindex="-1">
 {html_body}
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
@@ -739,11 +755,25 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .dark .week-title {{
       border-bottom-color: #334155;
     }}
+
+    .skip-link {{
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }}
+    .skip-link:focus {{
+      top: 0;
+    }}
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
-  <div class="container">
+  <main class="container" id="main-content" tabindex="-1">
     <a href="../index.html" class="back-link">← All Learning Hubs</a>
     <header>
       <h1>{meta.subject} Learning Hub</h1>
@@ -751,7 +781,7 @@ def update_index_page(meta: CurriculumMeta) -> None:
     </header>
 
     {lessons_html if lessons else "<p style='text-align:center;'>No lessons generated yet.</p>"}
-  </div>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

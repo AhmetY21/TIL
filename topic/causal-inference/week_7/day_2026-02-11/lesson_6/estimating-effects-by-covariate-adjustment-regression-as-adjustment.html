@@ -104,9 +104,24 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
@@ -114,6 +129,7 @@
   </div>
 
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-estimating-effects-by-covariate-adjustment-regression-as-adjustment">Topic: Estimating Effects by Covariate Adjustment (Regression as Adjustment)</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Covariate adjustment, also known as regression as adjustment, is a method used in causal inference to estimate the causal effect of a treatment (or exposure) on an outcome while controlling for confounding variables (also called covariates or confounders).  The fundamental idea is to use regression analysis to statistically remove the association between the confounders and both the treatment and the outcome.  By adjusting for these confounders, we aim to isolate the true causal effect of the treatment.</p>
@@ -171,6 +187,7 @@ print(f&quot;\nEstimated Treatment Effect: {treatment_effect:.2f}&quot;)
 <p>This Python code uses the <code>statsmodels</code> library to fit an ordinary least squares (OLS) regression model.  It simulates data reflecting the described scenario, creates a DataFrame, and then fits the model. The <code>results.summary()</code> output provides a detailed overview of the regression results, including the estimated coefficients, standard errors, p-values, and R-squared. The <code>treatment_effect</code> variable then extracts the crucial coefficient for the 'treatment' variable, representing the estimated causal effect of the online tutoring program on exam scores after adjusting for GPA.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are some limitations of using regression as adjustment for causal inference, and what alternative methods might be more appropriate when those limitations are present?</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

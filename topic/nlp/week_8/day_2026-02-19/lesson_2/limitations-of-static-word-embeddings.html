@@ -107,15 +107,31 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
 
+<main id="main-content" tabindex="-1">
 <h1 id="topic-limitations-of-static-word-embeddings">Topic: Limitations of Static Word Embeddings</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
 <p>Static word embeddings are a type of word representation where each word is mapped to a single, fixed vector. This vector is learned from a large corpus of text using techniques like Word2Vec (Skip-gram, CBOW), GloVe, or FastText. The underlying assumption is that words appearing in similar contexts will have similar vector representations. Once trained, the embedding for a particular word remains constant, regardless of the specific context in which it appears.</p>
@@ -188,6 +204,7 @@ if word_vectors:
 </ol>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How do contextualized word embeddings (e.g., BERT, ELMo) address the limitations of static word embeddings, and what are the trade-offs involved in using contextualized embeddings instead of static embeddings? Explain with an example of how BERT would solve the "bank" problem above.</p>
+</main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
