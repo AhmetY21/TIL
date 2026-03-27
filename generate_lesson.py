@@ -351,6 +351,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       color: #111827;
       background: #ffffff;
     }}
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
     h1, h2, h3 {{ color: #111827; }}
     a {{ color: #2563eb; text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
@@ -398,6 +402,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark body {{
       background: #0f172a;
       color: #e2e8f0;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
     }}
     .dark h1, .dark h2, .dark h3 {{ color: #f1f5f9; }}
     .dark a {{ color: #60a5fa; }}
@@ -654,6 +662,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
       margin: 0;
       padding: 40px 20px;
     }}
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
     .container {{ max-width: 1000px; margin: 0 auto; }}
     header {{ text-align: center; margin-bottom: 50px; }}
     h1 {{ font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }}
@@ -738,6 +750,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark .week-title {{
       border-bottom-color: #334155;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
   </style>
 </head>
