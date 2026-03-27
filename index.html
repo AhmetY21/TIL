@@ -29,6 +29,11 @@
       margin: 0;
       padding: 0;
     }
+    *:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -157,6 +162,11 @@
       color: var(--primary);
       border: 1px solid #334155;
     }
+    .dark *:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
   </style>
 </head>
 
