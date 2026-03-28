@@ -437,6 +437,14 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }}
+
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+    .dark *:focus-visible {{
+      outline-color: #60a5fa;
+    }}
   </style>
 </head>
 <body>
@@ -738,6 +746,14 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark .week-title {{
       border-bottom-color: #334155;
+    }}
+
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
+    .dark *:focus-visible {{
+      outline-color: var(--primary);
     }}
   </style>
 </head>
