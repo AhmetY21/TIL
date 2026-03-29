@@ -104,14 +104,34 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #0f172a;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      font-weight: 600;
+      border-bottom-right-radius: 6px;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content">
 
 
 <h1 id="topic-first-stage-vs-second-stage-decisions-here-and-now-vs-wait-and-see">Topic: First-stage vs Second-stage Decisions (Here-and-now vs Wait-and-see)</h1>
@@ -235,7 +255,8 @@ else:
 <p>This simplified example demonstrates the basic structure. Real-world problems will be more complex, involving more variables, constraints, and scenarios.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How does the computational complexity of solving a stochastic programming problem with first-stage and second-stage decisions scale with the number of scenarios? Why is scenario reduction a common technique, and what are some approaches to scenario reduction?</p>
-  <script>
+    </main>
+<script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
     
