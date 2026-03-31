@@ -107,14 +107,33 @@
       background: rgba(255, 255, 255, 0.2);
       color: #e2e8f0;
     }
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/stochastic-programming-index.html" class="back-link">← Back to Stochastic Programming</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 <h1 id="topic-baseline-solving-lpmip-solvers-warm-starts-and-scaling">Topic: Baseline Solving: LP/MIP solvers, warm starts, and scaling</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -245,6 +264,7 @@ if results:
 <p><strong>Scaling:</strong>  Scaling isn't explicitly done in this code.  However, you could add scaling by multiplying or dividing variables and coefficients by appropriate constants before creating the Gurobi model. This would be most important if the ordering, holding, and shortage costs have vastly different magnitudes.  For example, if the shortage cost is 1000 times larger than the ordering cost, divide the shortage cost coefficients by 1000 (and the shortage variables by 1000) before creating the model.  Remember to scale back the solution after solving.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>How can scenario reduction techniques (e.g., scenario clustering or sampling methods) be integrated with baseline solving to improve the computational efficiency of solving the stochastic program, and how would these techniques impact the quality of the baseline solution compared to using all scenarios?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;

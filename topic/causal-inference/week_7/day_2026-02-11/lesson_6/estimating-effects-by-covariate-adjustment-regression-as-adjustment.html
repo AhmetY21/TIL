@@ -104,14 +104,33 @@
     }
     .dark .page-header { border-bottom-color: #334155; }
 
+
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 0;
+      background: #ffffff;
+      padding: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      color: #2563eb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/causal-inference-index.html" class="back-link">← Back to Causal Inference</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+<main id="main-content" tabindex="-1">
 
 
 <h1 id="topic-estimating-effects-by-covariate-adjustment-regression-as-adjustment">Topic: Estimating Effects by Covariate Adjustment (Regression as Adjustment)</h1>
@@ -171,6 +190,7 @@ print(f&quot;\nEstimated Treatment Effect: {treatment_effect:.2f}&quot;)
 <p>This Python code uses the <code>statsmodels</code> library to fit an ordinary least squares (OLS) regression model.  It simulates data reflecting the described scenario, creates a DataFrame, and then fits the model. The <code>results.summary()</code> output provides a detailed overview of the regression results, including the estimated coefficients, standard errors, p-values, and R-squared. The <code>treatment_effect</code> variable then extracts the crucial coefficient for the 'treatment' variable, representing the estimated causal effect of the online tutoring program on exam scores after adjusting for GPA.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are some limitations of using regression as adjustment for causal inference, and what alternative methods might be more appropriate when those limitations are present?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
