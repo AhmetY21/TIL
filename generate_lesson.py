@@ -342,6 +342,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
   </script>
   <style>
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
@@ -393,6 +398,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
+    }}
+
+    .dark *:focus-visible {{
+      outline-color: #60a5fa;
     }}
 
     .dark body {{
@@ -646,6 +655,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
       --bg: #f8fafc;
       --text: #1e293b;
     }}
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
+
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
@@ -728,6 +742,9 @@ def update_index_page(meta: CurriculumMeta) -> None:
       --bg: #0f172a;
       --text: #e2e8f0;
       --secondary: #94a3b8;
+    }}
+    .dark *:focus-visible {{
+      outline-color: var(--primary);
     }}
     .dark .lesson-card {{
       background: #1e293b;
