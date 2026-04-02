@@ -342,6 +342,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
   </script>
   <style>
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
@@ -401,6 +406,7 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
     .dark h1, .dark h2, .dark h3 {{ color: #f1f5f9; }}
     .dark a {{ color: #60a5fa; }}
+    .dark *:focus-visible {{ outline-color: #60a5fa; }}
     .dark .page-header {{ border-bottom-color: #334155; }}
     .dark code {{ background-color: #1e293b; color: #e2e8f0; }}
     .dark pre {{
@@ -688,6 +694,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
 
     .lesson-date {{ font-size: 0.9rem; color: var(--secondary); font-weight: 600; }}
     .lesson-name {{ font-size: 1.2rem; font-weight: 800; margin: 10px 0 18px; color: #0f172a; }}
+
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
 
     .lesson-links {{ display: flex; gap: 10px; }}
     .btn {{
