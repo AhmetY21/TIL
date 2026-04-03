@@ -351,6 +351,7 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       color: #111827;
       background: #ffffff;
     }}
+    *:focus-visible {{ outline: 2px solid #2563eb; outline-offset: 2px; }}
     h1, h2, h3 {{ color: #111827; }}
     a {{ color: #2563eb; text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
@@ -399,6 +400,7 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       background: #0f172a;
       color: #e2e8f0;
     }}
+    .dark *:focus-visible {{ outline-color: #60a5fa; }}
     .dark h1, .dark h2, .dark h3 {{ color: #f1f5f9; }}
     .dark a {{ color: #60a5fa; }}
     .dark .page-header {{ border-bottom-color: #334155; }}
@@ -646,6 +648,7 @@ def update_index_page(meta: CurriculumMeta) -> None:
       --bg: #f8fafc;
       --text: #1e293b;
     }}
+    *:focus-visible {{ outline: 2px solid var(--primary); outline-offset: 2px; }}
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);

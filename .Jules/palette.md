@@ -1,9 +1,11 @@
-# Palette's Journal
+## 2024-03-24 - Initial Setup
+**Learning:** Checking memory constraints and UX capabilities.
+**Action:** Always verify before proceeding.
 
-## 2026-02-13 - Retrofitting Navigation Headers
-**Learning:** When injecting navigation components into existing HTML files, CSS conflicts (like absolute positioning on buttons) must be explicitly overridden (e.g., `position: static`) rather than just appending new styles, as the old styles might still apply.
-**Action:** When migrating UI components, check for and neutralize conflicting legacy CSS properties in the migration script.
+## 2025-02-14 - Global vs Local CSS Contexts in Generated HTML
+**Learning:** When injecting styles into dynamically generated files (like markdown to HTML conversions), CSS custom properties (variables like `--primary`) might not be defined if they are only declared in the root `index.html`. Using them blindly leads to broken focus styles.
+**Action:** Always verify if a template defines its own CSS variables before using them; fallback to hardcoded hex values (and explicit `.dark` variants) when styling independent generated artifacts like lessons.
 
-## 2026-02-13 - [Adding Copy Button to Code Blocks]
-**Learning:** When injecting JavaScript into Python f-string templates, remember to escape curly braces (`{` -> `{{`, `}` -> `}}`) to avoid syntax errors and runtime crashes. This is especially tricky when mixing CSS and JS in the same f-string block.
-**Action:** Always verify f-string template injections with a unit test that parses the output or checks for successful execution.
+## 2025-02-14 - Global vs Local CSS Contexts in Generated HTML
+**Learning:** When injecting styles into dynamically generated files (like markdown to HTML conversions), CSS custom properties (variables like `--primary`) might not be defined if they are only declared in the root `index.html`. Using them blindly leads to broken focus styles.
+**Action:** Always verify if a template defines its own CSS variables before using them; fallback to hardcoded hex values (and explicit `.dark` variants) when styling independent generated artifacts like lessons.
