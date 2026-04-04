@@ -7,3 +7,6 @@
 ## 2026-02-13 - [Adding Copy Button to Code Blocks]
 **Learning:** When injecting JavaScript into Python f-string templates, remember to escape curly braces (`{` -> `{{`, `}` -> `}}`) to avoid syntax errors and runtime crashes. This is especially tricky when mixing CSS and JS in the same f-string block.
 **Action:** Always verify f-string template injections with a unit test that parses the output or checks for successful execution.
+## 2026-04-04 - Global Focus Visible Outline
+**Learning:** Interactive elements need standardized focus states across theme contexts to meet basic accessibility standards (supporting keyboard navigation).
+**Action:** Use global `*:focus-visible` selectors with explicit theme colors rather than relying on default browser focus rings.
