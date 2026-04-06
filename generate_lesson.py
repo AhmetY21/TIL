@@ -414,6 +414,14 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
 
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+    .dark *:focus-visible {{
+      outline-color: #60a5fa;
+    }}
+
     /* Copy Button */
     pre {{ position: relative; }}
     .copy-button {{
@@ -738,6 +746,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark .week-title {{
       border-bottom-color: #334155;
+    }}
+
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
   </style>
 </head>
