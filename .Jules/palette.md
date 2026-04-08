@@ -7,3 +7,7 @@
 ## 2026-02-13 - [Adding Copy Button to Code Blocks]
 **Learning:** When injecting JavaScript into Python f-string templates, remember to escape curly braces (`{` -> `{{`, `}` -> `}}`) to avoid syntax errors and runtime crashes. This is especially tricky when mixing CSS and JS in the same f-string block.
 **Action:** Always verify f-string template injections with a unit test that parses the output or checks for successful execution.
+
+## 2026-02-13 - [Retrofitting Skip-to-Content Navigation]
+**Learning:** When adding accessibility features like skip links retroactively to legacy HTML files, blindly injecting an empty target div (e.g., `<div id="main-content" tabindex="-1"></div>`) immediately after the link is flawed as it fails to skip the actual navigation elements. Proper implementation requires wrapping the actual main content body in `<main id="main-content" tabindex="-1">`.
+**Action:** Always ensure the target container for a skip link wraps the primary content and includes `tabindex="-1"` so programmatic focus works correctly.
