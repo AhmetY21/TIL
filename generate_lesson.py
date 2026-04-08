@@ -342,6 +342,13 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     }}
   </script>
   <style>
+      *:focus-visible {{
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+      }}
+      .dark *:focus-visible {{
+        outline-color: #60a5fa;
+      }}
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
@@ -639,6 +646,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
   </script>
   <style>
+      *:focus-visible {{
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }}
     :root {{
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
