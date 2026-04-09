@@ -49,6 +49,30 @@
       text-decoration: underline;
     }
 
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      z-index: 100;
+      transition: top 0.2s;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     .theme-toggle {
       background: none;
       border: none;
@@ -63,6 +87,15 @@
     }
     .dark .theme-toggle:hover {
       background: rgba(255,255,255,0.1);
+    }
+
+
+    .dark .skip-link {
+      background: #60a5fa;
+      color: #0f172a;
+    }
+    .dark *:focus-visible {
+      outline-color: #60a5fa;
     }
 
     .dark body {
@@ -110,11 +143,13 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <div class="page-header">
     <a href="../../../../../hubs/nlp-index.html" class="back-link">← Back to Natural Language Processing</a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </div>
+  <main id="main-content" tabindex="-1">
 
 <h1 id="topic-bert-bidirectional-encoder-representations-from-transformers">Topic: BERT: Bidirectional Encoder Representations from Transformers</h1>
 <h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
@@ -185,6 +220,7 @@ scores = output.logits
 <p><strong>Note:</strong> This code requires the <code>transformers</code> library to be installed: <code>pip install transformers</code> and PyTorch installed.  The initial sentiment analysis using the pipeline might not be highly accurate without proper fine-tuning on a task-specific dataset. This example shows the basic usage of a pre-trained (but unfine-tuned) BERT model for sentiment analysis.</p>
 <h2 id="4-follow-up-question">4) Follow-up question</h2>
 <p>What are the key differences between BERT and other transformer-based models like GPT (Generative Pre-trained Transformer), and how do these differences affect their suitability for different NLP tasks?</p>
+  </main>
   <script>
     const btn = document.getElementById('theme-toggle');
     const html = document.documentElement;
