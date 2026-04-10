@@ -395,6 +395,15 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       background: rgba(255,255,255,0.1);
     }}
 
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
+    }}
+
     .dark body {{
       background: #0f172a;
       color: #e2e8f0;
@@ -720,6 +729,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark .theme-toggle:hover {{
       background: rgba(255,255,255,0.1);
+    }}
+
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
 
     .dark {{

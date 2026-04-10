@@ -7,3 +7,7 @@
 ## 2026-02-13 - [Adding Copy Button to Code Blocks]
 **Learning:** When injecting JavaScript into Python f-string templates, remember to escape curly braces (`{` -> `{{`, `}` -> `}}`) to avoid syntax errors and runtime crashes. This is especially tricky when mixing CSS and JS in the same f-string block.
 **Action:** Always verify f-string template injections with a unit test that parses the output or checks for successful execution.
+
+## 2026-04-10 - Adding :focus-visible Styles
+**Learning:** When asserting CSS `outline` values evaluated via Playwright's `getComputedStyle` in Chromium, the returned format standardizes to `rgb(R, G, B) solid Xpx` or `rgb(R, G, B) auto Xpx`.
+**Action:** When programmatically verifying dynamic CSS states like `:focus-visible` outlines, ensure hex code expectations are checked as their RGB equivalents.
