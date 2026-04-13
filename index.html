@@ -30,6 +30,11 @@
       padding: 0;
     }
 
+    *:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
@@ -144,6 +149,9 @@
       --bg: #0f172a;
       --text: #e2e8f0;
       --secondary: #94a3b8;
+    }
+    .dark *:focus-visible {
+      outline-color: var(--primary);
     }
     .dark .hub-card {
       background: #1e293b;

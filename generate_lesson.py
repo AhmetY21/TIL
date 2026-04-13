@@ -395,9 +395,17 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       background: rgba(255,255,255,0.1);
     }}
 
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+
     .dark body {{
       background: #0f172a;
       color: #e2e8f0;
+    }}
+    .dark *:focus-visible {{
+      outline-color: #60a5fa;
     }}
     .dark h1, .dark h2, .dark h3 {{ color: #f1f5f9; }}
     .dark a {{ color: #60a5fa; }}
@@ -722,12 +730,20 @@ def update_index_page(meta: CurriculumMeta) -> None:
       background: rgba(255,255,255,0.1);
     }}
 
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
+
     .dark {{
       --primary: #60a5fa;
       --primary-hover: #93c5fd;
       --bg: #0f172a;
       --text: #e2e8f0;
       --secondary: #94a3b8;
+    }}
+    .dark *:focus-visible {{
+      outline-color: var(--primary);
     }}
     .dark .lesson-card {{
       background: #1e293b;
