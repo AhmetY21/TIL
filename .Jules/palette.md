@@ -7,3 +7,9 @@
 ## 2026-02-13 - [Adding Copy Button to Code Blocks]
 **Learning:** When injecting JavaScript into Python f-string templates, remember to escape curly braces (`{` -> `{{`, `}` -> `}}`) to avoid syntax errors and runtime crashes. This is especially tricky when mixing CSS and JS in the same f-string block.
 **Action:** Always verify f-string template injections with a unit test that parses the output or checks for successful execution.
+## 2026-02-13 - Double Curly Braces in Python Templates
+**Learning:** When injecting CSS with curly braces into a Python f-string template, you must use double curly braces (e.g., ) to escape them properly, or it causes .
+**Action:** Always verify f-string template injections by running unit tests, and review syntax thoroughly.
+## 2026-02-13 - Escape CSS in Python f-string templates
+**Learning:** When injecting CSS into a Python f-string template, you must use double curly braces (e.g. `{{ outline: 2px solid var(--primary); }}`) to prevent Python from evaluating it as a variable format argument, which causes a NameError.
+**Action:** Always verify f-string template injections by running unit tests before finalizing the commit.
