@@ -358,6 +358,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     pre {{ background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }}
     pre code {{ background: transparent; padding: 0; }}
     blockquote {{ border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }}
+
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
     table {{ width: 100%; border-collapse: collapse; margin: 16px 0; }}
     th, td {{ border: 1px solid #e5e7eb; padding: 8px; text-align: left; }}
     th {{ background: #f9fafb; }}
@@ -413,6 +418,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th, .dark td {{ border-color: #334155; }}
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
+
+    .dark *:focus-visible {{
+      outline-color: #60a5fa;
+    }}
 
     /* Copy Button */
     pre {{ position: relative; }}
@@ -655,6 +664,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
       padding: 40px 20px;
     }}
     .container {{ max-width: 1000px; margin: 0 auto; }}
+
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
     header {{ text-align: center; margin-bottom: 50px; }}
     h1 {{ font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }}
     .subtitle {{ color: var(--secondary); font-size: 1.1rem; }}
