@@ -379,6 +379,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       text-decoration: underline;
     }}
 
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+
     .theme-toggle {{
       background: none;
       border: none;
@@ -413,6 +418,7 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark th, .dark td {{ border-color: #334155; }}
     .dark th {{ background: #1e293b; }}
     .dark hr {{ border-top-color: #334155; }}
+    .dark *:focus-visible {{ outline-color: #60a5fa; }}
 
     /* Copy Button */
     pre {{ position: relative; }}
@@ -661,6 +667,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
     .back-link {{ display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-weight: 600; }}
     .back-link:hover {{ text-decoration: underline; }}
 
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
+
     .week-title {{
       margin-top: 40px;
       padding-bottom: 10px;
@@ -738,6 +749,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .dark .week-title {{
       border-bottom-color: #334155;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
   </style>
 </head>
