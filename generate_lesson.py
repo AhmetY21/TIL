@@ -379,6 +379,11 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
       text-decoration: underline;
     }}
 
+    *:focus-visible {{
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }}
+
     .theme-toggle {{
       background: none;
       border: none;
@@ -398,6 +403,10 @@ def convert_md_to_html(md_text: str, title: str, meta: Optional[CurriculumMeta] 
     .dark body {{
       background: #0f172a;
       color: #e2e8f0;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
     }}
     .dark h1, .dark h2, .dark h3 {{ color: #f1f5f9; }}
     .dark a {{ color: #60a5fa; }}
@@ -656,6 +665,11 @@ def update_index_page(meta: CurriculumMeta) -> None:
     }}
     .container {{ max-width: 1000px; margin: 0 auto; }}
     header {{ text-align: center; margin-bottom: 50px; }}
+
+    *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }}
     h1 {{ font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }}
     .subtitle {{ color: var(--secondary); font-size: 1.1rem; }}
     .back-link {{ display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-weight: 600; }}
@@ -728,6 +742,10 @@ def update_index_page(meta: CurriculumMeta) -> None:
       --bg: #0f172a;
       --text: #e2e8f0;
       --secondary: #94a3b8;
+    }}
+    .dark *:focus-visible {{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }}
     .dark .lesson-card {{
       background: #1e293b;
