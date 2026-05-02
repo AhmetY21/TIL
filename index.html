@@ -30,6 +30,37 @@
       padding: 0;
     }
 
+    *:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--primary);
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      text-decoration: none;
+      font-weight: bold;
+      transition: top 0.2s;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
+    #main-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #main-content:focus {
+      outline: none;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
@@ -152,6 +183,13 @@
     .dark h1, .dark .hub-title {
       color: #f1f5f9;
     }
+    .dark *:focus-visible {
+      outline-color: var(--primary);
+    }
+    .dark .skip-link {
+      background: var(--primary);
+      color: #1e293b;
+    }
     .dark .hub-badge {
       background: #1e293b;
       color: var(--primary);
@@ -161,13 +199,15 @@
 </head>
 
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
   <header>
     <h1>📚 Daily Learning Hub</h1>
     <p class="subtitle">Curriculum-based micro-lessons generated daily.</p>
   </header>
 
-  <div class="hub-grid">
+  <main id="main-content" tabindex="-1">
+    <div class="hub-grid">
     <a href="hubs/nlp-index.html" class="hub-card">
       <div class="hub-icon">🗣️</div>
       <div class="hub-title">Natural Language Processing</div>
@@ -190,11 +230,12 @@
       <div class="hub-desc">Modeling uncertainty, scenario trees, and decomposition methods (Benders, PHA, SDDP).</div>
       <span class="hub-badge">43 topics</span>
     </a>
-  </div>
+    </div>
 
-  <footer>
-    <p>Lessons are generated every 8 hours</p>
-  </footer>
+    <footer>
+      <p>Lessons are generated every 8 hours</p>
+    </footer>
+  </main>
 
   <script>
     const btn = document.getElementById('theme-toggle');
