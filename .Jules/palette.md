@@ -7,3 +7,7 @@
 ## 2026-02-13 - [Adding Copy Button to Code Blocks]
 **Learning:** When injecting JavaScript into Python f-string templates, remember to escape curly braces (`{` -> `{{`, `}` -> `}}`) to avoid syntax errors and runtime crashes. This is especially tricky when mixing CSS and JS in the same f-string block.
 **Action:** Always verify f-string template injections with a unit test that parses the output or checks for successful execution.
+
+## 2026-02-13 - [Global Keyboard Focus and Skip Links]
+**Learning:** Retrofitting `.skip-link` and global `*:focus-visible` outlines requires a dedicated `<main tabindex="-1">` wrapper and corresponding `.dark` mode CSS overrides to maintain contrast across themes, while ensuring the focus ring on the main content wrapper itself is removed (`outline: none`) so that keyboard navigation doesn't highlight the entire page body.
+**Action:** When adding accessible keyboard navigation patterns, always test the full tab order, verify dark mode contrast, and ensure focus visually tracks only interactive elements.
